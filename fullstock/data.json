@@ -1,0 +1,90 @@
+{
+    "tienda": {
+        "nombre": "ConstruShop",
+        "direccion": "Av. Industrial 5678, Santiago",
+        "telefono": "+56911223344",
+        "email": "contacto@construshop.cl",
+        "contacto": "Gerente General",
+        "dineroInicial": 5000000
+    },
+    "usuario": {
+        "email": "gerencia@construshop.cl",
+        "password": "12345",
+        "nombre": "Gerente",
+        "rol": "Admin"
+    },
+    "perfiles": {
+        "vendedores": ["Carlos", "Maria"],
+        "bodegueros": ["Luis", "Ana"],
+        "empleados": [
+            { "id": 1, "nombre": "Carlos", "apellido": "Gutierrez Soto", "email": "carlos.gutierrez@construshop.cl", "password": "carlos123", "rut": "18.234.567-8", "cumpleanos": "1990-03-15", "rol": "Vendedor", "telefono": "+56912345678" },
+            { "id": 2, "nombre": "Maria", "apellido": "Lopez Fernandez", "email": "maria.lopez@construshop.cl", "password": "maria123", "rut": "19.876.543-2", "cumpleanos": "1992-07-22", "rol": "Vendedor", "telefono": "+56923456789" },
+            { "id": 3, "nombre": "Luis", "apellido": "Morales Vega", "email": "luis.morales@construshop.cl", "password": "luis123", "rut": "17.654.321-0", "cumpleanos": "1988-11-08", "rol": "Bodeguero", "telefono": "+56934567890" },
+            { "id": 4, "nombre": "Ana", "apellido": "Ramirez Torres", "email": "ana.ramirez@construshop.cl", "password": "ana123", "rut": "20.123.456-7", "cumpleanos": "1995-01-30", "rol": "Bodeguero", "telefono": "+56945678901" },
+            { "id": 5, "nombre": "Pedro", "apellido": "Sanchez Mora", "email": "pedro.sanchez@construshop.cl", "password": "pedro123", "rut": "16.987.654-K", "cumpleanos": "1985-09-12", "rol": "Admin", "telefono": "+56956789012" }
+        ]
+    },
+    "inventario": [
+        { "id": 1, "sku": "MEL-001", "material": "Melamina", "marca": "Vesto", "espesor": 18, "color": "Blanco", "stock": 8, "precio": 32000, "margen": 30 },
+        { "id": 2, "sku": "MEL-002", "material": "Melamina", "marca": "Vesto", "espesor": 18, "color": "Gris", "stock": 10, "precio": 34000, "margen": 30 },
+        { "id": 3, "sku": "MDF-001", "material": "MDF", "marca": "Trupan", "espesor": 15, "color": "Crudo", "stock": 0, "precio": 14000, "margen": 35 },
+        { "id": 4, "sku": "TER-001", "material": "Terciado", "marca": "Araucoply", "espesor": 15, "color": "Mueblista", "stock": 3, "precio": 12000, "margen": 30 },
+        { "id": 5, "sku": "OSB-001", "material": "OSB", "marca": "LP", "espesor": 11, "color": "Estructural", "stock": 6, "precio": 9000, "margen": 25 },
+        { "id": 6, "sku": "MEL-003", "material": "Melamina", "marca": "Sodimac", "espesor": 18, "color": "Nogal", "stock": 12, "precio": 35500, "margen": 28 },
+        { "id": 7, "sku": "MDF-002", "material": "MDF", "marca": "Easy", "espesor": 12, "color": "Blanco", "stock": 15, "precio": 11500, "margen": 32 },
+        { "id": 8, "sku": "TER-002", "material": "Terciado", "marca": "Araucoply", "espesor": 18, "color": "Rústico", "stock": 7, "precio": 15800, "margen": 28 },
+        { "id": 9, "sku": "OSB-002", "material": "OSB", "marca": "Trupan", "espesor": 15, "color": "Estructural", "stock": 4, "precio": 11200, "margen": 25 },
+        { "id": 10, "sku": "PLY-001", "material": "Triplay", "marca": "Araucoply", "espesor": 9, "color": "Bueno", "stock": 20, "precio": 8500, "margen": 30 },
+        { "id": 11, "sku": "MEL-004", "material": "Melamina", "marca": "Sodimac", "espesor": 15, "color": "Beige", "stock": 2, "precio": 28900, "margen": 30 },
+        { "id": 12, "sku": "FOR-001", "material": "Formica", "marca": "Sodimac", "espesor": 0.7, "color": "Blanco", "stock": 25, "precio": 4200, "margen": 40 },
+        { "id": 13, "sku": "MDF-003", "material": "MDF", "marca": "Easy", "espesor": 18, "color": "Natural", "stock": 0, "precio": 16800, "margen": 30 },
+        { "id": 14, "sku": "TER-003", "material": "Terciado", "marca": "LP", "espesor": 12, "color": "Marino", "stock": 5, "precio": 13500, "margen": 28 },
+        { "id": 15, "sku": "OSB-003", "material": "OSB", "marca": "Sodimac", "espesor": 18, "color": "Estructural", "stock": 9, "precio": 13800, "margen": 25 }
+    ],
+    "ventas": [
+        { "id": 1, "fecha": "2026-07-20T10:30:00.000Z", "cliente": "Constructora Los Andes", "materialId": 1, "sku": "MEL-001", "materialNombre": "Melamina Blanco 18mm", "cantidad": 5, "precioUnitario": 32000, "neto": 134454, "iva": 25546, "total": 160000, "vendedor": "Carlos", "canal": "local", "estado": "completada" },
+        { "id": 2, "fecha": "2026-07-20T14:15:00.000Z", "cliente": "Estructuras SpA", "materialId": 3, "sku": "MDF-001", "materialNombre": "MDF Crudo 15mm", "cantidad": 10, "precioUnitario": 14000, "neto": 117647, "iva": 22353, "total": 140000, "vendedor": "Maria", "canal": "local", "estado": "completada" },
+        { "id": 3, "fecha": "2026-07-21T09:00:00.000Z", "cliente": "Muebleria Del Valle", "materialId": 2, "sku": "MEL-002", "materialNombre": "Melamina Gris 18mm", "cantidad": 8, "precioUnitario": 34000, "neto": 228571, "iva": 43429, "total": 272000, "vendedor": "Carlos", "canal": "online", "fechaEntrega": "2026-07-23T10:00:00.000Z", "tipoRetiro": "retiro", "estado": "completada" },
+        { "id": 4, "fecha": "2026-07-21T11:45:00.000Z", "cliente": "Constructora Del Sur", "materialId": 4, "sku": "TER-001", "materialNombre": "Terciado Mueblista 15mm", "cantidad": 12, "precioUnitario": 12000, "neto": 121008, "iva": 22992, "total": 144000, "vendedor": "Maria", "canal": "local", "estado": "completada" },
+        { "id": 5, "fecha": "2026-07-22T08:30:00.000Z", "cliente": "Juan Perez - Remodelacion", "materialId": 5, "sku": "OSB-001", "materialNombre": "OSB Estructural 11mm", "cantidad": 4, "precioUnitario": 9000, "neto": 30252, "iva": 5748, "total": 36000, "vendedor": "Carlos", "canal": "online", "fechaEntrega": "2026-07-24T15:00:00.000Z", "tipoRetiro": "domicilio", "estado": "completada" },
+        { "id": 6, "fecha": "2026-07-22T16:20:00.000Z", "cliente": "Carpinteria Los Robles", "materialId": 1, "sku": "MEL-001", "materialNombre": "Melamina Blanco 18mm", "cantidad": 3, "precioUnitario": 32000, "neto": 80672, "iva": 15328, "total": 96000, "vendedor": "Maria", "canal": "local", "estado": "completada" },
+        { "id": 7, "fecha": "2026-07-23T10:00:00.000Z", "cliente": "Inmobiliaria El Parque", "materialId": 2, "sku": "MEL-002", "materialNombre": "Melamina Gris 18mm", "cantidad": 15, "precioUnitario": 34000, "neto": 428571, "iva": 81429, "total": 510000, "vendedor": "Carlos", "canal": "online", "fechaEntrega": "2026-07-25T09:00:00.000Z", "tipoRetiro": "retiro", "estado": "completada" },
+        { "id": 8, "fecha": "2026-07-23T13:45:00.000Z", "cliente": "Taller Artesanal MG", "materialId": 3, "sku": "MDF-001", "materialNombre": "MDF Crudo 15mm", "cantidad": 6, "precioUnitario": 14000, "neto": 70588, "iva": 13412, "total": 84000, "vendedor": "Maria", "canal": "local", "estado": "completada" },
+        { "id": 9, "fecha": "2026-07-24T09:15:00.000Z", "cliente": "Constructora Rio Claro", "materialId": 4, "sku": "TER-001", "materialNombre": "Terciado Mueblista 15mm", "cantidad": 20, "precioUnitario": 12000, "neto": 201681, "iva": 38319, "total": 240000, "vendedor": "Carlos", "canal": "online", "fechaEntrega": "2026-07-26T11:00:00.000Z", "tipoRetiro": "domicilio", "estado": "completada" },
+        { "id": 10, "fecha": "2026-07-24T15:30:00.000Z", "cliente": "Diseno y Construccion PCA", "materialId": 5, "sku": "OSB-001", "materialNombre": "OSB Estructural 11mm", "cantidad": 8, "precioUnitario": 9000, "neto": 60504, "iva": 11496, "total": 72000, "vendedor": "Maria", "canal": "local", "estado": "completada" },
+        { "id": 11, "fecha": "2026-07-25T08:00:00.000Z", "cliente": "Constructora Los Andes", "materialId": 1, "sku": "MEL-001", "materialNombre": "Melamina Blanco 18mm", "cantidad": 10, "precioUnitario": 32000, "neto": 268908, "iva": 51092, "total": 320000, "vendedor": "Carlos", "canal": "online", "fechaEntrega": "2026-07-27T10:00:00.000Z", "tipoRetiro": "retiro", "estado": "completada" },
+        { "id": 12, "fecha": "2026-07-25T11:00:00.000Z", "cliente": "Muebleria Del Valle", "materialId": 2, "sku": "MEL-002", "materialNombre": "Melamina Gris 18mm", "cantidad": 4, "precioUnitario": 34000, "neto": 114286, "iva": 21714, "total": 136000, "vendedor": "Maria", "canal": "local", "estado": "completada" },
+        { "id": 13, "fecha": "2026-07-25T14:30:00.000Z", "cliente": "Constructora Los Andes", "materialId": 6, "sku": "MEL-003", "materialNombre": "Melamina Nogal 18mm", "cantidad": 6, "precioUnitario": 35500, "neto": 178824, "iva": 33976, "total": 213000, "vendedor": "Carlos", "canal": "local", "estado": "completada" },
+        { "id": 14, "fecha": "2026-07-26T09:00:00.000Z", "cliente": "Taller Artesanal MG", "materialId": 7, "sku": "MDF-002", "materialNombre": "MDF Blanco 12mm", "cantidad": 15, "precioUnitario": 11500, "neto": 145798, "iva": 27702, "total": 173500, "vendedor": "Maria", "canal": "online", "fechaEntrega": "2026-07-28T14:00:00.000Z", "tipoRetiro": "domicilio", "estado": "completada" },
+        { "id": 15, "fecha": "2026-07-26T11:30:00.000Z", "cliente": "Estructuras SpA", "materialId": 10, "sku": "PLY-001", "materialNombre": "Triplay Bueno 9mm", "cantidad": 20, "precioUnitario": 8500, "neto": 142857, "iva": 27143, "total": 170000, "vendedor": "Carlos", "canal": "local", "estado": "completada" }
+    ],
+    "bodega": [],
+    "tareas": [
+        { "id": 1, "tipo": "entrega", "materialId": 6, "sku": "MEL-003", "materialNombre": "Melamina Nogal 18mm", "cantidad": 6, "origen": "venta", "notas": "Entregar a: Constructora Los Andes", "estado": "pendiente", "fechaCreacion": "2026-07-25T14:30:00.000Z", "ventaId": 13, "asignadoA": "bodega", "trabajadorAsignado": "", "items": [{ "materialId": 6, "sku": "MEL-003", "materialNombre": "Melamina Nogal 18mm", "cantidad": 6, "precioUnitario": 35500 }], "vendedor": "Carlos", "fechaCompra": "2026-07-25T14:30:00.000Z", "canal": "local", "tipoRetiro": "local", "cliente": "Constructora Los Andes", "prioridad": "normal" },
+        { "id": 2, "tipo": "entrega", "materialId": 7, "sku": "MDF-002", "materialNombre": "MDF Blanco 12mm", "cantidad": 15, "origen": "venta", "notas": "Entregar a: Taller Artesanal MG", "estado": "pendiente", "fechaCreacion": "2026-07-26T09:00:00.000Z", "ventaId": 14, "asignadoA": "bodega", "trabajadorAsignado": "", "items": [{ "materialId": 7, "sku": "MDF-002", "materialNombre": "MDF Blanco 12mm", "cantidad": 15, "precioUnitario": 11500 }], "vendedor": "Maria", "fechaCompra": "2026-07-26T09:00:00.000Z", "canal": "online", "tipoRetiro": "domicilio", "fechaEntrega": "2026-07-28T14:00:00.000Z", "cliente": "Taller Artesanal MG", "prioridad": "normal" },
+        { "id": 3, "tipo": "entrega", "materialId": 10, "sku": "PLY-001", "materialNombre": "Triplay Bueno 9mm", "cantidad": 20, "origen": "venta", "notas": "Entregar a: Estructuras SpA", "estado": "asignada", "fechaCreacion": "2026-07-26T11:30:00.000Z", "ventaId": 15, "asignadoA": "bodega", "trabajadorAsignado": "Luis", "items": [{ "materialId": 10, "sku": "PLY-001", "materialNombre": "Triplay Bueno 9mm", "cantidad": 20, "precioUnitario": 8500 }], "vendedor": "Carlos", "fechaCompra": "2026-07-26T11:30:00.000Z", "canal": "local", "tipoRetiro": "local", "cliente": "Estructuras SpA", "prioridad": "normal" }
+    ],
+    "proveedores": [
+        { "id": 1, "nombre": "Distrimel SpA", "marcas": "Vesto, Vitos", "contacto": "Roberto Diaz", "telefono": "+56922334455", "email": "ventas@distrimel.cl", "notas": "Proveedor principal de melamina" },
+        { "id": 2, "nombre": "Maderas del Sur", "marcas": "Araucoply, Ensel", "contacto": "Patricia Gonzalez", "telefono": "+56933445566", "email": "pedidos@maderasdel-sur.cl", "notas": "Terciados y OSB" },
+        { "id": 3, "nombre": "Trupan Distribuciones", "marcas": "Trupan", "contacto": "Fernando Lopez", "telefono": "+56944556677", "email": "comercial@trupan-dist.cl", "notas": "MDF y OSB" },
+        { "id": 4, "nombre": "Easy SA", "marcas": "Easy, Forestal", "contacto": "Carla Mendez", "telefono": "+56955667788", "email": "proyectos@easy.cl", "notas": "Materiales generales" },
+        { "id": 5, "nombre": "Sodimac SA", "marcas": "Sodimac, Ferreteria Central", "contacto": "Andres Pizarro", "telefono": "+56966778899", "email": "ventas.pro@sodimac.cl", "notas": "Materiales y herramientas" },
+        { "id": 6, "nombre": "LP Chile SA", "marcas": "LP", "contacto": "Monica Reyes", "telefono": "+56977889900", "email": "distribucion@lpchile.cl", "notas": "OSB y paneles" }
+    ],
+    "ventasAnuladas": [],
+    "alertasStockPendientes": [],
+    "clientes": [
+        { "id": 1, "nombre": "Constructora Los Andes", "rut": "76.123.456-7", "email": "compras@losandes.cl", "telefono": "+56911112222", "saldo": 0 },
+        { "id": 2, "nombre": "Estructuras SpA", "rut": "76.234.567-8", "email": "contacto@estructuras-spa.cl", "telefono": "+56922223333", "saldo": 0 },
+        { "id": 3, "nombre": "Muebleria Del Valle", "rut": "76.345.678-9", "email": "pedidos@mueblesvalle.cl", "telefono": "+56933334444", "saldo": 0 },
+        { "id": 4, "nombre": "Constructora Del Sur", "rut": "76.456.789-0", "email": "obras@constructoradelsur.cl", "telefono": "+56944445555", "saldo": 0 },
+        { "id": 5, "nombre": "Juan Perez - Remodelacion", "rut": "12.345.678-9", "email": "juan.perez@gmail.com", "telefono": "+56955556666", "saldo": 0 },
+        { "id": 6, "nombre": "Carpinteria Los Robles", "rut": "76.567.890-1", "email": "contacto@losrobles.cl", "telefono": "+56966667777", "saldo": 0 },
+        { "id": 7, "nombre": "Inmobiliaria El Parque", "rut": "76.678.901-2", "email": "compras@elparque.cl", "telefono": "+56977778888", "saldo": 0 },
+        { "id": 8, "nombre": "Taller Artesanal MG", "rut": "76.789.012-3", "email": "taller@artesanal-mg.cl", "telefono": "+56988889999", "saldo": 0 },
+        { "id": 9, "nombre": "Constructora Rio Claro", "rut": "76.890.123-4", "email": "gerencia@rioclaro.cl", "telefono": "+56999990000", "saldo": 0 },
+        { "id": 10, "nombre": "Diseno y Construccion PCA", "rut": "76.901.234-5", "email": "proyectos@pca.cl", "telefono": "+56900001111", "saldo": 0 }
+    ],
+    "tareasInternas": []
+}

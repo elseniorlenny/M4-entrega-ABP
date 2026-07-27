@@ -1,0 +1,59 @@
+{
+    "proveedores": [
+        {
+            "id": 1,
+            "nombre": "Vesto",
+            "contacto": "Juan Perez",
+            "telefono": "+56912345678",
+            "email": "ventas@vesto.cl",
+            "direccion": "Av. Los Mares 1234, Valparaiso",
+            "notas": "Melamina y MDF. Entrega en 3-5 dias habiles.",
+            "metodoPago": "Transferencia",
+            "activo": true
+        },
+        {
+            "id": 2,
+            "nombre": "Masisa",
+            "contacto": "Maria Lopez",
+            "telefono": "+56987654321",
+            "email": "pedidos@masisa.cl",
+            "direccion": "Camino Industrial 567, Concepcion",
+            "notas": "Entrega a domicilio. Minimo 10 unidades.",
+            "metodoPago": "Credito 30 dias",
+            "activo": true
+        },
+        {
+            "id": 3,
+            "nombre": "Egger",
+            "contacto": "Pedro Soto",
+            "telefono": "+56911223344",
+            "email": "ventas@egger.cl",
+            "direccion": "Parque Industrial 890, Temuco",
+            "notas": "Premium. Mayor variedad de colores.",
+            "metodoPago": "Transferencia",
+            "activo": true
+        },
+        {
+            "id": 4,
+            "nombre": "Trupan",
+            "contacto": "Ana Garcia",
+            "telefono": "+56955667788",
+            "email": "contacto@trupan.cl",
+            "direccion": "Ruta 5 Sur km 345, Chillan",
+            "notas": "MDF y OSB. Buena relacion precio-calidad.",
+            "metodoPago": "Credito 15 dias",
+            "activo": true
+        },
+        {
+            "id": 5,
+            "nombre": "Arauco",
+            "contacto": "Carlos Munoz",
+            "telefono": "+56999887766",
+            "email": "ventas@arauco.cl",
+            "direccion": "Av. Arauco 234, Penco",
+            "notas": "Durolac y terciado. Descuentos por volumen.",
+            "metodoPago": "Transferencia",
+            "activo": true
+        }
+    ]
+}

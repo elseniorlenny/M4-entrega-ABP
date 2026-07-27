@@ -1,0 +1,103 @@
+{
+    "trabajadores": [
+        {
+            "id": 1,
+            "nombre": "Gerente",
+            "edad": 45,
+            "genero": "M",
+            "rol": "Gerente General",
+            "email": "gerencia@construshop.cl",
+            "password": "12345",
+            "accesoReal": true,
+            "activo": true
+        },
+        {
+            "id": 2,
+            "nombre": "Carlos Munoz",
+            "edad": 32,
+            "genero": "M",
+            "rol": "Vendedor Presencial",
+            "email": "carlos.ventas@construshop.cl",
+            "password": "carlos2026",
+            "accesoReal": false,
+            "activo": true
+        },
+        {
+            "id": 3,
+            "nombre": "Maria Lopez",
+            "edad": 28,
+            "genero": "F",
+            "rol": "Vendedora Presencial",
+            "email": "maria.ventas@construshop.cl",
+            "password": "maria2026",
+            "accesoReal": false,
+            "activo": true
+        },
+        {
+            "id": 4,
+            "nombre": "Pedro Soto",
+            "edad": 25,
+            "genero": "M",
+            "rol": "Vendedor Online",
+            "email": "pedro.online@construshop.cl",
+            "password": "pedro2026",
+            "accesoReal": false,
+            "activo": true
+        },
+        {
+            "id": 5,
+            "nombre": "Luis Garcia",
+            "edad": 40,
+            "genero": "M",
+            "rol": "Jefe de Bodega",
+            "email": "luis.bodega@construshop.cl",
+            "password": "luis2026",
+            "accesoReal": false,
+            "activo": true
+        },
+        {
+            "id": 6,
+            "nombre": "Ana Ramirez",
+            "edad": 30,
+            "genero": "F",
+            "rol": "Asistente de Bodega",
+            "email": "ana.bodega@construshop.cl",
+            "password": "ana2026",
+            "accesoReal": false,
+            "activo": true
+        },
+        {
+            "id": 7,
+            "nombre": "Jorge Torres",
+            "edad": 27,
+            "genero": "M",
+            "rol": "Asistente de Bodega",
+            "email": "jorge.bodega@construshop.cl",
+            "password": "jorge2026",
+            "accesoReal": false,
+            "activo": true
+        },
+        {
+            "id": 8,
+            "nombre": "Valentina Diaz",
+            "edad": 23,
+            "genero": "F",
+            "rol": "Asistente de Bodega",
+            "email": "valentina.bodega@construshop.cl",
+            "password": "valentina2026",
+            "accesoReal": false,
+            "activo": true
+        },
+        {
+            "id": 9,
+            "nombre": "Rodrigo Vargas",
+            "edad": 35,
+            "genero": "M",
+            "rol": "Reposicion / Compras",
+            "email": "rodrigo.compras@construshop.cl",
+            "password": "rodrigo2026",
+            "accesoReal": false,
+            "activo": true
+        }
+    ]
+}

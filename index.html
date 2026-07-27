@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full.Stock</title>
+    <link rel="stylesheet" href="fullstock/css/estilos.css?v=2">
+</head>
+<body>
+
+    <header>
+        <nav>
+            <span id="brand-app" style="cursor:pointer;font-weight:bold" onclick="navegar('inicio')">Full.Stock</span>
+            <div id="nav-center">
+                <a href="#" data-seccion="venta">Ventas</a>
+                <a href="#" data-seccion="bodega">Bodega</a>
+                <a href="#" data-seccion="reposicion">Reposicion</a>
+                <a href="#" data-seccion="estadisticas">Estadisticas</a>
+            </div>
+            <div id="nav-right">
+                <a href="#" data-seccion="opciones">Opciones</a>
+                <div>
+                    <button id="btn-login-nav">Login</button>
+                    <button id="btn-logout-nav" class="oculto">Logout</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="app-contenido">
+        <p>Cargando...</p>
+    </main>
+
+    <script src="fullstock/js/swal.js?v=2"></script>
+    <script src="fullstock/js/data.js?v=2"></script>
+    <script src="fullstock/js/app.js?v=2"></script>
+</body>
+</html>

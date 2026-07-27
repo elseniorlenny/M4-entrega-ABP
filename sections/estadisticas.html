@@ -1,0 +1,323 @@
+<!-- TABS NAV -->
+<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">
+    <button class="tab-btn active" onclick="showEstTab('metricas', event)">Metricas</button>
+    <button class="tab-btn" onclick="showEstTab('ventas-list', event)">Ventas</button>
+    <button class="tab-btn" onclick="showEstTab('entregas-list', event)">Entregas</button>
+    <button class="tab-btn" onclick="showEstTab('anulados-list', event)">Anulados</button>
+    <button class="tab-btn" onclick="showEstTab('reembolsos-list', event)">Reembolsos</button>
+    <button class="tab-btn" onclick="showEstTab('empleados', event)">Empleados</button>
+    <button class="tab-btn" onclick="showEstTab('clientes', event)">Clientes</button>
+    <button class="tab-btn" onclick="showEstTab('archivo', event)">Archivos</button>
+    <button class="tab-btn" onclick="showEstTab('inventario-est', event)">Inventario</button>
+    <button class="tab-btn" onclick="showEstTab('proveedores-est', event)">Proveedores</button>
+</div>
+
+<!-- TAB: METRICAS -->
+<div id="tab-metricas" class="est-tab">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px">
+        <div class="metric-card" style="border-left:4px solid var(--success)">
+            <div class="metric-label">Dinero Disponible</div>
+            <div class="metric-value" id="est-dinero">$0</div>
+        </div>
+        <div class="metric-card" style="border-left:4px solid var(--danger)">
+            <div class="metric-label">Egresos</div>
+            <div class="metric-value" id="est-egresos">$0</div>
+        </div>
+        <div class="metric-card" style="border-left:4px solid #0d6efd">
+            <div class="metric-label">Ingresos</div>
+            <div class="metric-value" id="est-ingresos">$0</div>
+        </div>
+        <div class="metric-card" style="border-left:4px solid var(--accent)">
+            <div class="metric-label">Margen Ganancia</div>
+            <div class="metric-value" id="est-margen-ganancia">0%</div>
+        </div>
+        <div class="metric-card" style="border-left:4px solid var(--danger)">
+            <div class="metric-label">Margen Perdida</div>
+            <div class="metric-value" id="est-margen-perdida">0%</div>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: VENTAS -->
+<div id="tab-ventas-list" class="est-tab" style="display:none">
+    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+        <div class="kanban-header">Listado de Ventas</div>
+        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:center">ID</th>
+                        <th style="text-align:center">Fecha</th>
+                        <th style="text-align:center">Cliente</th>
+                        <th style="text-align:center">Vendedor</th>
+                        <th style="text-align:center">Material</th>
+                        <th style="text-align:center">Cantidad</th>
+                        <th style="text-align:center">Total</th>
+                        <th style="text-align:center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="est-ventas-lista"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: ENTREGAS -->
+<div id="tab-entregas-list" class="est-tab" style="display:none">
+    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+        <div class="kanban-header">Listado de Entregas</div>
+        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:center">ID</th>
+                        <th style="text-align:center">Venta</th>
+                        <th style="text-align:center">Cliente</th>
+                        <th style="text-align:center">Material</th>
+                        <th style="text-align:center">Cantidad</th>
+                        <th style="text-align:center">Encargado</th>
+                        <th style="text-align:center">Fecha Inicio</th>
+                        <th style="text-align:center">Fecha Fin</th>
+                    </tr>
+                </thead>
+                <tbody id="est-entregas-lista"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: ANULADOS -->
+<div id="tab-anulados-list" class="est-tab" style="display:none">
+    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+        <div class="kanban-header">Listado de Ventas Anuladas</div>
+        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:center">ID</th>
+                        <th style="text-align:center">Venta Original</th>
+                        <th style="text-align:center">Fecha</th>
+                        <th style="text-align:center">Cliente</th>
+                        <th style="text-align:center">Material</th>
+                        <th style="text-align:center">Cantidad</th>
+                        <th style="text-align:center">Monto Reembolso</th>
+                        <th style="text-align:center">Motivo</th>
+                    </tr>
+                </thead>
+                <tbody id="est-anulados-lista"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: REEMBOLSOS -->
+<div id="tab-reembolsos-list" class="est-tab" style="display:none">
+    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+        <div class="kanban-header">Listado de Reembolsos</div>
+        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:center">ID</th>
+                        <th style="text-align:center">Venta</th>
+                        <th style="text-align:center">Cliente</th>
+                        <th style="text-align:center">Monto</th>
+                        <th style="text-align:center">Fecha</th>
+                        <th style="text-align:center">Motivo</th>
+                    </tr>
+                </thead>
+                <tbody id="est-reembolsos-lista"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: EMPLEADOS -->
+<div id="tab-empleados" class="est-tab" style="display:none">
+    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+        <div class="kanban-header" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Empleados</span>
+            <button onclick="estAbrirFormEmpleado()" style="font-size:0.85em;padding:2px 8px">+ Contratar</button>
+        </div>
+        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:center">ID</th>
+                        <th style="text-align:center">Nombre</th>
+                        <th style="text-align:center">Rol</th>
+                        <th style="text-align:center">Email</th>
+                        <th style="text-align:center">Telefono</th>
+                        <th style="text-align:center">Editar</th>
+                        <th style="text-align:center">Despedir</th>
+                    </tr>
+                </thead>
+                <tbody id="est-empleados-lista"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: CLIENTES -->
+<div id="tab-clientes" class="est-tab" style="display:none">
+    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+        <div class="kanban-header" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Clientes Registrados</span>
+        </div>
+        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:center">ID</th>
+                        <th style="text-align:center">Nombre</th>
+                        <th style="text-align:center">RUT</th>
+                        <th style="text-align:center">Email</th>
+                        <th style="text-align:center">Telefono</th>
+                        <th style="text-align:center">Saldo</th>
+                        <th style="text-align:center">Editar</th>
+                        <th style="text-align:center">Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody id="est-clientes-lista"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: ARCHIVOS -->
+<div id="tab-archivo" class="est-tab" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+            <div class="kanban-header">Archivo Entregados</div>
+            <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align:center">ID</th>
+                            <th style="text-align:center">Venta</th>
+                            <th style="text-align:center">Fecha</th>
+                            <th style="text-align:center">Material</th>
+                            <th style="text-align:center">Encargado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="est-arch-entregas"></tbody>
+                </table>
+            </div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+            <div class="kanban-header">Archivo Compras</div>
+            <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align:center">ID</th>
+                            <th style="text-align:center">Proveedor</th>
+                            <th style="text-align:center">Fecha</th>
+                            <th style="text-align:center">Material</th>
+                            <th style="text-align:center">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="est-arch-compras"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: INVENTARIO EDITABLE -->
+<div id="tab-inventario-est" class="est-tab" style="display:none">
+    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+        <div class="kanban-header">Inventario - Precios Editables</div>
+        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:center">SKU</th>
+                        <th style="text-align:center">Material</th>
+                        <th style="text-align:center">Marca</th>
+                        <th style="text-align:center">Stock</th>
+                        <th style="text-align:center">Precio Unit.</th>
+                        <th style="text-align:center">Margen %</th>
+                        <th style="text-align:center">IVA</th>
+                        <th style="text-align:center">Precio Venta</th>
+                    </tr>
+                </thead>
+                <tbody id="est-inv-precios"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: PROVEEDORES HISTORIAL -->
+<div id="tab-proveedores-est" class="est-tab" style="display:none">
+    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+        <div class="kanban-header">Proveedores - Historial de Compras</div>
+        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:center">ID</th>
+                        <th style="text-align:center">Empresa</th>
+                        <th style="text-align:center">Contacto</th>
+                        <th style="text-align:center">Telefono</th>
+                        <th style="text-align:center">Compras Realizadas</th>
+                        <th style="text-align:center">Total Gastado</th>
+                    </tr>
+                </thead>
+                <tbody id="est-prov-historial"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EMPLEADO -->
+<div id="modal-empleado" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;width:400px;max-width:90%">
+        <div style="font-weight:600;font-size:1em;margin-bottom:12px" id="emp-form-titulo">Contratar Empleado</div>
+        <input type="hidden" id="emp-form-idx">
+        <label style="font-size:0.85em;display:block;margin-bottom:8px">Nombre
+            <input type="text" id="emp-form-nombre" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+        </label>
+        <label style="font-size:0.85em;display:block;margin-bottom:8px">Rol
+            <select id="emp-form-rol" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                <option value="vendedor">Vendedor</option>
+                <option value="bodeguero">Bodeguero</option>
+                <option value="admin">Admin</option>
+            </select>
+        </label>
+        <label style="font-size:0.85em;display:block;margin-bottom:8px">Email
+            <input type="email" id="emp-form-email" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+        </label>
+        <label style="font-size:0.85em;display:block;margin-bottom:8px">Telefono
+            <input type="text" id="emp-form-telefono" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+        </label>
+        <div style="display:flex;gap:8px;margin-top:12px">
+            <button onclick="estGuardarEmpleado()" style="background:var(--success);flex:1">Guardar</button>
+            <button onclick="estCerrarFormEmpleado()" style="background:#6c757d;flex:1">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CLIENTE -->
+<div id="modal-cliente" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;width:400px;max-width:90%">
+        <div style="font-weight:600;font-size:1em;margin-bottom:12px" id="cli-form-titulo">Registrar Cliente</div>
+        <input type="hidden" id="cli-form-idx">
+        <label style="font-size:0.85em;display:block;margin-bottom:8px">Nombre
+            <input type="text" id="cli-form-nombre" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+        </label>
+        <label style="font-size:0.85em;display:block;margin-bottom:8px">RUT
+            <input type="text" id="cli-form-rut" placeholder="XX.XXX.XXX-X" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+        </label>
+        <label style="font-size:0.85em;display:block;margin-bottom:8px">Email
+            <input type="email" id="cli-form-email" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+        </label>
+        <label style="font-size:0.85em;display:block;margin-bottom:8px">Telefono
+            <input type="text" id="cli-form-telefono" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+        </label>
+        <div style="display:flex;gap:8px;margin-top:12px">
+            <button onclick="estGuardarCliente()" style="background:var(--success);flex:1">Guardar</button>
+            <button onclick="estCerrarFormCliente()" style="background:#6c757d;flex:1">Cancelar</button>
+        </div>
+    </div>
+</div>

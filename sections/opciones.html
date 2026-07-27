@@ -1,0 +1,31 @@
+<div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+    <div class="kanban-header">Datos de la Tienda</div>
+    <form id="form-tienda" style="padding:12px">
+        <label>Nombre Tienda <input type="text" id="opt-nombre-tienda"></label>
+        <label>Direccion <input type="text" id="opt-direccion"></label>
+        <label>Email <input type="email" id="opt-email"></label>
+        <button type="submit" style="width:100%">Guardar</button>
+    </form>
+</div>
+
+<div style="margin-top:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+    <div class="kanban-header">Tema</div>
+    <form id="form-usuario" style="padding:12px">
+        <label>Tema
+            <select id="opt-tema">
+                <option value="light">Claro</option>
+                <option value="dark">Oscuro</option>
+            </select>
+        </label>
+        <button type="submit" style="width:100%">Guardar</button>
+    </form>
+</div>
+
+<hr style="margin:24px 0">
+
+<div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
+    <div class="kanban-header">Datos</div>
+    <div style="padding:12px">
+        <button id="btn-reset-datos" style="width:100%;background:var(--danger)">Resetear datos (volver a base)</button>
+    </div>
+</div>
