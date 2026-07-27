@@ -14,14 +14,16 @@
         "rol": "Admin"
     },
     "perfiles": {
-        "vendedores": ["Carlos", "Maria"],
-        "bodegueros": ["Luis", "Ana"],
+        "vendedores": ["Carlos", "Maria", "Camila"],
+        "bodegueros": ["Luis", "Ana", "Felipe"],
         "empleados": [
             { "id": 1, "nombre": "Carlos", "apellido": "Gutierrez Soto", "email": "carlos.gutierrez@construshop.cl", "password": "carlos123", "rut": "18.234.567-8", "cumpleanos": "1990-03-15", "rol": "Vendedor", "telefono": "+56912345678" },
             { "id": 2, "nombre": "Maria", "apellido": "Lopez Fernandez", "email": "maria.lopez@construshop.cl", "password": "maria123", "rut": "19.876.543-2", "cumpleanos": "1992-07-22", "rol": "Vendedor", "telefono": "+56923456789" },
             { "id": 3, "nombre": "Luis", "apellido": "Morales Vega", "email": "luis.morales@construshop.cl", "password": "luis123", "rut": "17.654.321-0", "cumpleanos": "1988-11-08", "rol": "Bodeguero", "telefono": "+56934567890" },
             { "id": 4, "nombre": "Ana", "apellido": "Ramirez Torres", "email": "ana.ramirez@construshop.cl", "password": "ana123", "rut": "20.123.456-7", "cumpleanos": "1995-01-30", "rol": "Bodeguero", "telefono": "+56945678901" },
-            { "id": 5, "nombre": "Pedro", "apellido": "Sanchez Mora", "email": "pedro.sanchez@construshop.cl", "password": "pedro123", "rut": "16.987.654-K", "cumpleanos": "1985-09-12", "rol": "Admin", "telefono": "+56956789012" }
+            { "id": 5, "nombre": "Pedro", "apellido": "Sanchez Mora", "email": "pedro.sanchez@construshop.cl", "password": "pedro123", "rut": "16.987.654-K", "cumpleanos": "1985-09-12", "rol": "Admin", "telefono": "+56956789012" },
+            { "id": 6, "nombre": "Felipe", "apellido": "Castro Diaz", "email": "felipe.castro@construshop.cl", "password": "felipe123", "rut": "18.912.345-6", "cumpleanos": "1993-05-14", "rol": "Bodeguero", "telefono": "+56967890123" },
+            { "id": 7, "nombre": "Camila", "apellido": "Silva Rojas", "email": "camila.silva@construshop.cl", "password": "camila123", "rut": "19.456.789-1", "cumpleanos": "1994-08-19", "rol": "Vendedor", "telefono": "+56978901234" }
         ]
     },
     "inventario": [
@@ -30,14 +32,14 @@
         { "id": 3, "sku": "MDF-001", "material": "MDF", "marca": "Trupan", "espesor": 15, "color": "Crudo", "stock": 0, "precio": 14000, "margen": 35 },
         { "id": 4, "sku": "TER-001", "material": "Terciado", "marca": "Araucoply", "espesor": 15, "color": "Mueblista", "stock": 3, "precio": 12000, "margen": 30 },
         { "id": 5, "sku": "OSB-001", "material": "OSB", "marca": "LP", "espesor": 11, "color": "Estructural", "stock": 6, "precio": 9000, "margen": 25 },
-        { "id": 6, "sku": "MEL-003", "material": "Melamina", "marca": "Sodimac", "espesor": 18, "color": "Nogal", "stock": 12, "precio": 35500, "margen": 28 },
-        { "id": 7, "sku": "MDF-002", "material": "MDF", "marca": "Easy", "espesor": 12, "color": "Blanco", "stock": 15, "precio": 11500, "margen": 32 },
+        { "id": 6, "sku": "MEL-003", "material": "Melamina", "marca": "Masisa", "espesor": 18, "color": "Nogal", "stock": 12, "precio": 35500, "margen": 28 },
+        { "id": 7, "sku": "MDF-002", "material": "MDF", "marca": "Trupan", "espesor": 12, "color": "Blanco", "stock": 15, "precio": 11500, "margen": 32 },
         { "id": 8, "sku": "TER-002", "material": "Terciado", "marca": "Araucoply", "espesor": 18, "color": "Rústico", "stock": 7, "precio": 15800, "margen": 28 },
-        { "id": 9, "sku": "OSB-002", "material": "OSB", "marca": "Trupan", "espesor": 15, "color": "Estructural", "stock": 4, "precio": 11200, "margen": 25 },
+        { "id": 9, "sku": "OSB-002", "material": "OSB", "marca": "LP", "espesor": 15, "color": "Estructural", "stock": 4, "precio": 11200, "margen": 25 },
         { "id": 10, "sku": "PLY-001", "material": "Triplay", "marca": "Araucoply", "espesor": 9, "color": "Bueno", "stock": 20, "precio": 8500, "margen": 30 },
-        { "id": 11, "sku": "MEL-004", "material": "Melamina", "marca": "Sodimac", "espesor": 15, "color": "Beige", "stock": 2, "precio": 28900, "margen": 30 },
+        { "id": 11, "sku": "MEL-004", "material": "Melamina", "marca": "Masisa", "espesor": 15, "color": "Beige", "stock": 2, "precio": 28900, "margen": 30 },
         { "id": 12, "sku": "FOR-001", "material": "Formica", "marca": "Sodimac", "espesor": 0.7, "color": "Blanco", "stock": 25, "precio": 4200, "margen": 40 },
-        { "id": 13, "sku": "MDF-003", "material": "MDF", "marca": "Easy", "espesor": 18, "color": "Natural", "stock": 0, "precio": 16800, "margen": 30 },
+        { "id": 13, "sku": "MDF-003", "material": "MDF", "marca": "Masisa", "espesor": 18, "color": "Natural", "stock": 0, "precio": 16800, "margen": 30 },
         { "id": 14, "sku": "TER-003", "material": "Terciado", "marca": "LP", "espesor": 12, "color": "Marino", "stock": 5, "precio": 13500, "margen": 28 },
         { "id": 15, "sku": "OSB-003", "material": "OSB", "marca": "Sodimac", "espesor": 18, "color": "Estructural", "stock": 9, "precio": 13800, "margen": 25 }
     ],
@@ -60,17 +62,18 @@
     ],
     "bodega": [],
     "tareas": [
-        { "id": 1, "tipo": "entrega", "materialId": 6, "sku": "MEL-003", "materialNombre": "Melamina Nogal 18mm", "cantidad": 6, "origen": "venta", "notas": "Entregar a: Constructora Los Andes", "estado": "pendiente", "fechaCreacion": "2026-07-25T14:30:00.000Z", "ventaId": 13, "asignadoA": "bodega", "trabajadorAsignado": "", "items": [{ "materialId": 6, "sku": "MEL-003", "materialNombre": "Melamina Nogal 18mm", "cantidad": 6, "precioUnitario": 35500 }], "vendedor": "Carlos", "fechaCompra": "2026-07-25T14:30:00.000Z", "canal": "local", "tipoRetiro": "local", "cliente": "Constructora Los Andes", "prioridad": "normal" },
-        { "id": 2, "tipo": "entrega", "materialId": 7, "sku": "MDF-002", "materialNombre": "MDF Blanco 12mm", "cantidad": 15, "origen": "venta", "notas": "Entregar a: Taller Artesanal MG", "estado": "pendiente", "fechaCreacion": "2026-07-26T09:00:00.000Z", "ventaId": 14, "asignadoA": "bodega", "trabajadorAsignado": "", "items": [{ "materialId": 7, "sku": "MDF-002", "materialNombre": "MDF Blanco 12mm", "cantidad": 15, "precioUnitario": 11500 }], "vendedor": "Maria", "fechaCompra": "2026-07-26T09:00:00.000Z", "canal": "online", "tipoRetiro": "domicilio", "fechaEntrega": "2026-07-28T14:00:00.000Z", "cliente": "Taller Artesanal MG", "prioridad": "normal" },
-        { "id": 3, "tipo": "entrega", "materialId": 10, "sku": "PLY-001", "materialNombre": "Triplay Bueno 9mm", "cantidad": 20, "origen": "venta", "notas": "Entregar a: Estructuras SpA", "estado": "asignada", "fechaCreacion": "2026-07-26T11:30:00.000Z", "ventaId": 15, "asignadoA": "bodega", "trabajadorAsignado": "Luis", "items": [{ "materialId": 10, "sku": "PLY-001", "materialNombre": "Triplay Bueno 9mm", "cantidad": 20, "precioUnitario": 8500 }], "vendedor": "Carlos", "fechaCompra": "2026-07-26T11:30:00.000Z", "canal": "local", "tipoRetiro": "local", "cliente": "Estructuras SpA", "prioridad": "normal" }
+        { "id": 1, "tipo": "entrega", "materialId": 6, "sku": "MEL-003", "materialNombre": "Melamina Nogal 18mm", "cantidad": 6, "origen": "venta", "notas": "Entrega inmediata local", "estado": "pendiente", "fechaCreacion": "2026-07-27T08:30:00.000Z", "ventaId": 13, "asignadoA": "bodega", "trabajadorAsignado": "", "items": [{ "materialId": 6, "sku": "MEL-003", "materialNombre": "Melamina Nogal 18mm", "cantidad": 6, "precioUnitario": 35500 }], "vendedor": "Carlos", "fechaCompra": "2026-07-27T08:30:00.000Z", "canal": "local", "tipoRetiro": "inmediata", "cliente": "Constructora Los Andes", "prioridad": "urgente" },
+        { "id": 2, "tipo": "entrega", "materialId": 7, "sku": "MDF-002", "materialNombre": "MDF Blanco 12mm", "cantidad": 15, "origen": "venta", "notas": "Venta online con fecha de retiro", "estado": "pendiente", "fechaCreacion": "2026-07-27T09:00:00.000Z", "ventaId": 14, "asignadoA": "bodega", "trabajadorAsignado": "", "items": [{ "materialId": 7, "sku": "MDF-002", "materialNombre": "MDF Blanco 12mm", "cantidad": 15, "precioUnitario": 11500 }], "vendedor": "Maria", "fechaCompra": "2026-07-27T09:00:00.000Z", "canal": "online", "tipoRetiro": "retiro", "fechaEntrega": "2026-07-28T11:00:00.000Z", "cliente": "Taller Artesanal MG", "prioridad": "normal" },
+        { "id": 3, "tipo": "entrega", "materialId": 10, "sku": "PLY-001", "materialNombre": "Triplay Bueno 9mm", "cantidad": 20, "origen": "venta", "notas": "Venta online con envio a domicilio", "estado": "pendiente", "fechaCreacion": "2026-07-27T10:15:00.000Z", "ventaId": 15, "asignadoA": "bodega", "trabajadorAsignado": "", "items": [{ "materialId": 10, "sku": "PLY-001", "materialNombre": "Triplay Bueno 9mm", "cantidad": 20, "precioUnitario": 8500 }], "vendedor": "Camila", "fechaCompra": "2026-07-27T10:15:00.000Z", "canal": "online", "tipoRetiro": "domicilio", "fechaEntrega": "2026-07-29T15:30:00.000Z", "cliente": "Estructuras SpA", "prioridad": "normal" },
+        { "id": 4, "tipo": "entrega", "materialId": 1, "sku": "MEL-001", "materialNombre": "Melamina Blanco 18mm", "cantidad": 5, "origen": "venta", "notas": "En preparacion por bodeguero", "estado": "en_proceso", "fechaCreacion": "2026-07-27T07:45:00.000Z", "ventaId": 11, "asignadoA": "bodega", "trabajadorAsignado": "Luis", "items": [{ "materialId": 1, "sku": "MEL-001", "materialNombre": "Melamina Blanco 18mm", "cantidad": 5, "precioUnitario": 32000 }], "vendedor": "Carlos", "fechaCompra": "2026-07-27T07:45:00.000Z", "canal": "local", "tipoRetiro": "inmediata", "cliente": "Constructora Los Andes", "prioridad": "urgente" }
     ],
     "proveedores": [
-        { "id": 1, "nombre": "Distrimel SpA", "marcas": "Vesto, Vitos", "contacto": "Roberto Diaz", "telefono": "+56922334455", "email": "ventas@distrimel.cl", "notas": "Proveedor principal de melamina" },
-        { "id": 2, "nombre": "Maderas del Sur", "marcas": "Araucoply, Ensel", "contacto": "Patricia Gonzalez", "telefono": "+56933445566", "email": "pedidos@maderasdel-sur.cl", "notas": "Terciados y OSB" },
-        { "id": 3, "nombre": "Trupan Distribuciones", "marcas": "Trupan", "contacto": "Fernando Lopez", "telefono": "+56944556677", "email": "comercial@trupan-dist.cl", "notas": "MDF y OSB" },
-        { "id": 4, "nombre": "Easy SA", "marcas": "Easy, Forestal", "contacto": "Carla Mendez", "telefono": "+56955667788", "email": "proyectos@easy.cl", "notas": "Materiales generales" },
-        { "id": 5, "nombre": "Sodimac SA", "marcas": "Sodimac, Ferreteria Central", "contacto": "Andres Pizarro", "telefono": "+56966778899", "email": "ventas.pro@sodimac.cl", "notas": "Materiales y herramientas" },
-        { "id": 6, "nombre": "LP Chile SA", "marcas": "LP", "contacto": "Monica Reyes", "telefono": "+56977889900", "email": "distribucion@lpchile.cl", "notas": "OSB y paneles" }
+        { "id": 1, "nombre": "Sodimac Venta Empresa SA", "marcas": "Sodimac, Kolor, Bauker, Redline, Imperial", "contacto": "Andres Pizarro", "telefono": "+56966778899", "email": "ventas.pro@sodimac.cl", "notas": "Proveedor oficial materiales y soluciones constructivas" },
+        { "id": 2, "nombre": "Easy Pro Chile SA", "marcas": "Easy, Forestal, Skil, Dewalt", "contacto": "Carla Mendez", "telefono": "+56955667788", "email": "proyectos@easy.cl", "notas": "Soluciones para construccion y remodelacion" },
+        { "id": 3, "nombre": "Masisa Chile SA", "marcas": "Masisa, Melamina Masisa, MDF Masisa", "contacto": "Gonzalo Valenzuela", "telefono": "+56944332211", "email": "ventas.chile@masisa.com", "notas": "Placas de melamina y tableros MDF" },
+        { "id": 4, "nombre": "Arauco Soluciones Sostenibles SA", "marcas": "Vesto, Trupan, Araucoply, Durolac", "contacto": "Patricia Gonzalez", "telefono": "+56933445566", "email": "contacto@araucosoluciones.cl", "notas": "Melaminas Vesto, MDF Trupan y Terciados Araucoply" },
+        { "id": 5, "nombre": "LP Chile SA", "marcas": "LP OSB, LP SmartSide, LP TechShield", "contacto": "Monica Reyes", "telefono": "+56977889900", "email": "distribucion@lpchile.cl", "notas": "Especialistas en tableros OSB estructurales" },
+        { "id": 6, "nombre": "Imperial Ferretería SA", "marcas": "Imperial, Arauco, Masisa, Stanley", "contacto": "Ricardo Soto", "telefono": "+56988776655", "email": "cotizaciones@imperial.cl", "notas": "Insumos para carpinteria y muebleria" }
     ],
     "ventasAnuladas": [],
     "alertasStockPendientes": [],

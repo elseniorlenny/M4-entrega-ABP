@@ -136,9 +136,9 @@ function onRenderVenta() {
     carritoVenta = []
     poblarSelectVenta()
     actualizarVendedorVenta()
-    setTareaInactivo()
     renderVentas()
     renderCarritoVenta()
+    renderEnvioTareasVenta()
 
     const form = document.getElementById('form-venta')
     if (form) {
@@ -165,54 +165,63 @@ function onFormVentaSubmit(e) {
     const item = inventario.find(i => i.id === parseInt(materialId))
     if (!item) return
 
+    const matNombre = `${item.material} ${item.color} ${item.espesor}mm`
     const enCarrito = carritoVenta.filter(c => c.materialId === item.id).reduce((s, c) => s + c.cantidad, 0)
-    if (cantidad + enCarrito > item.stock) {
-        window._repoPendiente = { item, cantidad, cliente }
+    const sinStockSuficiente = (cantidad + enCarrito) > item.stock
 
-        const panel = document.getElementById('detalle-venta')
-        const titulo = document.getElementById('detalle-titulo')
-        const contenido = document.getElementById('detalle-contenido')
-        const btn = document.getElementById('detalle-btn-accion')
-
-        if (panel) { panel.style.opacity = '1'; panel.style.pointerEvents = 'auto' }
-        if (titulo) { titulo.textContent = 'Sin Stock'; titulo.style.color = 'var(--danger)' }
-        if (contenido) {
-            contenido.innerHTML = `
-                <div style="margin-bottom:6px"><strong>${item.material} ${item.color} ${item.espesor}mm</strong></div>
-                <div style="font-size:0.9em;margin-bottom:4px">Stock: <strong>${item.stock}</strong> | Solicitado: <strong>${cantidad}</strong></div>
-                <div style="font-size:0.85em;color:var(--text-muted)">Cliente: ${cliente}</div>
-            `
-        }
-        if (btn) {
-            btn.disabled = false
-            btn.textContent = 'Enviar a Reposicion'
-            btn.style.background = 'var(--danger)'
-            btn.onclick = onDetalleEnviar
-        }
-
-        window._accionPendiente = 'reposicion'
-
-        document.getElementById('venta-material').value = ''
-        document.getElementById('venta-cantidad').value = ''
-        document.getElementById('venta-stock-info').textContent = '0'
-        document.getElementById('venta-precio-info').textContent = '$0'
-        document.getElementById('venta-total-preview').textContent = '$0'
-        return
-    }
-
-    // Stock OK → agregar al carrito
-    const existente = carritoVenta.find(c => c.materialId === item.id)
-    if (existente) {
-        existente.cantidad += cantidad
-    } else {
-        carritoVenta.push({
+    if (item.stock === 0) {
+        const vendedor = usuarioActual ? usuarioActual.nombre : 'Gerente';
+        alertasEnvioVenta.push({
+            id: Date.now() + Math.random(),
+            tipoTarget: 'reposicion',
+            cliente,
             materialId: item.id,
             sku: item.sku,
-            materialNombre: `${item.material} ${item.color} ${item.espesor}mm`,
+            materialNombre: matNombre,
             cantidad,
             precioUnitario: item.precio,
-            stockActual: item.stock
-        })
+            prioridad: 'alta',
+            canal: 'local',
+            tipoEntrega: 'inmediata',
+            vendedor,
+            notas: `Producto sin stock (${item.stock} und.)`
+        });
+        alert(`⚠️ El producto "${item.sku}" no tiene stock (0 und.). Se generó una tarea con Prioridad ALTA dirigida a Reposición.`);
+    } else {
+        // Agregar al carrito
+        const existente = carritoVenta.find(c => c.materialId === item.id);
+        if (existente) {
+            existente.cantidad += cantidad;
+        } else {
+            carritoVenta.push({
+                materialId: item.id,
+                sku: item.sku,
+                materialNombre: matNombre,
+                cantidad,
+                precioUnitario: item.precio,
+                stockActual: item.stock
+            });
+        }
+        // Si no tiene stock suficiente -> generar tarea Prioridad Alta con destino a Reposición en Envío Tareas
+        if (sinStockSuficiente) {
+            const vendedor = usuarioActual ? usuarioActual.nombre : 'Gerente';
+            alertasEnvioVenta.push({
+                id: Date.now() + Math.random(),
+                tipoTarget: 'reposicion',
+                cliente,
+                materialId: item.id,
+                sku: item.sku,
+                materialNombre: matNombre,
+                cantidad,
+                precioUnitario: item.precio,
+                prioridad: 'alta',
+                canal: 'local',
+                tipoEntrega: 'inmediata',
+                vendedor,
+                notas: `Producto sin stock suficiente (${item.stock} und disp. en bodega)`
+            });
+            alert(`⚠️ El producto "${item.sku}" no tiene stock suficiente (${item.stock} und). Se agregó al carrito y se generó automáticamente una tarea con Prioridad ALTA con destino a Reposición.`);
+        }
     }
 
     document.getElementById('venta-material').value = ''
@@ -221,7 +230,9 @@ function onFormVentaSubmit(e) {
     document.getElementById('venta-precio-info').textContent = '$0'
     document.getElementById('venta-total-preview').textContent = '$0'
 
+    guardarTodo()
     renderCarritoVenta()
+    renderEnvioTareasVenta()
 }
 
 function enviarRepoDesdeAlerta() {
@@ -309,125 +320,325 @@ function onRealizarVenta() {
     const cliente = document.getElementById('venta-cliente').value.trim()
     if (!cliente) { alert('Ingresa el nombre del cliente'); return }
 
-    // Preparar resumen para Columna 3
-    const granTotal = carritoVenta.reduce((sum, c) => sum + c.precioUnitario * c.cantidad, 0)
-    const panel = document.getElementById('detalle-venta')
-    const titulo = document.getElementById('detalle-titulo')
-    const contenido = document.getElementById('detalle-contenido')
-    const btn = document.getElementById('detalle-btn-accion')
-
-    if (panel) { panel.style.opacity = '1'; panel.style.pointerEvents = 'auto' }
-    if (titulo) { titulo.textContent = 'Confirmar Envio'; titulo.style.color = 'var(--success)' }
-    if (contenido) {
-        contenido.innerHTML = `
-            <div><strong>Cliente:</strong> ${cliente}</div>
-            <div><strong>Productos:</strong> ${carritoVenta.length}</div>
-            <div><strong>Total:</strong> ${formatearCLP(granTotal)}</div>
-            <div style="margin-top:6px;font-size:0.85em;color:var(--text-muted)">Presiona Enviar para confirmar la venta y enviar a bodega.</div>
-        `
-    }
-    if (btn) {
-        btn.disabled = false
-        btn.textContent = 'Enviar'
-        btn.style.background = 'var(--success)'
-        btn.onclick = onDetalleEnviar
-    }
-
-    window._ventaPendiente = {
-        cliente,
-        items: [...carritoVenta],
-        total: granTotal
-    }
-    window._accionPendiente = 'venta'
-}
-
-function onDetalleEnviar() {
-    if (window._accionPendiente === 'venta') {
-        enviarVentaPendiente()
-    } else if (window._accionPendiente === 'reposicion') {
-        enviarRepoDesdeAlerta()
-    }
-}
-
-function enviarVentaPendiente() {
-    const pendiente = window._ventaPendiente
-    if (!pendiente) return
-
-    const nota = document.getElementById('detalle-nota') ? document.getElementById('detalle-nota').value.trim() : ''
     const vendedor = usuarioActual ? usuarioActual.nombre : 'Gerente'
-    const fecha = new Date().toISOString()
-    const ventaId = siguienteId(ventas)
 
-    pendiente.items.forEach(c => {
-        const total = c.precioUnitario * c.cantidad
-        const neto = Math.round(total / 1.19)
-        const iva = total - neto
-        ventas.push({
-            id: siguienteId(ventas), fecha, cliente: pendiente.cliente,
-            materialId: c.materialId, sku: c.sku,
-            materialNombre: c.materialNombre,
-            cantidad: c.cantidad, precioUnitario: c.precioUnitario,
-            neto, iva, total, vendedor, canal: 'local', estado: 'completada',
-            ventaGroupId: ventaId
-        })
-    })
+    carritoVenta.forEach(item => {
+        const itemInv = inventario.find(i => i.id === item.materialId || i.sku === item.sku)
+        const stockActual = itemInv ? itemInv.stock : 0
 
-    if (pendiente.cliente) {
-        const existente = clientes.find(c => c.nombre === pendiente.cliente)
-        if (!existente) {
-            const maxId = clientes.length > 0 ? Math.max(...clientes.map(c => c.id)) : 0
-            clientes.push({
-                id: maxId + 1,
-                nombre: pendiente.cliente,
-                rut: 'CLI-' + String(maxId + 1).padStart(4, '0'),
-                email: '-',
-                telefono: '-',
-                saldo: 0
+        if (stockActual >= item.cantidad) {
+            alertasEnvioVenta.push({
+                id: Date.now() + Math.random(),
+                tipoTarget: 'bodega',
+                cliente,
+                materialId: item.materialId,
+                sku: item.sku,
+                materialNombre: item.materialNombre,
+                cantidad: item.cantidad,
+                precioUnitario: item.precioUnitario,
+                prioridad: 'alta',
+                canal: 'local',
+                tipoEntrega: 'inmediata',
+                vendedor,
+                notas: ''
+            })
+        } else {
+            alertasEnvioVenta.push({
+                id: Date.now() + Math.random(),
+                tipoTarget: 'reposicion',
+                cliente,
+                materialId: item.materialId,
+                sku: item.sku,
+                materialNombre: item.materialNombre,
+                cantidad: item.cantidad,
+                precioUnitario: item.precioUnitario,
+                prioridad: 'urgente',
+                canal: 'local',
+                tipoEntrega: 'inmediata',
+                vendedor,
+                notas: `Stock insuficiente (${stockActual} und disp.)`
             })
         }
-    }
+    })
 
-    const notasTarea = `Entregar a: ${pendiente.cliente}` + (nota ? ` | Nota: ${nota}` : '')
-    const primerItem = pendiente.items[0]
-    const tarea = new Tarea(siguienteId(tareas), 'entrega', primerItem.materialId, primerItem.sku, primerItem.materialNombre, primerItem.cantidad, 'venta', notasTarea)
-    tarea.asignadoA = 'bodega'
-    tarea.ventaId = ventaId
-    tarea.items = pendiente.items.map(c => ({
-        materialId: c.materialId, sku: c.sku,
-        materialNombre: c.materialNombre, cantidad: c.cantidad,
-        precioUnitario: c.precioUnitario
-    }))
-    tarea.vendedor = vendedor
-    tarea.fechaCompra = fecha
-    tarea.canal = 'local'
-    tarea.tipoRetiro = 'local'
-    tarea.cliente = pendiente.cliente
-    tareas.push(tarea)
-
-    guardarTodo()
-    renderVentas()
-
-    setTareaAcumulada()
-    document.getElementById('mensaje-enviado').textContent = 'Venta realizada - ' + formatearCLP(pendiente.total)
-
-    window._ventaPendiente = null
-    window._accionPendiente = null
     carritoVenta = []
     renderCarritoVenta()
+    guardarTodo()
+    renderEnvioTareasVenta()
     document.getElementById('venta-cliente').value = ''
     document.getElementById('venta-material').value = ''
     document.getElementById('venta-cantidad').value = ''
     document.getElementById('venta-stock-info').textContent = '0'
     document.getElementById('venta-precio-info').textContent = '$0'
     document.getElementById('venta-total-preview').textContent = '$0'
+}
 
-    setTimeout(function() { setTareaInactivo() }, 2000)
+function renderEnvioTareasVenta() {
+    const container = document.getElementById('envio-tareas-drop')
+    const countEl = document.getElementById('envio-tareas-count')
+    const btnEnviarTodo = document.getElementById('btn-enviar-todo-venta')
+    if (!container) return
+
+    if (!alertasEnvioVenta || alertasEnvioVenta.length === 0) {
+        container.innerHTML = '<div class="kanban-empty">Sin tareas pendientes de envío</div>'
+        if (countEl) countEl.textContent = '0'
+        if (btnEnviarTodo) btnEnviarTodo.disabled = true
+        return
+    }
+
+    if (countEl) countEl.textContent = alertasEnvioVenta.length
+    if (btnEnviarTodo) {
+        btnEnviarTodo.disabled = false
+        btnEnviarTodo.textContent = `🚀 Enviar Todo (${alertasEnvioVenta.length})`
+    }
+
+    container.innerHTML = alertasEnvioVenta.map((a, idx) => {
+        const colorPrioridad = a.prioridad === 'urgente' || a.prioridad === 'alta' ? 'var(--danger)' : a.prioridad === 'media' ? 'var(--warning)' : 'var(--success)'
+        const isBodega = a.tipoTarget === 'bodega'
+        const labelTarget = isBodega ? '📦 A Bodega' : '🛒 A Reposición'
+        const bgTarget = isBodega ? 'var(--info)' : 'var(--danger)'
+
+        return `
+        <div class="kanban-card" style="border-left:4px solid ${colorPrioridad};margin-bottom:8px;padding:8px;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="background:${bgTarget};color:#000;padding:1px 5px;border-radius:3px;font-size:0.75em;font-weight:bold">${labelTarget}</span>
+                <span style="background:${colorPrioridad};color:#fff;padding:1px 5px;border-radius:3px;font-size:0.75em;font-weight:bold">${a.prioridad.toUpperCase()}</span>
+            </div>
+            <div style="font-size:0.85em;font-weight:bold;margin-bottom:2px">Cliente: ${a.cliente}</div>
+            <div style="font-size:0.8em;color:var(--text)"><code>${a.sku}</code> ${a.materialNombre}</div>
+            <div style="font-size:0.8em;margin-top:2px">Cant: <strong>${a.cantidad} und.</strong></div>
+            <div style="font-size:0.75em;color:var(--text-muted);margin-top:2px">Plataforma: ${(a.canal || 'local').toUpperCase()} | Entrega: ${(a.tipoEntrega || 'inmediata').toUpperCase()}</div>
+            ${a.notas ? `<div style="font-size:0.75em;color:var(--warning);margin-top:2px">Nota: ${a.notas}</div>` : ''}
+
+            <div style="display:flex;gap:4px;margin-top:6px">
+                <button onclick="appEditarAlertaVenta(${idx})" style="font-size:0.75em;background:var(--info);color:#000;flex:1;padding:3px;border-radius:3px;font-weight:600">✏️ Editar</button>
+                <button onclick="appEnviarAlertaVentaUnica(${idx})" style="font-size:0.75em;background:${isBodega ? 'var(--success)' : 'var(--danger)'};color:#fff;flex:1.2;padding:3px;font-weight:bold;border-radius:3px">📤 ${isBodega ? 'A Bodega' : 'A Reposición'}</button>
+                <button onclick="appEliminarAlertaVenta(${idx})" style="font-size:0.75em;background:var(--danger);padding:3px;border-radius:3px">🗑️</button>
+            </div>
+        </div>
+        `
+    }).join('')
+}
+
+function renderEnvioTareasBodega() {
+    const container = document.getElementById('bodega-envio-drop')
+    const countEl = document.getElementById('kanban-alert-count')
+    const btnEnviarTodo = document.getElementById('btn-enviar-todo-bodega')
+    if (!container) return
+
+    if (!alertasStockPendientes || alertasStockPendientes.length === 0) {
+        container.innerHTML = '<div class="kanban-empty">Sin alertas de stock pendientes</div>'
+        if (countEl) countEl.textContent = '0'
+        if (btnEnviarTodo) btnEnviarTodo.disabled = true
+        return
+    }
+
+    if (countEl) countEl.textContent = alertasStockPendientes.length
+    if (btnEnviarTodo) {
+        btnEnviarTodo.disabled = false
+        btnEnviarTodo.textContent = `🚀 Enviar Todo (${alertasStockPendientes.length})`
+    }
+
+    container.innerHTML = alertasStockPendientes.map((a, idx) => {
+        const colorPrioridad = a.prioridad === 'urgente' || a.prioridad === 'alta' ? 'var(--danger)' : a.prioridad === 'media' ? 'var(--warning)' : 'var(--success)'
+        return `
+        <div class="kanban-card" style="border-left:4px solid ${colorPrioridad};margin-bottom:8px;padding:8px;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="background:${colorPrioridad};color:#fff;padding:1px 5px;border-radius:3px;font-size:0.75em;font-weight:bold">🛒 A Reposición</span>
+                <span style="background:${colorPrioridad};color:#fff;padding:1px 5px;border-radius:3px;font-size:0.75em;font-weight:bold">${(a.prioridad || 'alta').toUpperCase()}</span>
+            </div>
+            <div style="font-size:0.8em;color:var(--text);font-weight:bold"><code>${a.sku}</code> ${a.materialNombre}</div>
+            <div style="font-size:0.8em;margin-top:2px">Sugerido pedir: <strong>${a.cantidad} und.</strong></div>
+            ${a.notas ? `<div style="font-size:0.75em;color:var(--text-muted);margin-top:2px">Detalle: ${a.notas}</div>` : ''}
+
+            <div style="display:flex;gap:4px;margin-top:6px">
+                <button onclick="appEditarAlertaBodega(${idx})" style="font-size:0.75em;background:var(--info);color:#000;flex:1;padding:3px;border-radius:3px;font-weight:600">✏️ Editar</button>
+                <button onclick="appEnviarAlertaBodegaUnica(${idx})" style="font-size:0.75em;background:${colorPrioridad};color:#fff;flex:1.2;padding:3px;font-weight:bold;border-radius:3px">📤 A Reposición</button>
+                <button onclick="appEliminarAlertaBodega(${idx})" style="font-size:0.75em;background:${colorPrioridad};padding:3px;border-radius:3px">🗑️</button>
+            </div>
+        </div>
+        `
+    }).join('')
+}
+
+window.appEnviarAlertaVentaUnica = function(idx) {
+    const a = alertasEnvioVenta[idx]
+    if (!a) return
+
+    const vendedor = a.vendedor || (usuarioActual ? usuarioActual.nombre : 'Gerente')
+    const fecha = new Date().toISOString()
+    const ventaId = siguienteId(ventas)
+
+    if (a.tipoTarget === 'bodega') {
+        const total = a.precioUnitario * a.cantidad
+        const neto = Math.round(total / 1.19)
+        const iva = total - neto
+
+        ventas.push({
+            id: ventaId, fecha, cliente: a.cliente,
+            materialId: a.materialId, sku: a.sku,
+            materialNombre: a.materialNombre,
+            cantidad: a.cantidad, precioUnitario: a.precioUnitario,
+            neto, iva, total, vendedor, canal: a.canal, estado: 'completada'
+        })
+
+        const clienteObj = clientes.find(c => c.nombre === a.cliente)
+        if (!clienteObj && a.cliente) {
+            clientes.push({
+                id: clientes.length + 1,
+                nombre: a.cliente,
+                rut: 'CLI-' + String(clientes.length + 1).padStart(4, '0'),
+                email: '-', telefono: '-', saldo: 0
+            })
+        }
+
+        const notasTarea = `Entregar a: ${a.cliente} | Entrega: ${a.tipoEntrega}` + (a.notas ? ` | Nota: ${a.notas}` : '')
+        const tarea = new Tarea(siguienteId(tareas), 'entrega', a.materialId, a.sku, a.materialNombre, a.cantidad, 'venta', notasTarea)
+        tarea.asignadoA = 'bodega'
+        tarea.ventaId = ventaId
+        tarea.prioridad = a.prioridad || 'normal'
+        tarea.vendedor = vendedor
+        tarea.fechaCompra = fecha
+        tarea.canal = a.canal || 'local'
+        tarea.tipoRetiro = (a.tipoEntrega === 'inmediata' || !a.tipoEntrega) ? 'local' : a.tipoEntrega
+        tarea.cliente = a.cliente
+        gestorTareas.agregarTarea(tarea)
+    } else {
+        const notasRepo = `Cliente: ${a.cliente}. Necesita: ${a.cantidad} und.` + (a.notas ? ` | Nota: ${a.notas}` : '')
+        const tarea = new Tarea(siguienteId(tareas), 'reposicion', a.materialId, a.sku, a.materialNombre, a.cantidad, 'stock-insuficiente', notasRepo)
+        tarea.prioridad = a.prioridad || 'urgente'
+        tarea.estado = 'enviada'
+        tarea.asignadoA = 'proveedores'
+        tarea.fuente = 'ventas'
+        tarea.enviadoPor = vendedor
+        gestorTareas.agregarTarea(tarea)
+    }
+
+    alertasEnvioVenta.splice(idx, 1)
+    guardarTodo()
+    renderEnvioTareasVenta()
+    renderVentas()
+    renderBodegaKanban()
+    renderReposicionKanban()
+}
+
+window.appEnviarTodasAlertasVenta = function() {
+    if (!alertasEnvioVenta || alertasEnvioVenta.length === 0) return
+    const total = alertasEnvioVenta.length
+    while (alertasEnvioVenta.length > 0) {
+        appEnviarAlertaVentaUnica(0)
+    }
+    alert(`🚀 Las ${total} tareas de envío fueron procesadas y transmitidas exitosamente.`)
+}
+
+window.appEliminarAlertaVenta = function(idx) {
+    alertasEnvioVenta.splice(idx, 1)
+    guardarTodo()
+    renderEnvioTareasVenta()
+}
+
+window.appEnviarAlertaBodegaUnica = function(idx) {
+    const a = alertasStockPendientes[idx]
+    if (!a) return
+
+    const tarea = new Tarea(siguienteId(tareas), 'reposicion', a.materialId, a.sku, a.materialNombre, a.cantidad, a.origen || 'stock-bajo', a.notas || 'Solicitado desde bodega')
+    tarea.prioridad = a.prioridad || 'urgente'
+    tarea.estado = 'enviada'
+    tarea.asignadoA = 'proveedores'
+    tarea.fuente = 'bodega'
+    tarea.enviadoPor = a.enviadoPor || (usuarioActual ? usuarioActual.nombre : 'Bodega')
+    tareas.push(tarea)
+
+    alertasStockPendientes.splice(idx, 1)
+    guardarTodo()
+    renderEnvioTareasBodega()
+    if (seccionActual === 'reposicion') renderReposicionKanban()
+}
+
+window.appEnviarTodasAlertasBodega = function() {
+    if (!alertasStockPendientes || alertasStockPendientes.length === 0) return
+    const total = alertasStockPendientes.length
+    while (alertasStockPendientes.length > 0) {
+        appEnviarAlertaBodegaUnica(0)
+    }
+    alert(`🚀 Las ${total} alertas de stock fueron enviadas a Reposición.`)
+}
+
+window.appEliminarAlertaBodega = function(idx) {
+    alertasStockPendientes.splice(idx, 1)
+    guardarTodo()
+    renderEnvioTareasBodega()
+}
+
+window.appEditarAlertaVenta = function(idx) {
+    const a = alertasEnvioVenta[idx]
+    if (!a) return
+    document.getElementById('alerta-edit-idx').value = idx
+    document.getElementById('alerta-edit-origen').value = 'venta'
+    document.getElementById('alerta-edit-prioridad').value = a.prioridad || 'alta'
+    document.getElementById('alerta-edit-cantidad').value = a.cantidad || 1
+    document.getElementById('alerta-edit-canal').value = a.canal || 'local'
+    document.getElementById('alerta-edit-entrega').value = a.tipoEntrega || 'inmediata'
+    document.getElementById('alerta-edit-notas').value = a.notas || ''
+    document.getElementById('modal-editar-alerta').style.display = 'flex'
+}
+
+window.appEditarAlertaBodega = function(idx) {
+    const a = alertasStockPendientes[idx]
+    if (!a) return
+    document.getElementById('alerta-edit-idx').value = idx
+    document.getElementById('alerta-edit-origen').value = 'bodega'
+    document.getElementById('alerta-edit-prioridad').value = a.prioridad || 'urgente'
+    document.getElementById('alerta-edit-cantidad').value = a.cantidad || 1
+    document.getElementById('alerta-edit-canal').value = 'local'
+    document.getElementById('alerta-edit-entrega').value = 'inmediata'
+    document.getElementById('alerta-edit-notas').value = a.notas || ''
+    document.getElementById('modal-editar-alerta').style.display = 'flex'
+}
+
+window.appCerrarModalEditarAlerta = function() {
+    const modal = document.getElementById('modal-editar-alerta')
+    if (modal) modal.style.display = 'none'
+}
+
+window.appGuardarAtributosAlerta = function() {
+    const idx = parseInt(document.getElementById('alerta-edit-idx').value)
+    const origen = document.getElementById('alerta-edit-origen').value
+    const prioridad = document.getElementById('alerta-edit-prioridad').value
+    const cantidad = parseInt(document.getElementById('alerta-edit-cantidad').value) || 1
+    const canal = document.getElementById('alerta-edit-canal').value
+    const tipoEntrega = document.getElementById('alerta-edit-entrega').value
+    const notas = document.getElementById('alerta-edit-notas').value.trim()
+
+    if (origen === 'venta') {
+        const a = alertasEnvioVenta[idx]
+        if (a) {
+            a.prioridad = prioridad
+            a.cantidad = cantidad
+            a.canal = canal
+            a.tipoEntrega = tipoEntrega
+            a.notas = notas
+        }
+        renderEnvioTareasVenta()
+    } else {
+        const a = alertasStockPendientes[idx]
+        if (a) {
+            a.prioridad = prioridad
+            a.cantidad = cantidad
+            a.notas = notas
+        }
+        renderEnvioTareasBodega()
+    }
+
+    guardarTodo()
+    appCerrarModalEditarAlerta()
 }
 
 /* ==================== RENDER: BODEGA ==================== */
 function onRenderBodega() {
     renderBodegaKanban()
     renderBodegaInventario()
+    renderEnvioTareasBodega()
 
     const inputB = document.getElementById('input-busqueda-bodega')
     if (inputB) {
@@ -574,18 +785,21 @@ function onRenderEstadisticas() {
 
 function estRenderMetricas() {
     const ingresos = ventas.filter(v => v.estado === 'completada').reduce((s, v) => s + v.total, 0)
-    const egresos = alertasStockPendientes.length * 5000 + tareas.filter(t => t.tipo === 'reposicion' && t.estado === 'comprada').reduce((s, t) => s + (t.totalCompra || 0), 0)
+    const egresosCompras = tareas.filter(t => t.tipo === 'reposicion' && ['comprada', 'completada'].includes(t.estado)).reduce((s, t) => s + (t.totalCompra || 0), 0)
     const reembolsos = ventasAnuladas.reduce((s, v) => s + (v.montoReembolso || 0), 0)
-    const dinero = (tiendaConfig.dineroInicial || 0) + ingresos - egresos - reembolsos
-    const margenGanancia = ingresos > 0 ? Math.round(((ingresos - egresos) / ingresos) * 100) : 0
-    const margenPerdida = egresos > 0 ? Math.round((reembolsos / egresos) * 100) : 0
+    const egresosTotales = egresosCompras + reembolsos
+    const dinero = (tiendaConfig.dineroInicial !== undefined ? tiendaConfig.dineroInicial : 5000000)
+
+    const gananciaBruta = ingresos - egresosCompras
+    const margenGananciaPct = ingresos > 0 ? Math.round((gananciaBruta / ingresos) * 100) : 0
+    const margenPerdidaPct = ingresos > 0 ? Math.round((reembolsos / ingresos) * 100) : 0
 
     const el = (id) => document.getElementById(id)
     if (el('est-dinero')) el('est-dinero').textContent = formatearCLP(dinero)
-    if (el('est-egresos')) el('est-egresos').textContent = formatearCLP(egresos)
+    if (el('est-egresos')) el('est-egresos').textContent = formatearCLP(egresosTotales)
     if (el('est-ingresos')) el('est-ingresos').textContent = formatearCLP(ingresos)
-    if (el('est-margen-ganancia')) el('est-margen-ganancia').textContent = margenGanancia + '%'
-    if (el('est-margen-perdida')) el('est-margen-perdida').textContent = margenPerdida + '%'
+    if (el('est-margen-ganancia')) el('est-margen-ganancia').textContent = `${formatearCLP(gananciaBruta)} (${margenGananciaPct}%)`
+    if (el('est-margen-perdida')) el('est-margen-perdida').textContent = `${formatearCLP(reembolsos)} (${margenPerdidaPct}%)`
 }
 
 function estRenderVentas() {
@@ -597,7 +811,7 @@ function estRenderVentas() {
         return `<tr style="border-bottom:1px solid var(--border)">
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.id}</td>
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${new Date(v.fecha).toLocaleDateString('es-CL')}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.cliente}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${v.cliente}</td>
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.vendedor}</td>
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.materialNombre || '-'}</td>
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.cantidad}</td>
@@ -611,11 +825,11 @@ function estRenderEntregas() {
     const tbody = document.getElementById('est-entregas-lista')
     if (!tbody) return
     const entregas = tareas.filter(t => t.tipo === 'entrega' && t.estado === 'completada')
-    if (entregas.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:12px;color:var(--text-muted)">Sin entregas</td></tr>'; return }
+    if (entregas.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:12px;color:var(--text-muted)">Sin entregas completadas</td></tr>'; return }
     tbody.innerHTML = entregas.map(t => `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.id}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">V-${String(t.ventaId || 0).padStart(4, '0')}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.cliente || '-'}</td>
+        <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${t.cliente || '-'}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.materialNombre}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.cantidad}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.trabajadorAsignado || '-'}</td>
@@ -627,12 +841,12 @@ function estRenderEntregas() {
 function estRenderAnulados() {
     const tbody = document.getElementById('est-anulados-lista')
     if (!tbody) return
-    if (ventasAnuladas.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:12px;color:var(--text-muted)">Sin anulados</td></tr>'; return }
+    if (ventasAnuladas.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:12px;color:var(--text-muted)">Sin ventas anuladas</td></tr>'; return }
     tbody.innerHTML = ventasAnuladas.map(v => `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.id}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">V-${String(v.ventaOriginalId || 0).padStart(4, '0')}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${new Date(v.fecha).toLocaleDateString('es-CL')}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.cliente}</td>
+        <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${v.cliente}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.materialNombre}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.cantidad}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold;color:var(--danger)">${formatearCLP(v.montoReembolso || 0)}</td>
@@ -643,11 +857,11 @@ function estRenderAnulados() {
 function estRenderReembolsos() {
     const tbody = document.getElementById('est-reembolsos-lista')
     if (!tbody) return
-    if (ventasAnuladas.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:12px;color:var(--text-muted)">Sin reembolsos</td></tr>'; return }
+    if (ventasAnuladas.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:12px;color:var(--text-muted)">Sin reembolsos registrados</td></tr>'; return }
     tbody.innerHTML = ventasAnuladas.map(v => `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.id}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">V-${String(v.ventaOriginalId || 0).padStart(4, '0')}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.cliente}</td>
+        <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${v.cliente}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold;color:var(--danger)">${formatearCLP(v.montoReembolso || 0)}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${new Date(v.fecha).toLocaleDateString('es-CL')}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.motivo}</td>
@@ -658,122 +872,129 @@ function estRenderEmpleados() {
     const tbody = document.getElementById('est-empleados-lista')
     if (!tbody) return
     const empleados = (datosJSON && datosJSON.perfiles && datosJSON.perfiles.empleados) || []
-    if (empleados.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:12px;color:var(--text-muted)">Sin empleados</td></tr>'; return }
+    if (empleados.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:12px;color:var(--text-muted)">Sin empleados registrados</td></tr>'; return }
     tbody.innerHTML = empleados.map((e, i) => `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.id}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${e.nombre} ${e.apellido}</td>
+        <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${e.nombre} ${e.apellido || ''}</td>
+        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.rut || '-'}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center"><span style="background:var(--info);color:#000;padding:1px 5px;border-radius:3px;font-size:0.75em">${e.rol}</span></td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.email}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.telefono}</td>
+        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.cumpleanos || '-'}</td>
+        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.telefono || '-'}</td>
         <td style="padding:6px 8px;text-align:center"><button onclick="estEditarEmpleado(${i})" style="font-size:0.75em;background:var(--info);color:#000;padding:3px 6px">Editar</button></td>
         <td style="padding:6px 8px;text-align:center"><button onclick="estDespedirEmpleado(${i})" style="font-size:0.75em;background:var(--danger);padding:3px 6px">X</button></td>
     </tr>`).join('')
 }
 
-function estRenderClientes() {
-    const tbody = document.getElementById('est-clientes-lista')
-    if (!tbody) return
-    if (clientes.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:12px;color:var(--text-muted)">Sin clientes</td></tr>'; return }
-    tbody.innerHTML = clientes.map((c, i) => `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.id || '-'}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${c.nombre}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.rut}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.email || '-'}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.telefono || '-'}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold;color:${c.saldo > 0 ? 'var(--success)' : 'var(--danger)'}">${formatearCLP(c.saldo || 0)}</td>
-        <td style="padding:6px 8px;text-align:center"><button onclick="estEditarCliente(${i})" style="font-size:0.75em;background:var(--info);color:#000;padding:3px 6px">Editar</button></td>
-        <td style="padding:6px 8px;text-align:center"><button onclick="estEliminarCliente(${i})" style="font-size:0.75em;background:var(--danger);padding:3px 6px">X</button></td>
-    </tr>`).join('')
-}
-
-window.estAbrirFormCliente = function(idx) {
-    const modal = document.getElementById('modal-cliente')
+window.estAbrirFormEmpleado = function(idx) {
+    const modal = document.getElementById('modal-empleado')
     if (!modal) return
-    if (idx !== undefined) {
-        const c = clientes[idx]
-        if (!c) return
-        document.getElementById('cli-form-titulo').textContent = 'Editar Cliente'
-        document.getElementById('cli-form-idx').value = idx
-        document.getElementById('cli-form-nombre').value = c.nombre
-        document.getElementById('cli-form-rut').value = c.rut || ''
-        document.getElementById('cli-form-email').value = c.email || ''
-        document.getElementById('cli-form-telefono').value = c.telefono || ''
+    const empleados = (datosJSON && datosJSON.perfiles && datosJSON.perfiles.empleados) || []
+    if (idx !== undefined && idx !== '') {
+        const e = empleados[idx]
+        if (!e) return
+        document.getElementById('emp-form-titulo').textContent = 'Editar Empleado'
+        document.getElementById('emp-form-idx').value = idx
+        document.getElementById('emp-form-nombre').value = e.nombre || ''
+        document.getElementById('emp-form-apellido').value = e.apellido || ''
+        document.getElementById('emp-form-rut').value = e.rut || ''
+        document.getElementById('emp-form-cumpleanos').value = e.cumpleanos || ''
+        document.getElementById('emp-form-rol').value = e.rol || 'Vendedor'
+        document.getElementById('emp-form-email').value = e.email || ''
+        document.getElementById('emp-form-password').value = e.password || ''
+        document.getElementById('emp-form-telefono').value = e.telefono || ''
     } else {
-        document.getElementById('cli-form-titulo').textContent = 'Registrar Cliente'
-        document.getElementById('cli-form-idx').value = ''
-        document.getElementById('cli-form-nombre').value = ''
-        document.getElementById('cli-form-rut').value = ''
-        document.getElementById('cli-form-email').value = ''
-        document.getElementById('cli-form-telefono').value = ''
+        document.getElementById('emp-form-titulo').textContent = 'Contratar Empleado'
+        document.getElementById('emp-form-idx').value = ''
+        document.getElementById('emp-form-nombre').value = ''
+        document.getElementById('emp-form-apellido').value = ''
+        document.getElementById('emp-form-rut').value = ''
+        document.getElementById('emp-form-cumpleanos').value = ''
+        document.getElementById('emp-form-rol').value = 'Vendedor'
+        document.getElementById('emp-form-email').value = ''
+        document.getElementById('emp-form-password').value = ''
+        document.getElementById('emp-form-telefono').value = ''
     }
     modal.style.display = 'flex'
 }
 
-window.estCerrarFormCliente = function() {
-    const modal = document.getElementById('modal-cliente')
-    if (modal) modal.style.display = 'none'
+window.estEditarEmpleado = function(idx) {
+    estAbrirFormEmpleado(idx)
 }
 
-window.estGuardarCliente = function() {
-    const idx = document.getElementById('cli-form-idx').value
-    const nombre = document.getElementById('cli-form-nombre').value.trim()
-    const rut = document.getElementById('cli-form-rut').value.trim()
-    const email = document.getElementById('cli-form-email').value.trim()
-    const telefono = document.getElementById('cli-form-telefono').value.trim()
-    if (!nombre) { alert('Ingrese el nombre'); return }
+window.estGuardarEmpleado = function() {
+    const idx = document.getElementById('emp-form-idx').value
+    const nombre = document.getElementById('emp-form-nombre').value.trim()
+    const apellido = document.getElementById('emp-form-apellido').value.trim()
+    const rut = document.getElementById('emp-form-rut').value.trim()
+    const cumpleanos = document.getElementById('emp-form-cumpleanos').value
+    const rol = document.getElementById('emp-form-rol').value
+    const email = document.getElementById('emp-form-email').value.trim()
+    const password = document.getElementById('emp-form-password').value.trim()
+    const telefono = document.getElementById('emp-form-telefono').value.trim()
+
+    if (!nombre) { alert('Ingrese el nombre del empleado'); return }
+
+    if (!datosJSON.perfiles) datosJSON.perfiles = { empleados: [] }
+    if (!datosJSON.perfiles.empleados) datosJSON.perfiles.empleados = []
+    const empleados = datosJSON.perfiles.empleados
+
     if (idx !== '') {
-        const c = clientes[parseInt(idx)]
-        if (c) { c.nombre = nombre; c.rut = rut; c.email = email; c.telefono = telefono }
+        const emp = empleados[parseInt(idx)]
+        if (emp) {
+            emp.nombre = nombre
+            emp.apellido = apellido
+            emp.rut = rut
+            emp.cumpleanos = cumpleanos
+            emp.rol = rol
+            emp.email = email
+            emp.password = password
+            emp.telefono = telefono
+        }
     } else {
-        const maxId = clientes.length > 0 ? Math.max(...clientes.map(c => c.id)) : 0
-        clientes.push({ id: maxId + 1, nombre, rut, email, telefono, saldo: 0 })
+        const maxId = empleados.length > 0 ? Math.max(...empleados.map(e => e.id)) : 0
+        empleados.push({
+            id: maxId + 1,
+            nombre,
+            apellido,
+            rut,
+            cumpleanos,
+            rol,
+            email,
+            password,
+            telefono
+        })
     }
     guardarTodo()
-    estRenderClientes()
-    estCerrarFormCliente()
+    estRenderEmpleados()
+    estCerrarFormEmpleado()
 }
 
-window.estEditarCliente = function(idx) {
-    estAbrirFormCliente(idx)
-}
-
-window.estEliminarCliente = function(idx) {
-    if (!confirm('Eliminar cliente?')) return
-    clientes.splice(idx, 1)
+window.estDespedirEmpleado = function(idx) {
+    if (!confirm('¿Está seguro de despedir a este empleado?')) return
+    const empleados = (datosJSON && datosJSON.perfiles && datosJSON.perfiles.empleados) || []
+    empleados.splice(idx, 1)
     guardarTodo()
-    estRenderClientes()
+    estRenderEmpleados()
 }
 
-function estRenderArchivos() {
-    const tbodyE = document.getElementById('est-arch-entregas')
-    const tbodyC = document.getElementById('est-arch-compras')
-    const archEnt = tareas.filter(t => t.tipo === 'entrega' && t.estado === 'completada')
-    const archComp = tareas.filter(t => t.tipo === 'reposicion' && t.estado === 'completada')
-
-    if (tbodyE) {
-        if (archEnt.length === 0) { tbodyE.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:12px;color:var(--text-muted)">Sin archivos</td></tr>' }
-        else {
-            tbodyE.innerHTML = archEnt.map(t => `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.id}</td>
-                <td style="padding:6px 8px;font-size:0.85em;text-align:center">V-${String(t.ventaId || 0).padStart(4, '0')}</td>
-                <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.fechaFin ? new Date(t.fechaFin).toLocaleDateString('es-CL') : '-'}</td>
-                <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.materialNombre}</td>
-                <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.trabajadorAsignado || '-'}</td>
-            </tr>`).join('')
-        }
-    }
-    if (tbodyC) {
-        if (archComp.length === 0) { tbodyC.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:12px;color:var(--text-muted)">Sin archivos</td></tr>' }
-        else {
-            tbodyC.innerHTML = archComp.map(t => `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.codigoCompra || `C-${String(t.id).padStart(4, '0')}`}</td>
-                <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.proveedorNombre || '-'}</td>
-                <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.fechaCompra ? new Date(t.fechaCompra).toLocaleDateString('es-CL') : '-'}</td>
-                <td style="padding:6px 8px;font-size:0.85em;text-align:center">${t.materialNombre}</td>
-                <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${formatearCLP(t.totalCompra || 0)}</td>
-            </tr>`).join('')
-        }
-    }
+function estRenderClientes() {
+    const tbody = document.getElementById('est-clientes-lista')
+    if (!tbody) return
+    if (clientes.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:12px;color:var(--text-muted)">Sin clientes registrados</td></tr>'; return }
+    tbody.innerHTML = clientes.map((c, i) => {
+        const totalComprasCliente = ventas.filter(v => v.cliente === c.nombre && v.estado === 'completada').reduce((s, v) => s + v.total, 0)
+        return `<tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.id || (i + 1)}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${c.nombre}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.rut || '-'}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.email || '-'}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.telefono || '-'}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold;color:var(--success)">${formatearCLP(totalComprasCliente)}</td>
+            <td style="padding:6px 8px;text-align:center"><button onclick="estEditarCliente(${i})" style="font-size:0.75em;background:var(--info);color:#000;padding:3px 6px">Editar</button></td>
+            <td style="padding:6px 8px;text-align:center"><button onclick="estEliminarCliente(${i})" style="font-size:0.75em;background:var(--danger);padding:3px 6px">X</button></td>
+        </tr>`
+    }).join('')
 }
 
 function estRenderInventarioPrecios() {
@@ -781,17 +1002,21 @@ function estRenderInventarioPrecios() {
     if (!tbody) return
     tbody.innerHTML = inventario.map(item => {
         const margen = item.margen || 30
-        const iva = Math.round(item.precio * IVA_PORCENTAJE)
-        const precioVenta = item.precio + Math.round(item.precio * margen / 100) + iva
+        const precioVentaPublico = item.precio
+        const iva = Math.round(precioVentaPublico - (precioVentaPublico / 1.19))
+        const costoProveedorUnit = Math.round(precioVentaPublico / ((1 + margen / 100) * 1.19))
+
         return `<tr style="border-bottom:1px solid var(--border)">
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${item.sku}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${item.material}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${item.material} ${item.color} ${item.espesor}mm</td>
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${item.marca || '-'}</td>
             <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold;color:${item.stock === 0 ? 'var(--danger)' : item.stock <= STOCK_MINIMO ? 'var(--warning)' : 'var(--success)'}">${item.stock}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${formatearCLP(item.precio)}</td>
-            <td style="padding:6px 8px;text-align:center"><input type="number" value="${margen}" min="0" max="100" onchange="estUpdateMargen(${item.id}, this.value)" style="width:60px;text-align:center;padding:3px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)"></td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${formatearCLP(precioVentaPublico)}</td>
+            <td style="padding:6px 8px;text-align:center">
+                <input type="number" value="${margen}" min="0" max="200" onchange="estUpdateMargen(${item.id}, this.value)" style="width:65px;text-align:center;padding:3px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">%
+            </td>
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${formatearCLP(iva)}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold;color:var(--success)">${formatearCLP(precioVenta)}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold;color:var(--accent)">${formatearCLP(costoProveedorUnit)}</td>
         </tr>`
     }).join('')
 }
@@ -808,96 +1033,20 @@ function estRenderProvHistorial() {
     const tbody = document.getElementById('est-prov-historial')
     if (!tbody) return
     const compras = tareas.filter(t => t.tipo === 'reposicion' && ['comprada', 'completada'].includes(t.estado))
-    if (proveedores.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:12px;color:var(--text-muted)">Sin proveedores</td></tr>'; return }
+    if (proveedores.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:12px;color:var(--text-muted)">Sin proveedores registrados</td></tr>'; return }
     tbody.innerHTML = proveedores.map(p => {
         const comps = compras.filter(t => t.proveedorId === p.id)
-        const total = comps.reduce((s, t) => s + (t.totalCompra || 0), 0)
+        const totalGastado = comps.reduce((s, t) => s + (t.totalCompra || 0), 0)
         return `<tr style="border-bottom:1px solid var(--border)">
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${p.id}</td>
             <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${p.nombre}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${p.marcas || '-'}</td>
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${p.contacto || '-'}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${p.telefono || '-'}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${p.telefono || ''} | ${p.email || ''}</td>
             <td style="padding:6px 8px;font-size:0.85em;text-align:center">${comps.length}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${formatearCLP(total)}</td>
+            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold;color:var(--danger)">${formatearCLP(totalGastado)}</td>
         </tr>`
     }).join('')
-}
-
-window.estAbrirFormEmpleado = function() {
-    const modal = document.getElementById('modal-empleado')
-    if (modal) {
-        document.getElementById('emp-form-titulo').textContent = 'Contratar Empleado'
-        document.getElementById('emp-form-idx').value = ''
-        document.getElementById('emp-form-nombre').value = ''
-        document.getElementById('emp-form-rol').value = 'vendedor'
-        document.getElementById('emp-form-email').value = ''
-        document.getElementById('emp-form-telefono').value = ''
-        modal.style.display = 'flex'
-    }
-}
-
-window.estCerrarFormEmpleado = function() {
-    const modal = document.getElementById('modal-empleado')
-    if (modal) modal.style.display = 'none'
-}
-
-window.estGuardarEmpleado = function() {
-    const idx = document.getElementById('emp-form-idx').value
-    const nombre = document.getElementById('emp-form-nombre').value.trim()
-    const rol = document.getElementById('emp-form-rol').value
-    const email = document.getElementById('emp-form-email').value.trim()
-    const telefono = document.getElementById('emp-form-telefono').value.trim()
-    if (!nombre) { alert('Ingrese el nombre'); return }
-    const empleados = (datosJSON && datosJSON.perfiles && datosJSON.perfiles.empleados) || []
-    if (idx !== '') {
-        const emp = empleados[parseInt(idx)]
-        if (emp) {
-            emp.nombre = nombre
-            emp.rol = rol.charAt(0).toUpperCase() + rol.slice(1)
-            emp.email = email
-            emp.telefono = telefono
-        }
-    } else {
-        const nuevoId = empleados.length > 0 ? Math.max(...empleados.map(e => e.id)) + 1 : 1
-        empleados.push({
-            id: nuevoId, nombre, apellido: '', email,
-            password: nombre.toLowerCase() + '123',
-            rut: '-', cumpleanos: '-',
-            rol: rol.charAt(0).toUpperCase() + rol.slice(1),
-            telefono
-        })
-        if (datosJSON && datosJSON.perfiles) datosJSON.perfiles.empleados = empleados
-    }
-    guardarTodo()
-    estRenderEmpleados()
-    estCerrarFormEmpleado()
-}
-
-window.estEditarEmpleado = function(idx) {
-    const empleados = (datosJSON && datosJSON.perfiles && datosJSON.perfiles.empleados) || []
-    const emp = empleados[idx]
-    if (!emp) return
-    const modal = document.getElementById('modal-empleado')
-    if (modal) {
-        document.getElementById('emp-form-titulo').textContent = 'Editar Empleado'
-        document.getElementById('emp-form-idx').value = idx
-        document.getElementById('emp-form-nombre').value = emp.nombre
-        document.getElementById('emp-form-rol').value = emp.rol.toLowerCase()
-        document.getElementById('emp-form-email').value = emp.email || ''
-        document.getElementById('emp-form-telefono').value = emp.telefono || ''
-        modal.style.display = 'flex'
-    }
-}
-
-window.estDespedirEmpleado = function(idx) {
-    const empleados = (datosJSON && datosJSON.perfiles && datosJSON.perfiles.empleados) || []
-    const emp = empleados[idx]
-    if (!emp) return
-    if (!confirm(`Despedir a ${emp.nombre} ${emp.apellido}?`)) return
-    empleados.splice(idx, 1)
-    if (datosJSON && datosJSON.perfiles) datosJSON.perfiles.empleados = empleados
-    guardarTodo()
-    estRenderEmpleados()
 }
 
 /* ==================== MÓDULO 4: EVENTOS DOM, ASINCRONÍA Y CONSUMO API ==================== */

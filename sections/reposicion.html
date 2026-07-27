@@ -1,58 +1,62 @@
-<!-- BARRA DE HERRAMIENTAS MÓDULO REPOSICIÓN (EVENTOS DOM & ASINCRONÍA) -->
+<!-- BARRA DE HERRAMIENTAS MÓDULO REPOSICIÓN -->
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;background:var(--bg-card);padding:12px;border:1px solid var(--border);border-radius:var(--radius)">
     <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:260px">
-        <span style="font-weight:600;font-size:0.9em">🔍 Buscar (keyup):</span>
+        <span style="font-weight:600;font-size:0.9em">🔍 Buscar:</span>
         <input type="text" id="input-busqueda-reposicion" placeholder="Filtrar por SKU, proveedor, notas, id..." style="flex:1;padding:6px 10px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
     </div>
     <div style="display:flex;gap:8px">
-        <button id="btn-nueva-tarea-reposicion" onclick="abrirModalNuevaTarea('reposicion')" style="background:var(--primary);color:#000;font-weight:600;padding:6px 12px">+ Nueva Tarea Reposicion</button>
-        <button id="btn-api-reposicion" onclick="sincronizarConAPIExterna()" style="background:#0dcaf0;color:#000;font-weight:600;padding:6px 12px">🌐 Cargar de API Externa</button>
+        <button id="btn-nueva-tarea-reposicion" onclick="abrirModalNuevaTarea('reposicion')" style="background:var(--primary);color:#000;font-weight:600;padding:6px 12px">+ Nueva Tarea</button>
+        <button id="btn-api-reposicion" onclick="sincronizarConAPIExterna()" style="background:#0dcaf0;color:#000;font-weight:600;padding:6px 12px">🌐 Cargar API</button>
     </div>
 </div>
 
-<!-- KANBAN 3 COLUMNAS -->
-<div class="kanban kanban-5">
-    <!-- COL 1: TAREAS ENTRANTES -->
+<!-- KANBAN 4 COLUMNAS SUPERIORES -->
+<div class="kanban">
+    <!-- COLUMNA 1: ENTRANTE -->
     <div class="kanban-col">
-        <div class="kanban-header"><span class="kanban-badge" id="repo-ent-count">0</span> Tareas Entrantes</div>
+        <div class="kanban-header">
+            <span>📥 Entrante</span>
+            <span class="kanban-badge" id="repo-ent-count">0</span>
+        </div>
         <div class="kanban-drop" id="repo-entrantes"></div>
     </div>
 
-    <!-- COL 2: PROCESO DE COMPRA -->
+    <!-- COLUMNA 2: PROCESO DE COMPRA -->
     <div class="kanban-col">
-        <div class="kanban-header"><span class="kanban-badge" id="repo-proc-count">0</span> Proceso de Compra</div>
+        <div class="kanban-header">
+            <span>🛒 Proceso de Compra</span>
+            <span class="kanban-badge" id="repo-proc-count">0</span>
+        </div>
         <div class="kanban-drop" id="repo-proceso"></div>
     </div>
 
-    <!-- COL 3: RECEPCION DE COMPRAS -->
+    <!-- COLUMNA 3: RECEPCIÓN -->
     <div class="kanban-col">
-        <div class="kanban-header"><span class="kanban-badge" id="repo-comp-count">0</span> Recepcion de Compras</div>
+        <div class="kanban-header">
+            <span>📦 Recepción</span>
+            <span class="kanban-badge" id="repo-comp-count">0</span>
+        </div>
         <div class="kanban-drop" id="repo-completado"></div>
     </div>
-</div>
 
-<!-- PROVEEDORES -->
-<div style="margin-top:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-    <div class="kanban-header" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Proveedores</span>
-        <button id="btn-add-proveedor" onclick="appRepoAbrirFormProveedor()" style="font-size:0.9em;padding:2px 8px">+ Nuevo</button>
-    </div>
-    <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-        <table>
-            <thead>
-                <tr>
-                    <th style="text-align:center">ID</th>
-                    <th style="text-align:center">Empresa</th>
-                    <th style="text-align:center">Marcas</th>
-                    <th style="text-align:center">Nombre</th>
-                    <th style="text-align:center">Correo</th>
-                    <th style="text-align:center">Telefono</th>
-                    <th style="text-align:center">Editar</th>
-                    <th style="text-align:center">Eliminar</th>
-                </tr>
-            </thead>
-            <tbody id="lista-proveedores"></tbody>
-        </table>
+    <!-- COLUMNA 4: PROVEEDORES -->
+    <div class="kanban-col">
+        <div class="kanban-header" style="justify-content:space-between">
+            <span>🏬 Proveedores</span>
+            <button id="btn-add-proveedor" onclick="appRepoAbrirFormProveedor()" style="font-size:0.75em;padding:2px 6px;background:var(--primary);color:#000;font-weight:bold;border-radius:var(--radius)">+ Nuevo</button>
+        </div>
+        <div class="kanban-body" style="padding:0;overflow-y:auto;height:420px">
+            <table style="width:100%;border-collapse:collapse">
+                <thead>
+                    <tr style="background:var(--bg-input);font-size:0.75em;color:var(--text-muted);border-bottom:1px solid var(--border)">
+                        <th style="padding:4px;text-align:center">Empresa</th>
+                        <th style="padding:4px;text-align:center">Contacto</th>
+                        <th style="padding:4px;text-align:center">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-proveedores"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -73,20 +77,22 @@
         <label style="font-size:0.85em;display:block;margin-bottom:8px">Correo
             <input type="email" id="prov-form-email" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
         </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Telefono
+        <label style="font-size:0.85em;display:block;margin-bottom:8px">Teléfono
             <input type="text" id="prov-form-telefono" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
         </label>
         <div style="display:flex;gap:8px;margin-top:12px">
-            <button onclick="appRepoGuardarProveedor()" style="background:var(--success);flex:1">Guardar</button>
-            <button onclick="appRepoCerrarFormProveedor()" style="background:#6c757d;flex:1">Cancelar</button>
+            <button onclick="appRepoGuardarProveedor()" style="background:var(--success);flex:1;font-weight:bold">Guardar</button>
+            <button onclick="appRepoCerrarFormProveedor()" style="background:#6c757d;flex:1;font-weight:bold">Cancelar</button>
         </div>
     </div>
 </div>
 
-<!-- INVENTARIO -->
+<!-- COLUMNA ANCHA: INVENTARIO -->
 <div style="margin-top:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-    <div class="kanban-header">Inventario</div>
-    <div class="scroll-box" style="border:none;border-radius:0;padding:0">
+    <div class="kanban-header" style="justify-content:space-between">
+        <span>📦 Inventario General de Reposición</span>
+    </div>
+    <div class="scroll-box" style="border:none;border-radius:0;padding:0;max-height:350px">
         <table>
             <thead>
                 <tr>

@@ -83,6 +83,52 @@
         </div>
     </div>
 
+    <!-- MODAL EDITAR ATRIBUTOS DE TAREA EN ENVÍO -->
+    <div id="modal-editar-alerta" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center">
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;width:420px;max-width:90%">
+            <div style="font-weight:700;font-size:1.1em;margin-bottom:12px;color:var(--accent)" id="alerta-edit-titulo">✏️ Editar Atributos de Tarea</div>
+            <input type="hidden" id="alerta-edit-idx">
+            <input type="hidden" id="alerta-edit-origen">
+
+            <label style="font-size:0.85em;display:block;margin-bottom:8px;font-weight:600">Prioridad
+                <select id="alerta-edit-prioridad" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                    <option value="urgente">🔴 Urgente</option>
+                    <option value="alta">🟠 Alta</option>
+                    <option value="media">🟡 Media</option>
+                    <option value="baja">🟢 Baja</option>
+                </select>
+            </label>
+
+            <label style="font-size:0.85em;display:block;margin-bottom:8px;font-weight:600">Cantidad
+                <input type="number" id="alerta-edit-cantidad" min="1" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+            </label>
+
+            <label style="font-size:0.85em;display:block;margin-bottom:8px;font-weight:600">Plataforma de Venta
+                <select id="alerta-edit-canal" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                    <option value="local">Store Local (Presencial)</option>
+                    <option value="online">E-Commerce / Online</option>
+                </select>
+            </label>
+
+            <label style="font-size:0.85em;display:block;margin-bottom:8px;font-weight:600">Tipo de Entrega
+                <select id="alerta-edit-entrega" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                    <option value="inmediata">Entrega Inmediata</option>
+                    <option value="retiro">Retiro en Tienda</option>
+                    <option value="domicilio">Envío a Domicilio</option>
+                </select>
+            </label>
+
+            <label style="font-size:0.85em;display:block;margin-bottom:12px;font-weight:600">Notas / Observaciones
+                <textarea id="alerta-edit-notas" rows="3" placeholder="Instrucciones para bodega o reposición..." style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)"></textarea>
+            </label>
+
+            <div style="display:flex;gap:10px">
+                <button onclick="appGuardarAtributosAlerta()" style="background:var(--success);color:#fff;flex:1;padding:8px;font-weight:bold">Guardar Cambios</button>
+                <button onclick="appCerrarModalEditarAlerta()" style="background:#6c757d;color:#fff;flex:1;padding:8px">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CONTENEDOR DE TOOLTIP PARA EVENTOS MOUSEOVER -->
     <div id="app-tooltip" style="display:none;position:fixed;z-index:10000;background:rgba(20,20,20,0.95);color:#fff;padding:8px 12px;border-radius:6px;font-size:0.82em;border:1px solid var(--primary);box-shadow:0 4px 15px rgba(0,0,0,0.4);pointer-events:none;max-width:280px"></div>
 
