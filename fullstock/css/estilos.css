@@ -383,7 +383,8 @@ form h3 {
     padding: 8px;
     background: var(--bg);
     flex: 1;
-    height: 400px;
+    height: 420px;
+    box-sizing: border-box;
     overflow-y: auto;
 }
 
@@ -393,7 +394,8 @@ form h3 {
 
 .kanban-drop {
     flex: 1;
-    height: 400px;
+    height: 420px;
+    box-sizing: border-box;
     border: 1px solid var(--border);
     border-top: none;
     border-radius: 0 0 var(--radius) var(--radius);

@@ -31,6 +31,64 @@
         <p>Cargando...</p>
     </main>
 
+    <!-- MODAL NUEVA TAREA (POO, EVENTOS FORMULARIO SUBMIT) -->
+    <div id="modal-nueva-tarea" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:480px;max-width:92%;box-shadow:0 10px 30px rgba(0,0,0,0.5)">
+            <div style="font-weight:700;font-size:1.15em;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+                <span>➕ Agregar Nueva Tarea (POO)</span>
+                <span style="cursor:pointer;font-size:1.2em" onclick="cerrarModalNuevaTarea()">&times;</span>
+            </div>
+            <form id="form-nueva-tarea">
+                <label style="font-size:0.85em;display:block;margin-bottom:10px">Tipo de Tarea
+                    <select id="nt-tipo" style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                        <option value="entrega">Entrega (Bodega)</option>
+                        <option value="reposicion">Reposicion (Compras)</option>
+                    </select>
+                </label>
+
+                <label style="font-size:0.85em;display:block;margin-bottom:10px">Descripcion / Material
+                    <input type="text" id="nt-material" placeholder="Ej. Melamina Blanco 18mm" required style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                </label>
+
+                <div style="display:flex;gap:10px;margin-bottom:10px">
+                    <label style="font-size:0.85em;flex:1">Cantidad
+                        <input type="number" id="nt-cantidad" min="1" value="1" required style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                    </label>
+                    <label style="font-size:0.85em;flex:1">Prioridad
+                        <select id="nt-prioridad" style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                            <option value="normal">Normal</option>
+                            <option value="urgente">Urgente</option>
+                            <option value="baja">Baja</option>
+                        </select>
+                    </label>
+                </div>
+
+                <label style="font-size:0.85em;display:block;margin-bottom:10px">Fecha y Hora Limite (Cuenta Regresiva)
+                    <input type="datetime-local" id="nt-fecha-limite" style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                </label>
+
+                <label style="font-size:0.85em;display:block;margin-bottom:16px">Notas Adicionales
+                    <textarea id="nt-notas" rows="3" placeholder="Detalles de la tarea..." style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)"></textarea>
+                </label>
+
+                <div id="nt-spinner" style="display:none;text-align:center;margin-bottom:12px;color:var(--primary);font-size:0.9em">
+                    ⏳ Procesando retardo asincrono (1.5s setTimeout)...
+                </div>
+
+                <div style="display:flex;gap:10px">
+                    <button type="submit" id="nt-btn-submit" style="background:var(--success);color:#fff;flex:1;padding:10px;font-weight:600">Guardar Tarea</button>
+                    <button type="button" onclick="cerrarModalNuevaTarea()" style="background:#6c757d;color:#fff;flex:1;padding:10px">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DE TOOLTIP PARA EVENTOS MOUSEOVER -->
+    <div id="app-tooltip" style="display:none;position:fixed;z-index:10000;background:rgba(20,20,20,0.95);color:#fff;padding:8px 12px;border-radius:6px;font-size:0.82em;border:1px solid var(--primary);box-shadow:0 4px 15px rgba(0,0,0,0.4);pointer-events:none;max-width:280px"></div>
+
+    <!-- CONTENEDOR DE NOTIFICACIONES ASINCRÓNICAS (SETTIMEOUT 2s) -->
+    <div id="app-notifications" style="position:fixed;bottom:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:8px"></div>
+
     <script src="fullstock/js/swal.js?v=2"></script>
     <script src="fullstock/js/data.js?v=2"></script>
     <script src="fullstock/js/app.js?v=2"></script>

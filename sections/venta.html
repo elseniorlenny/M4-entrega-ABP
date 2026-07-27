@@ -46,14 +46,14 @@
     <!-- COL 3: ENVIO DE TAREAS -->
     <div class="kanban-col">
         <div class="kanban-header">Envio de Tareas</div>
-        <div id="detalle-venta" style="padding:8px;flex:1;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);background:var(--bg);opacity:0.5;pointer-events:none">
+        <div id="detalle-venta" style="padding:8px;height:420px;box-sizing:border-box;display:flex;flex-direction:column;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);background:var(--bg);opacity:0.5;pointer-events:none">
             <div id="detalle-titulo" style="margin-top:0;font-size:1.1em;font-weight:600">Envio de Tareas</div>
-            <div id="detalle-contenido">
+            <div id="detalle-contenido" style="flex:1;overflow-y:auto">
                 <p style="color:var(--text-muted)">Las alertas de envio apareceran aqui.</p>
             </div>
             <div style="margin-top:auto;padding-top:8px">
                 <label style="font-size:0.85em">Nota
-                    <textarea id="detalle-nota" rows="6" placeholder="Nota opcional..." style="width:100%;margin-top:2px"></textarea>
+                    <textarea id="detalle-nota" rows="4" placeholder="Nota opcional..." style="width:100%;margin-top:2px"></textarea>
                 </label>
                 <button id="detalle-btn-accion" style="width:100%;margin-top:4px" disabled>Enviar</button>
             </div>

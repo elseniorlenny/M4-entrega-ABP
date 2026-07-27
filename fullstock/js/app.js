@@ -428,6 +428,16 @@ function enviarVentaPendiente() {
 function onRenderBodega() {
     renderBodegaKanban()
     renderBodegaInventario()
+
+    const inputB = document.getElementById('input-busqueda-bodega')
+    if (inputB) {
+        inputB.removeEventListener('keyup', onBusquedaBodegaKeyup)
+        inputB.addEventListener('keyup', onBusquedaBodegaKeyup)
+    }
+}
+
+function onBusquedaBodegaKeyup() {
+    renderBodegaKanban()
 }
 
 /* ==================== RENDER: REPOSICION ==================== */
@@ -435,6 +445,16 @@ function onRenderReposicion() {
     renderReposicionKanban()
     renderListaProveedores()
     renderRepoInventario()
+
+    const inputR = document.getElementById('input-busqueda-reposicion')
+    if (inputR) {
+        inputR.removeEventListener('keyup', onBusquedaReposicionKeyup)
+        inputR.addEventListener('keyup', onBusquedaReposicionKeyup)
+    }
+}
+
+function onBusquedaReposicionKeyup() {
+    renderReposicionKanban()
 }
 
 /* ==================== RENDER: INVENTARIO ==================== */
@@ -879,3 +899,187 @@ window.estDespedirEmpleado = function(idx) {
     guardarTodo()
     estRenderEmpleados()
 }
+
+/* ==================== MÓDULO 4: EVENTOS DOM, ASINCRONÍA Y CONSUMO API ==================== */
+
+// MODAL NUEVA TAREA
+window.abrirModalNuevaTarea = function(tipoDefault = 'entrega') {
+    const modal = document.getElementById('modal-nueva-tarea')
+    if (!modal) return
+    const selectTipo = document.getElementById('nt-tipo')
+    if (selectTipo) selectTipo.value = tipoDefault
+    modal.style.display = 'flex'
+}
+
+window.cerrarModalNuevaTarea = function() {
+    const modal = document.getElementById('modal-nueva-tarea')
+    if (modal) modal.style.display = 'none'
+}
+
+// NOTIFICACIONES ASINCRÓNICAS (SETTIMEOUT 2s)
+window.mostrarNotificacionAsync = function(mensaje, tipo = 'success') {
+    const container = document.getElementById('app-notifications')
+    if (!container) return
+
+    const toast = document.createElement('div')
+    toast.style.background = tipo === 'success' ? '#198754' : tipo === 'error' ? '#dc3545' : '#0dcaf0'
+    toast.style.color = '#fff'
+    toast.style.padding = '12px 18px'
+    toast.style.borderRadius = '8px'
+    toast.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)'
+    toast.style.fontWeight = '600'
+    toast.style.fontSize = '0.9em'
+    toast.style.transition = 'all 0.3s ease'
+    toast.innerHTML = `🔔 Notificacion (2s Delay): ${mensaje}`
+
+    container.appendChild(toast)
+
+    setTimeout(() => {
+        toast.style.opacity = '0'
+        setTimeout(() => toast.remove(), 300)
+    }, 4000)
+}
+
+// CONSUMO DE API EXTERNA CON FETCH Y TRY/CATCH
+window.sincronizarConAPIExterna = async function() {
+    try {
+        mostrarNotificacionAsync('Iniciando peticion GET a API JSONPlaceholder...', 'info')
+        const tareasNuevas = await gestorTareas.recuperarDeAPI()
+        
+        // Notificación asincrónica tras 2 segundos (setTimeout)
+        setTimeout(() => {
+            mostrarNotificacionAsync(`¡Sincronizacion Exitosa! ${tareasNuevas.length} tareas importadas desde API.`, 'success')
+            if (seccionActual === 'bodega') renderBodegaKanban()
+            if (seccionActual === 'reposicion') renderReposicionKanban()
+        }, 2000)
+    } catch (err) {
+        console.error('Error al sincronizar con API:', err)
+        mostrarNotificacionAsync(`Error al conectar con API externa: ${err.message}`, 'error')
+    }
+}
+
+// CONFIGURACIÓN DEL FORMULARIO NUEVA TAREA (SUBMIT, RETARDO SETTIMEOUT 1.5s + NOTIF 2s)
+function configurarFormularioNuevaTarea() {
+    const form = document.getElementById('form-nueva-tarea')
+    if (!form) return
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault()
+
+        const tipo = document.getElementById('nt-tipo').value
+        const materialNombre = document.getElementById('nt-material').value
+        const cantidad = document.getElementById('nt-cantidad').value
+        const prioridad = document.getElementById('nt-prioridad').value
+        const fechaLimite = document.getElementById('nt-fecha-limite').value
+        const notas = document.getElementById('nt-notas').value
+
+        const btnSubmit = document.getElementById('nt-btn-submit')
+        const spinner = document.getElementById('nt-spinner')
+
+        if (btnSubmit) btnSubmit.disabled = true
+        if (spinner) spinner.style.display = 'block'
+
+        // 1. Simular retardo con setTimeout (1.5 segundos)
+        setTimeout(async () => {
+            const nuevaTarea = new Tarea(
+                siguienteId(tareas),
+                tipo,
+                1,
+                `MAN-${Date.now().toString().slice(-4)}`,
+                materialNombre,
+                parseInt(cantidad) || 1,
+                'manual',
+                notas
+            )
+            nuevaTarea.prioridad = prioridad
+            if (fechaLimite) nuevaTarea.fechaLimite = new Date(fechaLimite).toISOString()
+
+            // POO GestorTareas
+            gestorTareas.agregarTarea(nuevaTarea)
+
+            // API POST (fetch)
+            try {
+                await gestorTareas.guardarEnAPI(nuevaTarea)
+            } catch (err) {
+                console.warn('No se pudo hacer POST a API, guardado local exitoso.', err)
+            }
+
+            if (spinner) spinner.style.display = 'none'
+            if (btnSubmit) btnSubmit.disabled = false
+            cerrarModalNuevaTarea()
+            form.reset()
+
+            if (seccionActual === 'bodega') renderBodegaKanban()
+            if (seccionActual === 'reposicion') renderReposicionKanban()
+
+            // 2. Notificación asincrónica tras 2 segundos (setTimeout)
+            setTimeout(() => {
+                mostrarNotificacionAsync(`Tarea POO #${nuevaTarea.id} ("${nuevaTarea.materialNombre}") creada con exito.`, 'success')
+            }, 2000)
+
+        }, 1500)
+    })
+}
+
+// TIMER REGRESIVO CONTINUO (SETINTERVAL 1s)
+setInterval(() => {
+    document.querySelectorAll('.kanban-countdown').forEach(el => {
+        const tareaId = el.getAttribute('data-tarea-id')
+        if (!tareaId) return
+        const tarea = gestorTareas.obtenerTareaPorId(tareaId)
+        if (tarea && tarea.fechaLimite) {
+            const info = tarea.obtenerTiempoRestante()
+            if (info) {
+                if (info.expirado) {
+                    el.innerHTML = `<span style="color:#ff4d4d;font-weight:bold;font-size:0.75em">🔴 Expirada</span>`
+                } else {
+                    const h = String(info.horas).padStart(2, '0')
+                    const m = String(info.minutos).padStart(2, '0')
+                    const s = String(info.segundos).padStart(2, '0')
+                    el.innerHTML = `<span style="color:#f4c522;font-weight:bold;font-size:0.75em">⏳ ${h}:${m}:${s}</span>`
+                }
+            }
+        }
+    })
+}, 1000)
+
+// HOVER MOUSEOVER Y MOUSEOUT EN TARJETAS KANBAN
+window.hoverKanbanCard = function(el, e, tareaId) {
+    el.style.boxShadow = '0 0 15px var(--primary)'
+    el.style.transform = 'translateY(-2px)'
+    el.style.transition = 'all 0.2s ease'
+    
+    const tarea = gestorTareas.obtenerTareaPorId(tareaId)
+    if (tarea) {
+        const tooltip = document.getElementById('app-tooltip')
+        if (tooltip) {
+            const fechaFormateada = new Date(tarea.fechaCreacion).toLocaleString('es-CL')
+            tooltip.innerHTML = `
+                <div><strong>Tarea POO #${tarea.id}</strong> (${tarea.tipo})</div>
+                <div>Estado: <span style="color:var(--accent)">${tarea.estado}</span></div>
+                <div>Creada: ${fechaFormateada}</div>
+                <div>Prioridad: ${tarea.prioridad || 'normal'}</div>
+                <div>Detalle: ${tarea.descripcion}</div>
+            `
+            tooltip.style.display = 'block'
+            tooltip.style.top = (e.clientY + 12) + 'px'
+            tooltip.style.left = (e.clientX + 12) + 'px'
+        }
+    }
+}
+
+window.unhoverKanbanCard = function(el) {
+    el.style.boxShadow = 'none'
+    el.style.transform = 'none'
+    const tooltip = document.getElementById('app-tooltip')
+    if (tooltip) tooltip.style.display = 'none'
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        configurarFormularioNuevaTarea()
+    })
+} else {
+    configurarFormularioNuevaTarea()
+}
+

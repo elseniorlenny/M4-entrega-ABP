@@ -41,36 +41,34 @@ function cargarEstadoInicial() {
     tiendaConfig = { ...datosJSON.tienda }
     usuarioActual = null
 
-    const invLocal = sessionStorage.getItem('fs_inventario')
+    const invLocal = localStorage.getItem('fs_inventario') || sessionStorage.getItem('fs_inventario')
     inventario = invLocal ? JSON.parse(invLocal) : JSON.parse(JSON.stringify(datosJSON.inventario))
 
-    const venLocal = sessionStorage.getItem('fs_ventas')
+    const venLocal = localStorage.getItem('fs_ventas') || sessionStorage.getItem('fs_ventas')
     ventas = venLocal ? JSON.parse(venLocal) : JSON.parse(JSON.stringify(datosJSON.ventas))
 
-    const bodLocal = sessionStorage.getItem('fs_bodega')
+    const bodLocal = localStorage.getItem('fs_bodega') || sessionStorage.getItem('fs_bodega')
     bodega = bodLocal ? JSON.parse(bodLocal) : JSON.parse(JSON.stringify(datosJSON.bodega))
 
-    const tarLocal = sessionStorage.getItem('fs_tareas')
-    if (tarLocal) {
-        const guardadas = JSON.parse(tarLocal)
-        tareas = guardadas.map(t => reconstruirTarea(t))
-    } else {
-        tareas = JSON.parse(JSON.stringify(datosJSON.tareas)).map(t => reconstruirTarea(t))
+    if (!gestorTareas.cargarDeStorage()) {
+        gestorTareas.tareas = JSON.parse(JSON.stringify(datosJSON.tareas)).map(t => reconstruirTarea(t))
+        gestorTareas.guardarEnStorage()
     }
+    tareas = gestorTareas.tareas
 
-const provLocal = sessionStorage.getItem('fs_proveedores')
+    const provLocal = localStorage.getItem('fs_proveedores') || sessionStorage.getItem('fs_proveedores')
     proveedores = provLocal ? JSON.parse(provLocal) : JSON.parse(JSON.stringify(datosJSON.proveedores))
 
-    const vaLocal = sessionStorage.getItem('fs_ventasAnuladas')
+    const vaLocal = localStorage.getItem('fs_ventasAnuladas') || sessionStorage.getItem('fs_ventasAnuladas')
     ventasAnuladas = vaLocal ? JSON.parse(vaLocal) : JSON.parse(JSON.stringify(datosJSON.ventasAnuladas || []))
 
-    const alertasLocal = sessionStorage.getItem('fs_alertasStock')
+    const alertasLocal = localStorage.getItem('fs_alertasStock') || sessionStorage.getItem('fs_alertasStock')
     alertasStockPendientes = alertasLocal ? JSON.parse(alertasLocal) : []
 
-    const clientesLocal = sessionStorage.getItem('fs_clientes')
+    const clientesLocal = localStorage.getItem('fs_clientes') || sessionStorage.getItem('fs_clientes')
     clientes = clientesLocal ? JSON.parse(clientesLocal) : []
 
-    const tiendaLocal = sessionStorage.getItem('fs_tienda')
+    const tiendaLocal = localStorage.getItem('fs_tienda') || sessionStorage.getItem('fs_tienda')
     tiendaConfig = tiendaLocal ? JSON.parse(tiendaLocal) : { ...datosJSON.tienda }
 
     guardarTodo()
@@ -79,7 +77,7 @@ const provLocal = sessionStorage.getItem('fs_proveedores')
 function reconstruirTarea(t) {
     const tarea = new Tarea(t.id, t.tipo, t.materialId, t.sku, t.materialNombre, t.cantidad, t.origen, t.notas)
     tarea.estado = t.estado || 'pendiente'
-    tarea.fechaCreacion = t.fechaCreacion
+    tarea.fechaCreacion = t.fechaCreacion || new Date().toISOString()
     tarea.fechaCompletada = t.fechaCompletada || null
     tarea.asignadoA = t.asignadoA || ''
     tarea.trabajadorAsignado = t.trabajadorAsignado || ''
@@ -116,35 +114,62 @@ function reconstruirTarea(t) {
 
 /* ==================== PERSISTENCIA ==================== */
 function guardarTodo() {
-    sessionStorage.setItem('fs_inventario', JSON.stringify(inventario))
-    sessionStorage.setItem('fs_ventas', JSON.stringify(ventas))
-    sessionStorage.setItem('fs_bodega', JSON.stringify(bodega))
-    sessionStorage.setItem('fs_tareas', JSON.stringify(tareas))
-    sessionStorage.setItem('fs_proveedores', JSON.stringify(proveedores))
-    sessionStorage.setItem('fs_ventasAnuladas', JSON.stringify(ventasAnuladas))
-    sessionStorage.setItem('fs_alertasStock', JSON.stringify(alertasStockPendientes))
-    sessionStorage.setItem('fs_clientes', JSON.stringify(clientes))
-    sessionStorage.setItem('fs_tienda', JSON.stringify(tiendaConfig))
+    const invStr = JSON.stringify(inventario)
+    const venStr = JSON.stringify(ventas)
+    const bodStr = JSON.stringify(bodega)
+    const provStr = JSON.stringify(proveedores)
+    const vaStr = JSON.stringify(ventasAnuladas)
+    const alertStr = JSON.stringify(alertasStockPendientes)
+    const cliStr = JSON.stringify(clientes)
+    const tienStr = JSON.stringify(tiendaConfig)
+
+    localStorage.setItem('fs_inventario', invStr)
+    sessionStorage.setItem('fs_inventario', invStr)
+
+    localStorage.setItem('fs_ventas', venStr)
+    sessionStorage.setItem('fs_ventas', venStr)
+
+    localStorage.setItem('fs_bodega', bodStr)
+    sessionStorage.setItem('fs_bodega', bodStr)
+
+    gestorTareas.guardarEnStorage()
+
+    localStorage.setItem('fs_proveedores', provStr)
+    sessionStorage.setItem('fs_proveedores', provStr)
+
+    localStorage.setItem('fs_ventasAnuladas', vaStr)
+    sessionStorage.setItem('fs_ventasAnuladas', vaStr)
+
+    localStorage.setItem('fs_alertasStock', alertStr)
+    sessionStorage.setItem('fs_alertasStock', alertStr)
+
+    localStorage.setItem('fs_clientes', cliStr)
+    sessionStorage.setItem('fs_clientes', cliStr)
+
+    localStorage.setItem('fs_tienda', tienStr)
+    sessionStorage.setItem('fs_tienda', tienStr)
 }
 
 function cargarSesion() {
-    const datos = sessionStorage.getItem('fs_sesion')
+    const datos = localStorage.getItem('fs_sesion') || sessionStorage.getItem('fs_sesion')
     if (datos) return JSON.parse(datos).activa
     return false
 }
 
 function guardarSesion() {
-    sessionStorage.setItem('fs_sesion', JSON.stringify({ activa: sesionActiva }))
+    const data = JSON.stringify({ activa: sesionActiva })
+    localStorage.setItem('fs_sesion', data)
+    sessionStorage.setItem('fs_sesion', data)
 }
 
 function cargarTheme() {
-    const theme = sessionStorage.getItem('fs_theme') || 'light'
+    const theme = localStorage.getItem('fs_theme') || sessionStorage.getItem('fs_theme') || 'light'
     document.documentElement.setAttribute('data-theme', theme)
     const toggle = document.getElementById('toggle-theme')
     if (toggle) toggle.checked = theme === 'dark'
 }
 
-/* ==================== CLASE TAREA ==================== */
+/* ==================== CLASE TAREA (POO) ==================== */
 class Tarea {
     constructor(id, tipo, materialId, sku, materialNombre, cantidad, origen, notas = '') {
         this.id = id
@@ -183,16 +208,211 @@ class Tarea {
         this.codigoCompra = ''
     }
 
+    get descripcion() {
+        return this.notas || this.materialNombre || `Tarea #${this.id}`
+    }
+
+    set descripcion(val) {
+        this.notas = val
+    }
+
+    cambiarEstado(nuevoEstado) {
+        const estadoAnterior = this.estado
+        this.estado = nuevoEstado
+        if (nuevoEstado === 'completada') {
+            this.fechaCompletada = new Date().toISOString()
+            this.fechaFin = new Date().toISOString()
+        }
+        console.log(`[POO Tarea #${this.id}] Estado cambiado de '${estadoAnterior}' a '${nuevoEstado}'`)
+        return this
+    }
+
     marcarCompletada() {
-        this.estado = 'completada'
-        this.fechaCompletada = new Date().toISOString()
-        this.fechaFin = new Date().toISOString()
+        return this.cambiarEstado('completada')
     }
 
     eliminar() {
         this.estado = 'eliminada'
+        console.log(`[POO Tarea #${this.id}] Eliminada correctamente`)
+        return this
+    }
+
+    esVencida() {
+        if (!this.fechaLimite || this.estado === 'completada' || this.estado === 'eliminada') return false
+        return new Date(this.fechaLimite) < new Date()
+    }
+
+    obtenerTiempoRestante() {
+        if (!this.fechaLimite) return null
+        const dif = new Date(this.fechaLimite) - new Date()
+        if (dif <= 0) return { horas: 0, minutos: 0, segundos: 0, expirado: true }
+        
+        const totalSegundos = Math.floor(dif / 1000)
+        const horas = Math.floor(totalSegundos / 3600)
+        const minutos = Math.floor((totalSegundos % 3600) / 60)
+        const segundos = totalSegundos % 60
+        
+        return { horas, minutos, segundos, expirado: false }
     }
 }
+
+/* ==================== CLASE GESTORTAREAS (POO & ES6+) ==================== */
+class GestorTareas {
+    constructor() {
+        this.tareas = []
+        this.apiEndpoint = 'https://jsonplaceholder.typicode.com/todos'
+    }
+
+    agregarTarea(tarea) {
+        if (!(tarea instanceof Tarea)) {
+            tarea = reconstruirTarea(tarea)
+        }
+        this.tareas.push(tarea)
+        tareas = this.tareas
+        this.guardarEnStorage()
+        console.log(`[GestorTareas] Tarea #${tarea.id} agregada (${tarea.tipo})`)
+        return tarea
+    }
+
+    eliminarTarea(id) {
+        const idNum = Number(id)
+        const tarea = this.tareas.find(t => t.id === idNum)
+        if (tarea) {
+            tarea.eliminar()
+            this.guardarEnStorage()
+            return true
+        }
+        return false
+    }
+
+    cambiarEstadoTarea(id, nuevoEstado) {
+        const tarea = this.obtenerTareaPorId(id)
+        if (tarea) {
+            tarea.cambiarEstado(nuevoEstado)
+            this.guardarEnStorage()
+            return tarea
+        }
+        return null
+    }
+
+    obtenerTareas() {
+        return [...this.tareas]
+    }
+
+    obtenerTareaPorId(id) {
+        const idNum = Number(id)
+        return this.tareas.find(t => t.id === idNum)
+    }
+
+    filtrarPorEstado(estado) {
+        return this.tareas.filter(t => t.estado === estado)
+    }
+
+    filtrarPorTipo(tipo) {
+        return this.tareas.filter(t => t.tipo === tipo)
+    }
+
+    buscarTareas(query = '') {
+        if (!query || !query.trim()) return [...this.tareas]
+        const q = query.toLowerCase().trim()
+        return this.tareas.filter(({ materialNombre, sku, notas, trabajadorAsignado, proveedorNombre, cliente, id }) => {
+            return (materialNombre && materialNombre.toLowerCase().includes(q)) ||
+                   (sku && sku.toLowerCase().includes(q)) ||
+                   (notas && notas.toLowerCase().includes(q)) ||
+                   (trabajadorAsignado && trabajadorAsignado.toLowerCase().includes(q)) ||
+                   (proveedorNombre && proveedorNombre.toLowerCase().includes(q)) ||
+                   (cliente && cliente.toLowerCase().includes(q)) ||
+                   String(id).includes(q)
+        })
+    }
+
+    async guardarEnAPI(tarea) {
+        try {
+            console.log(`[API Fetch] Enviando POST a https://jsonplaceholder.typicode.com/posts...`)
+            const respuesta = await fetch('https://jsonplaceholder.typicode.com/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: `[${tarea.tipo?.toUpperCase() || 'TAREA'}] ${tarea.materialNombre || tarea.notas || 'Sin titulo'}`,
+                    body: JSON.stringify(tarea),
+                    userId: 1
+                })
+            })
+            if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}: ${respuesta.statusText}`)
+            const resultado = await respuesta.json()
+            console.log('[API Fetch] Guardado exitoso en API externa:', resultado)
+            return resultado
+        } catch (error) {
+            console.error('[API Fetch] Error al guardar en API externa:', error)
+            throw error
+        }
+    }
+
+    async recuperarDeAPI() {
+        try {
+            console.log(`[API Fetch] Solicitando GET a ${this.apiEndpoint}...`)
+            const respuesta = await fetch(`${this.apiEndpoint}?_limit=5`)
+            if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}: ${respuesta.statusText}`)
+            const datosApi = await respuesta.json()
+            
+            const nuevasTareas = datosApi.map(item => {
+                const nueva = new Tarea(
+                    item.id + 9000,
+                    'reposicion',
+                    1,
+                    `API-${item.id}`,
+                    `Material API #${item.id}: ${item.title.substring(0, 20)}`,
+                    10,
+                    'api-externa',
+                    `Sincronizado de JSONPlaceholder. Detalle: ${item.title}`
+                )
+                nueva.estado = item.completed ? 'completada' : 'pendiente'
+                nueva.prioridad = item.completed ? 'baja' : 'urgente'
+                nueva.fechaLimite = new Date(Date.now() + 86400000 * 2).toISOString()
+                return nueva
+            })
+
+            let agregadasCount = 0
+            nuevasTareas.forEach(t => {
+                if (!this.tareas.some(exist => exist.id === t.id)) {
+                    this.tareas.push(t)
+                    agregadasCount++
+                }
+            })
+
+            tareas = this.tareas
+            this.guardarEnStorage()
+            console.log(`[API Fetch] Recuperadas e integradas ${agregadasCount} tareas nuevas desde API externa`)
+            return nuevasTareas
+        } catch (error) {
+            console.error('[API Fetch] Error al recuperar datos de API externa:', error)
+            throw error
+        }
+    }
+
+    guardarEnStorage() {
+        const json = JSON.stringify(this.tareas)
+        localStorage.setItem('fs_tareas', json)
+        sessionStorage.setItem('fs_tareas', json)
+    }
+
+    cargarDeStorage() {
+        const tarLocal = localStorage.getItem('fs_tareas') || sessionStorage.getItem('fs_tareas')
+        if (tarLocal) {
+            try {
+                const guardadas = JSON.parse(tarLocal)
+                this.tareas = guardadas.map(t => reconstruirTarea(t))
+                tareas = this.tareas
+                return true
+            } catch (e) {
+                console.error('[GestorTareas] Error cargando desde localStorage:', e)
+            }
+        }
+        return false
+    }
+}
+
+const gestorTareas = new GestorTareas()
 
 /* ==================== UTILIDADES ==================== */
 function formatearCLP(n) {
@@ -387,7 +607,6 @@ function renderBodegaInventario() {
     }).join('')
 }
 
-/* ==================== RENDER: BODEGA KANBAN ==================== */
 function renderBodegaKanban() {
     const colEnt = document.getElementById('kanban-entrantes')
     const colProc = document.getElementById('kanban-proceso')
@@ -1001,6 +1220,15 @@ window.appRepoArchivar = function(tareaId) {
     renderReposicionKanban()
 }
 
+
+window.appRepoArchivar = function(tareaId) {
+    const tarea = tareas.find(t => t.id === tareaId)
+    if (!tarea) return
+    tarea.estado = 'archivada'
+    guardarTodo()
+    renderReposicionKanban()
+}
+
 function renderListaProveedores() {
     const container = document.getElementById('lista-proveedores')
     if (!container) return
@@ -1161,6 +1389,18 @@ window.appBodegaAsignarTrabajador = function(tareaId, trabajador) {
     renderBodegaKanban()
 }
 
+window.appBodegaIniciar = function(tareaId) {
+    const tarea = tareas.find(t => t.id === tareaId)
+    if (!tarea) return
+    tarea.estado = 'en_proceso'
+    tarea.fechaInicio = new Date().toISOString()
+    guardarTodo()
+    const esDomicilio = tarea.tipoRetiro === 'domicilio'
+    const duracion = esDomicilio ? 20000 : 10000
+    iniciarTimer(tareaId, duracion)
+    renderBodegaKanban()
+}
+
 window.appBodegaCancelar = function(tareaId) {
     const tarea = tareas.find(t => t.id === tareaId)
     if (!tarea) return
@@ -1181,18 +1421,6 @@ window.appBodegaCancelar = function(tareaId) {
     tarea.fechaFin = new Date().toISOString()
     tarea.canceladoPor = tarea.trabajadorAsignado || 'Sistema'
     guardarTodo()
-    renderBodegaKanban()
-}
-
-window.appBodegaIniciar = function(tareaId) {
-    const tarea = tareas.find(t => t.id === tareaId)
-    if (!tarea) return
-    tarea.estado = 'en_proceso'
-    tarea.fechaInicio = new Date().toISOString()
-    guardarTodo()
-    const esDomicilio = tarea.tipoRetiro === 'domicilio'
-    const duracion = esDomicilio ? 20000 : 10000
-    iniciarTimer(tareaId, duracion)
     renderBodegaKanban()
 }
 

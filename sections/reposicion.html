@@ -1,21 +1,33 @@
+<!-- BARRA DE HERRAMIENTAS MÓDULO REPOSICIÓN (EVENTOS DOM & ASINCRONÍA) -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;background:var(--bg-card);padding:12px;border:1px solid var(--border);border-radius:var(--radius)">
+    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:260px">
+        <span style="font-weight:600;font-size:0.9em">🔍 Buscar (keyup):</span>
+        <input type="text" id="input-busqueda-reposicion" placeholder="Filtrar por SKU, proveedor, notas, id..." style="flex:1;padding:6px 10px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+    </div>
+    <div style="display:flex;gap:8px">
+        <button id="btn-nueva-tarea-reposicion" onclick="abrirModalNuevaTarea('reposicion')" style="background:var(--primary);color:#000;font-weight:600;padding:6px 12px">+ Nueva Tarea Reposicion</button>
+        <button id="btn-api-reposicion" onclick="sincronizarConAPIExterna()" style="background:#0dcaf0;color:#000;font-weight:600;padding:6px 12px">🌐 Cargar de API Externa</button>
+    </div>
+</div>
+
 <!-- KANBAN 3 COLUMNAS -->
 <div class="kanban kanban-5">
     <!-- COL 1: TAREAS ENTRANTES -->
     <div class="kanban-col">
         <div class="kanban-header"><span class="kanban-badge" id="repo-ent-count">0</span> Tareas Entrantes</div>
-        <div class="kanban-drop scroll-box" id="repo-entrantes"></div>
+        <div class="kanban-drop" id="repo-entrantes"></div>
     </div>
 
     <!-- COL 2: PROCESO DE COMPRA -->
     <div class="kanban-col">
         <div class="kanban-header"><span class="kanban-badge" id="repo-proc-count">0</span> Proceso de Compra</div>
-        <div class="kanban-drop scroll-box" id="repo-proceso"></div>
+        <div class="kanban-drop" id="repo-proceso"></div>
     </div>
 
     <!-- COL 3: RECEPCION DE COMPRAS -->
     <div class="kanban-col">
         <div class="kanban-header"><span class="kanban-badge" id="repo-comp-count">0</span> Recepcion de Compras</div>
-        <div class="kanban-drop scroll-box" id="repo-completado"></div>
+        <div class="kanban-drop" id="repo-completado"></div>
     </div>
 </div>
 

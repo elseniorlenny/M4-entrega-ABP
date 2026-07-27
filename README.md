@@ -17,6 +17,45 @@
 
 ---
 
+## ✅ Cumplimiento de Requerimientos del Módulo #4 (Programación Avanzada en JavaScript)
+
+Esta aplicación cumple estrictamente con los 5 puntos de evaluación del Módulo 4:
+
+### 1. Orientación a Objetos (POO) en JavaScript
+- **Clase `Tarea`** (`fullstock/js/data.js`):
+  - Propiedades: `id`, `descripcion` (getter/setter mapped a notas/materialNombre), `tipo`, `estado`, `fechaCreacion`, `fechaLimite`, `prioridad`, etc.
+  - Métodos: `cambiarEstado(nuevoEstado)`, `marcarCompletada()`, `eliminar()`, `esVencida()`, `obtenerTiempoRestante()`.
+- **Clase `GestorTareas`** (`fullstock/js/data.js`):
+  - Administra el listado de tareas con los métodos: `agregarTarea(tarea)`, `eliminarTarea(id)`, `cambiarEstadoTarea(id, nuevoEstado)`, `obtenerTareas()`, `obtenerTareaPorId(id)`, `filtrarPorEstado(estado)`, `filtrarPorTipo(tipo)`, `buscarTareas(query)`, `guardarEnAPI(tarea)`, `recuperarDeAPI()`, `guardarEnStorage()`, `cargarDeStorage()`.
+  - Instancia global accesible en la aplicación: `gestorTareas`.
+
+### 2. Características ES6+
+- **Variables**: Uso exclusivo de `let` y `const` en todo el proyecto.
+- **Template Literals**: Construcción dinámica de HTML y mensajes formateados usando `` `... ${var} ...` ``.
+- **Arrow Functions**: Implementado ampliamente en manipuladores de eventos, iteradores de arreglos (`map`, `filter`, `forEach`, `sort`, `find`, `findIndex`).
+- **Destructuring**: Extracción de propiedades directamente en parámetros e iteraciones (`const { materialNombre, sku, notas } = tarea`).
+- **Spread & Rest Operators (`...`)**: Utilizado para clonar y combinar objetos/arreglos (`[...this.tareas]`, `{ ...datosJSON.tienda }`).
+
+### 3. Eventos y Manipulación del DOM
+- **Formularios e Interacción HTML**: Formulario modal `#form-nueva-tarea` para agregar tareas con captura del evento `submit` y `e.preventDefault()`.
+- **Eventos `click`**: Navegación, botones de acción en tarjetas Kanban (Iniciar, Entregar, Negociar, Cancelar), modales y autenticación.
+- **Eventos `keyup`**: Búsqueda y filtrado en tiempo real de tareas en Bodega (`#input-busqueda-bodega`) y Reposición (`#input-busqueda-reposicion`).
+- **Eventos `mouseover` y `mouseout`**: Tooltips dinámicos con información extendida (`hoverKanbanCard` y `unhoverKanbanCard`) al pasar el cursor sobre las tarjetas Kanban y elementos del inventario.
+
+### 4. JavaScript Asíncrono
+- **Retardo Simulado (`setTimeout`)**: Retardo asíncrono de 1.5 segundos con indicador de carga (`#nt-spinner`) al procesar la creación de una tarea.
+- **Notificaciones Asincrónicas (2s)**: Mensajes emergentes (`mostrarNotificacionAsync`) generados con 2 segundos de retraso tras la finalización de acciones o peticiones.
+- **Contador Regresivo en Tiempo Real (`setInterval`)**: Temporizador continuo de 1 segundo que calcula y refresca el tiempo restante hasta la `fechaLimite` de cada tarea (`⏳ HH:MM:SS` o `🔴 Expirada`).
+
+### 5. Consumo de APIs y Persistencia
+- **Peticiones `fetch()` con `try/catch`**:
+  - GET a `https://jsonplaceholder.typicode.com/todos?_limit=5` para importar tareas externas al sistema (`gestorTareas.recuperarDeAPI()`).
+  - POST a `https://jsonplaceholder.typicode.com/posts` para enviar nuevas tareas a la API (`gestorTareas.guardarEnAPI(tarea)`).
+  - Manejo completo de errores con bloques `try/catch` y notificaciones al usuario.
+- **Almacenamiento Local (`localStorage`)**: Persistencia continua de `tareas`, `inventario`, `ventas`, `proveedores` y configuración en `localStorage` (sincronizado con `sessionStorage`).
+
+---
+
 ## 🏗️ Arquitectura del Sistema
 
 ### Estructura de Archivos

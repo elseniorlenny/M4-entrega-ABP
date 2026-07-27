@@ -1,33 +1,45 @@
+<!-- BARRA DE HERRAMIENTAS MÓDULO BODEGA (EVENTOS DOM & ASINCRONÍA) -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;background:var(--bg-card);padding:12px;border:1px solid var(--border);border-radius:var(--radius)">
+    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:260px">
+        <span style="font-weight:600;font-size:0.9em">🔍 Buscar (keyup):</span>
+        <input type="text" id="input-busqueda-bodega" placeholder="Filtrar por SKU, cliente, material, trabajador..." style="flex:1;padding:6px 10px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+    </div>
+    <div style="display:flex;gap:8px">
+        <button id="btn-nueva-tarea-bodega" onclick="abrirModalNuevaTarea('entrega')" style="background:var(--primary);color:#000;font-weight:600;padding:6px 12px">+ Nueva Tarea</button>
+        <button id="btn-api-bodega" onclick="sincronizarConAPIExterna()" style="background:#0dcaf0;color:#000;font-weight:600;padding:6px 12px">🌐 Cargar de API Externa</button>
+    </div>
+</div>
+
 <!-- KANBAN 4 COLUMNAS -->
 <div class="kanban kanban-5">
     <!-- COL 1: ENTRANTES -->
     <div class="kanban-col">
         <div class="kanban-header"><span class="kanban-badge" id="kanban-ent-count">0</span> Entrantes</div>
-        <div class="kanban-drop scroll-box" id="kanban-entrantes"></div>
+        <div class="kanban-drop" id="kanban-entrantes"></div>
     </div>
 
     <!-- COL 2: EN PROCESO -->
     <div class="kanban-col">
         <div class="kanban-header"><span class="kanban-badge" id="kanban-proc-count">0</span> En Proceso</div>
-        <div class="kanban-drop scroll-box" id="kanban-proceso"></div>
+        <div class="kanban-drop" id="kanban-proceso"></div>
     </div>
 
     <!-- COL 3: ENTREGADOS -->
     <div class="kanban-col">
         <div class="kanban-header"><span class="kanban-badge" id="kanban-term-count">0</span> Entregados</div>
-        <div class="kanban-drop scroll-box" id="kanban-terminado"></div>
+        <div class="kanban-drop" id="kanban-terminado"></div>
     </div>
 
     <!-- COL 4: ALERTAS STOCK -->
     <div class="kanban-col">
         <div class="kanban-header"><span class="kanban-badge" id="kanban-alert-count">0</span> Alertas Stock</div>
-        <div id="bodega-alerta-panel" style="padding:8px;flex:1;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);background:var(--bg);opacity:0.5;pointer-events:none">
-            <div id="bodega-alerta-contenido">
+        <div id="bodega-alerta-panel" style="padding:8px;height:420px;box-sizing:border-box;display:flex;flex-direction:column;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);background:var(--bg);opacity:0.5;pointer-events:none">
+            <div id="bodega-alerta-contenido" style="flex:1;overflow-y:auto">
                 <p style="color:var(--text-muted)">Las alertas de stock apareceran aqui.</p>
             </div>
             <div style="margin-top:auto;padding-top:8px">
                 <label style="font-size:0.85em">Nota
-                    <textarea id="bodega-alerta-nota" rows="4" placeholder="Nota opcional..." style="width:100%;margin-top:2px"></textarea>
+                    <textarea id="bodega-alerta-nota" rows="3" placeholder="Nota opcional..." style="width:100%;margin-top:2px"></textarea>
                 </label>
                 <button id="bodega-alerta-btn" style="width:100%;margin-top:4px" disabled>Enviar a Reposicion</button>
             </div>
