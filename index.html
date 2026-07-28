@@ -1,142 +1,189 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Full.Stock</title>
-    <link rel="stylesheet" href="fullstock/css/estilos.css?v=2">
+    <title>Full.Stock | Management Suite & TaskFlow</title>
+
+    <!-- BOOTSTRAP 5.3 CSS & BOOTSTRAP ICONS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <!-- SWEETALERT2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <!-- GOOGLE FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- LIGHT MINIMALIST BENTO STYLES -->
+    <link rel="stylesheet" href="fullstock/css/estilos.css?v=9">
 </head>
 <body>
 
+    <!-- NAVBAR HEADER MINIMALISTA (LIGHT MODE) -->
     <header>
         <nav>
-            <span id="brand-app" style="cursor:pointer;font-weight:bold" onclick="navegar('inicio')">Full.Stock</span>
-            <div id="nav-center">
-                <a href="#" data-seccion="venta">Ventas</a>
-                <a href="#" data-seccion="bodega">Bodega</a>
-                <a href="#" data-seccion="reposicion">Reposicion</a>
-                <a href="#" data-seccion="estadisticas">Estadisticas</a>
-            </div>
-            <div id="nav-right">
-                <a href="#" data-seccion="opciones">Opciones</a>
-                <div>
-                    <button id="btn-login-nav">Login</button>
-                    <button id="btn-logout-nav" class="oculto">Logout</button>
+            <span id="brand-app" onclick="navegar('inicio')" style="cursor:pointer;" class="user-select-none text-nowrap">
+                <i class="bi bi-box-seam-fill me-1"></i> Full.Stock <span class="text-muted fw-normal" style="font-size:0.85em;">| Tienda Muebles</span>
+            </span>
+            <div id="nav-center" class="d-flex align-items-center gap-1 flex-grow-1 justify-content-center">
+                <a href="#" data-seccion="venta"><i class="bi bi-cart3 me-1"></i> Ventas</a>
+                <a href="#" data-seccion="bodega"><i class="bi bi-truck me-1"></i> Bodega</a>
+                <a href="#" data-seccion="reposicion"><i class="bi bi-bag-check me-1"></i> Reposición</a>
+                <a href="#" data-seccion="inventario"><i class="bi bi-grid-3x3-gap me-1"></i> Inventario</a>
+                <a href="#" data-seccion="estadisticas"><i class="bi bi-bar-chart-line me-1"></i> Estadísticas</a>
+                <div class="d-flex align-items-center gap-1 ms-4 ps-3 border-start">
+                    <div class="navbar-search-wrapper" style="max-width:300px;">
+                        <div class="search-bar">
+                            <i class="bi bi-search"></i>
+                            <input type="text" id="navbar-search" placeholder="Buscar en sección actual..." autocomplete="off">
+                        </div>
+                        <div id="navbar-search-hint" class="text-muted small ms-2 d-none">Enter: filtrar | Esc: limpiar</div>
+                    </div>
+                    <button id="btn-api-nav" class="btn btn-outline-secondary btn-sm text-nowrap" title="Cargar API externa">
+                        <i class="bi bi-globe me-1"></i> Cargar API
+                    </button>
                 </div>
+            </div>
+            <div id="nav-right" class="d-flex align-items-center gap-2">
+                <a href="#" data-seccion="opciones"><i class="bi bi-gear me-1"></i> Opciones</a>
+                <button id="btn-login-nav" class="btn btn-indigo btn-sm"><i class="bi bi-person-fill me-1"></i> Login</button>
+                <button id="btn-logout-nav" class="btn btn-rose btn-sm oculto"><i class="bi bi-box-arrow-right me-1"></i> Logout</button>
             </div>
         </nav>
     </header>
 
-    <main id="app-contenido">
-        <p>Cargando...</p>
+    <!-- CONTAINER CENTRAL AMPLIO Y CÓMODO -->
+    <main id="app-contenido" class="container-fluid px-4 px-md-5 py-4">
+        <div class="d-flex justify-content-center align-items-center py-5">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                <span class="visually-hidden">Cargando Full.Stock...</span>
+            </div>
+        </div>
     </main>
 
     <!-- MODAL NUEVA TAREA (POO, EVENTOS FORMULARIO SUBMIT) -->
-    <div id="modal-nueva-tarea" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
-        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:480px;max-width:92%;box-shadow:0 10px 30px rgba(0,0,0,0.5)">
-            <div style="font-weight:700;font-size:1.15em;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
-                <span>➕ Agregar Nueva Tarea (POO)</span>
-                <span style="cursor:pointer;font-size:1.2em" onclick="cerrarModalNuevaTarea()">&times;</span>
+    <div id="modal-nueva-tarea" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.4);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center">
+        <div class="bento-card bg-white shadow-lg" style="width:460px;max-width:92%">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <h6 class="m-0 fw-bold text-dark"><i class="bi bi-plus-circle-fill me-1 text-primary"></i> Nueva Tarea POO</h6>
+                <button type="button" class="btn-close" onclick="cerrarModalNuevaTarea()"></button>
             </div>
             <form id="form-nueva-tarea">
-                <label style="font-size:0.85em;display:block;margin-bottom:10px">Tipo de Tarea
-                    <select id="nt-tipo" style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">Tipo de Tarea</label>
+                    <select id="nt-tipo" class="form-select">
                         <option value="entrega">Entrega (Bodega)</option>
-                        <option value="reposicion">Reposicion (Compras)</option>
+                        <option value="reposicion">Reposición (Compras)</option>
                     </select>
-                </label>
+                </div>
 
-                <label style="font-size:0.85em;display:block;margin-bottom:10px">Descripcion / Material
-                    <input type="text" id="nt-material" placeholder="Ej. Melamina Blanco 18mm" required style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-                </label>
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">Descripción / Material</label>
+                    <input type="text" id="nt-material" class="form-control" placeholder="Ej. Melamina Blanco 18mm" required>
+                </div>
 
-                <div style="display:flex;gap:10px;margin-bottom:10px">
-                    <label style="font-size:0.85em;flex:1">Cantidad
-                        <input type="number" id="nt-cantidad" min="1" value="1" required style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-                    </label>
-                    <label style="font-size:0.85em;flex:1">Prioridad
-                        <select id="nt-prioridad" style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold">Cantidad</label>
+                        <input type="number" id="nt-cantidad" class="form-control" min="1" value="1" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold">Prioridad</label>
+                        <select id="nt-prioridad" class="form-select">
                             <option value="normal">Normal</option>
-                            <option value="urgente">Urgente</option>
-                            <option value="baja">Baja</option>
+                            <option value="urgente">🔴 Urgente</option>
+                            <option value="baja">🟢 Baja</option>
                         </select>
-                    </label>
+                    </div>
                 </div>
 
-                <label style="font-size:0.85em;display:block;margin-bottom:10px">Fecha y Hora Limite (Cuenta Regresiva)
-                    <input type="datetime-local" id="nt-fecha-limite" style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-                </label>
-
-                <label style="font-size:0.85em;display:block;margin-bottom:16px">Notas Adicionales
-                    <textarea id="nt-notas" rows="3" placeholder="Detalles de la tarea..." style="width:100%;margin-top:4px;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)"></textarea>
-                </label>
-
-                <div id="nt-spinner" style="display:none;text-align:center;margin-bottom:12px;color:var(--primary);font-size:0.9em">
-                    ⏳ Procesando retardo asincrono (1.5s setTimeout)...
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">Fecha Límite</label>
+                    <input type="datetime-local" id="nt-fecha-limite" class="form-control">
                 </div>
 
-                <div style="display:flex;gap:10px">
-                    <button type="submit" id="nt-btn-submit" style="background:var(--success);color:#fff;flex:1;padding:10px;font-weight:600">Guardar Tarea</button>
-                    <button type="button" onclick="cerrarModalNuevaTarea()" style="background:#6c757d;color:#fff;flex:1;padding:10px">Cancelar</button>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Notas / Detalles</label>
+                    <textarea id="nt-notas" class="form-control" rows="2" placeholder="Instrucciones específicas..."></textarea>
+                </div>
+
+                <div id="nt-spinner" style="display:none;" class="text-center mb-2 text-primary small">
+                    <div class="spinner-border spinner-border-sm me-1" role="status"></div> Procesando asincrónico (1.5s)...
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" id="nt-btn-submit" class="btn btn-indigo flex-grow-1">Guardar Tarea</button>
+                    <button type="button" onclick="cerrarModalNuevaTarea()" class="btn btn-light border px-3">Cancelar</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL EDITAR ATRIBUTOS DE TAREA EN ENVÍO -->
-    <div id="modal-editar-alerta" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center">
-        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;width:420px;max-width:90%">
-            <div style="font-weight:700;font-size:1.1em;margin-bottom:12px;color:var(--accent)" id="alerta-edit-titulo">✏️ Editar Atributos de Tarea</div>
+    <!-- MODAL EDITAR ATRIBUTOS DE TAREA -->
+    <div id="modal-editar-alerta" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.4);backdrop-filter:blur(4px);z-index:10000;align-items:center;justify-content:center">
+        <div class="bento-card bg-white shadow-lg" style="width:420px;max-width:92%">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <h6 class="m-0 fw-bold text-dark" id="alerta-edit-titulo"><i class="bi bi-pencil-square me-1 text-primary"></i> Editar Tarea</h6>
+                <button type="button" class="btn-close" onclick="appCerrarModalEditarAlerta()"></button>
+            </div>
             <input type="hidden" id="alerta-edit-idx">
             <input type="hidden" id="alerta-edit-origen">
+            <input type="hidden" id="alerta-edit-tipo-target">
 
-            <label style="font-size:0.85em;display:block;margin-bottom:8px;font-weight:600">Prioridad
-                <select id="alerta-edit-prioridad" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-                    <option value="urgente">🔴 Urgente</option>
-                    <option value="alta">🟠 Alta</option>
-                    <option value="media">🟡 Media</option>
-                    <option value="baja">🟢 Baja</option>
-                </select>
-            </label>
-
-            <label style="font-size:0.85em;display:block;margin-bottom:8px;font-weight:600">Cantidad
-                <input type="number" id="alerta-edit-cantidad" min="1" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-            </label>
-
-            <label style="font-size:0.85em;display:block;margin-bottom:8px;font-weight:600">Plataforma de Venta
-                <select id="alerta-edit-canal" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-                    <option value="local">Store Local (Presencial)</option>
-                    <option value="online">E-Commerce / Online</option>
-                </select>
-            </label>
-
-            <label style="font-size:0.85em;display:block;margin-bottom:8px;font-weight:600">Tipo de Entrega
-                <select id="alerta-edit-entrega" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+            <!-- Tipo de Entrega (solo venta→bodega) -->
+            <div class="mb-2" id="alerta-edit-entrega-wrap">
+                <label class="form-label small fw-semibold">Tipo de Entrega</label>
+                <select id="alerta-edit-entrega" class="form-select">
                     <option value="inmediata">Entrega Inmediata</option>
-                    <option value="retiro">Retiro en Tienda</option>
                     <option value="domicilio">Envío a Domicilio</option>
                 </select>
-            </label>
+            </div>
 
-            <label style="font-size:0.85em;display:block;margin-bottom:12px;font-weight:600">Notas / Observaciones
-                <textarea id="alerta-edit-notas" rows="3" placeholder="Instrucciones para bodega o reposición..." style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)"></textarea>
-            </label>
+            <!-- Fecha Entrega (solo si domicilio) -->
+            <div class="mb-2" id="alerta-edit-fecha-wrap" style="display:none;">
+                <label class="form-label small fw-semibold">Fecha de Entrega</label>
+                <input type="date" id="alerta-edit-fecha" class="form-control">
+            </div>
 
-            <div style="display:flex;gap:10px">
-                <button onclick="appGuardarAtributosAlerta()" style="background:var(--success);color:#fff;flex:1;padding:8px;font-weight:bold">Guardar Cambios</button>
-                <button onclick="appCerrarModalEditarAlerta()" style="background:#6c757d;color:#fff;flex:1;padding:8px">Cancelar</button>
+            <!-- Prioridad (venta→reposicion, bodega) -->
+            <div class="mb-2" id="alerta-edit-prioridad-wrap" style="display:none;">
+                <label class="form-label small fw-semibold">Prioridad</label>
+                <select id="alerta-edit-prioridad" class="form-select">
+                    <option value="baja">Baja</option>
+                    <option value="normal">Normal</option>
+                    <option value="alta">Alta</option>
+                    <option value="urgente">Urgente</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">Notas / Observaciones</label>
+                <textarea id="alerta-edit-notas" class="form-control" rows="2" placeholder="Instrucciones adicionales..."></textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button onclick="appGuardarAtributosAlerta()" class="btn btn-indigo flex-grow-1">Guardar Cambios</button>
+                <button onclick="appCerrarModalEditarAlerta()" class="btn btn-light border px-3">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <!-- CONTENEDOR DE TOOLTIP PARA EVENTOS MOUSEOVER -->
-    <div id="app-tooltip" style="display:none;position:fixed;z-index:10000;background:rgba(20,20,20,0.95);color:#fff;padding:8px 12px;border-radius:6px;font-size:0.82em;border:1px solid var(--primary);box-shadow:0 4px 15px rgba(0,0,0,0.4);pointer-events:none;max-width:280px"></div>
+    <!-- TOOLTIP KANBAN MOUSEOVER -->
+    <div id="app-tooltip" style="display:none;position:fixed;z-index:10000;background:#0f172a;color:#ffffff;padding:8px 12px;border-radius:6px;font-size:0.78em;box-shadow:0 6px 16px rgba(0,0,0,0.15);pointer-events:none;max-width:280px"></div>
 
-    <!-- CONTENEDOR DE NOTIFICACIONES ASINCRÓNICAS (SETTIMEOUT 2s) -->
+    <!-- NOTIFICACIONES ASINCRÓNICAS -->
     <div id="app-notifications" style="position:fixed;bottom:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:8px"></div>
 
-    <script src="fullstock/js/swal.js?v=2"></script>
-    <script src="fullstock/js/data.js?v=2"></script>
-    <script src="fullstock/js/app.js?v=2"></script>
+    <!-- BOOTSTRAP, SWEETALERT & CHART.JS SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="fullstock/js/swal.js?v=10"></script>
+    <script src="fullstock/js/data.js?v=10"></script>
+    <script src="fullstock/js/app.js?v=10"></script>
 </body>
 </html>

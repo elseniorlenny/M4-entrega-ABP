@@ -427,11 +427,11 @@ Contraseña: 12345
 1. **LOGIN** → Accede como Gerente (Admin)
 
 2. **VENTAS** → Simula atención a cliente:
-   - Selecciona "Melamina Blanco 18mm" (stock: 8)
+   - Selecciona "Melamina Blanco 18mm"
    - Ingresa cantidad 5, cliente "Constructora Nueva"
    - Ve preview: Stock 8, Precio $32.000, Total $160.000
    - Agrega al carrito → Ve totales (Neto/IVA/Total)
-   - Confirma "Enviar" → **Crea venta + Tarea entrega automática**
+   - Confirma "Enviar" → **Crea venta y genera tarea de entrega en el panel de envío**
 
 3. **BODEGA** → Gestiona la entrega:
    - Ve tarea en "Entrantes" con tag "Local" + "Inmediata"

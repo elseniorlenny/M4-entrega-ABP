@@ -1,106 +1,125 @@
-<!-- SECCION VENTAS - 3 COLUMNAS SUPERIORES Y HISTORIAL INFERIOR -->
-<div class="kanban kanban-5">
-    <!-- COLUMNA 1: NUEVA VENTA -->
-    <div class="kanban-col">
-        <div class="kanban-header">
-            <span>➕ Nueva Venta</span>
+<!-- SECCIÓN VENTAS - ALTO CONTRASTE & MEJORA VISUAL -->
+<div class="bento-grid mb-3">
+
+    <!-- COLUMNA 1: NUEVA VENTA (BENTO SPAN 4) -->
+    <div class="bento-card bento-4 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-cart-plus me-1 text-primary"></i> Nueva Venta</h6>
+            <span class="badge bg-indigo-subtle text-indigo font-monospace fw-bold" style="background:#e0e7ff; color:#3730a3;">POS</span>
         </div>
-        <div class="kanban-body" style="flex:1;display:flex;flex-direction:column">
-            <form id="form-venta" style="flex:1;display:flex;flex-direction:column;gap:4px">
-                <div style="font-size:0.85em;color:var(--text-muted);margin-bottom:4px">
-                    Vendedor: <strong id="venta-vendedor-label" style="color:var(--accent)">Gerente</strong>
+        <form id="form-venta" class="d-flex flex-column flex-grow-1">
+            <!-- NOMBRE DEL VENDEDOR BIEN VISIBLE -->
+            <div class="mb-2 p-2 rounded-2 border d-flex justify-content-between align-items-center" style="background:#f8fafc; border-color:#e2e8f0;">
+                <span class="text-secondary small fw-semibold"><i class="bi bi-person-fill text-primary me-1"></i>Vendedor Activo:</span>
+                <span id="venta-vendedor-label" class="badge px-2 py-1 fw-bold" style="background:#e0e7ff; color:#3730a3; font-size:0.8rem;">Gerente</span>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label text-dark small fw-semibold">Cliente / Razón Social</label>
+                <input type="text" id="venta-cliente" class="form-control" required placeholder="Ej. Constructora San José">
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label text-dark small fw-semibold">Material / Producto</label>
+                <select id="venta-material" class="form-select" required>
+                    <option value="">Cargando productos...</option>
+                </select>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label text-dark small fw-semibold">Cantidad (Unidades)</label>
+                <input type="number" id="venta-cantidad" class="form-control" min="1" required placeholder="Ej. 10">
+            </div>
+
+            <!-- ZONA DE MONTOS CON FONDO CLARO (MT-AUTO Y MB-3 IDÉNTICO A CARRITO) -->
+            <div class="p-3 rounded-2 mt-auto mb-3 border" style="background:#f8fafc; border-color:#e2e8f0;">
+                <div class="d-flex justify-content-between text-secondary mb-1" style="font-size:0.82rem;">
+                    <span>Precio Unitario:</span>
+                    <strong id="venta-precio-info" class="text-dark">$0</strong>
                 </div>
-                <label style="font-size:0.85em;font-weight:600">Cliente 
-                    <input type="text" id="venta-cliente" required placeholder="Nombre o Razón Social" style="margin-top:2px">
-                </label>
-                <label style="font-size:0.85em;font-weight:600;margin-top:4px">Material
-                    <select id="venta-material" required style="margin-top:2px">
-                        <option value="">Seleccionar producto...</option>
-                    </select>
-                </label>
-                <label style="font-size:0.85em;font-weight:600;margin-top:4px">Cantidad
-                    <input type="number" id="venta-cantidad" min="1" required placeholder="Cant. unidades" style="margin-top:2px">
-                </label>
-                
-                <div style="border:1px solid var(--border);border-radius:var(--radius);padding:8px;margin:8px 0;background:var(--bg-card)">
-                    <div style="display:flex;justify-content:space-between;font-size:0.85em"><span>Precio Unitario:</span><strong id="venta-precio-info">$0</strong></div>
-                    <div style="display:flex;justify-content:space-between;font-size:0.95em;font-weight:bold;border-top:1px solid var(--border);padding-top:4px;margin-top:4px;color:var(--accent)"><span>Subtotal:</span><strong id="venta-total-preview">$0</strong></div>
+                <div class="d-flex justify-content-between fw-bold pt-2 border-top text-primary" style="font-size:0.9rem; border-color:#cbd5e1 !important;">
+                    <span>Subtotal:</span>
+                    <strong id="venta-total-preview" class="text-primary">$0</strong>
                 </div>
-                
-                <div style="margin-top:auto;padding-top:8px">
-                    <button type="submit" style="width:100%;font-weight:bold;background:var(--primary)">+ Agregar al Carrito</button>
-                </div>
-            </form>
-        </div>
+            </div>
+
+            <button type="submit" class="btn btn-outline-primary w-100 py-2">
+                <i class="bi bi-cart-plus me-1"></i> Agregar al Carrito
+            </button>
+        </form>
     </div>
 
-    <!-- COLUMNA 2: CARRITO -->
-    <div class="kanban-col">
-        <div class="kanban-header">
-            <span>🛒 Carrito de Compras</span>
-            <span class="kanban-badge" id="venta-carrito-count">0</span>
+    <!-- COLUMNA 2: CARRITO DE COMPRAS (BENTO SPAN 4 CON SCROLLBLOCK) -->
+    <div class="bento-card bento-4 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bag-check me-1 text-success"></i> Carrito de Compras</h6>
+            <span class="badge bg-success text-white px-2 py-1 fw-bold" id="venta-carrito-count">0</span>
         </div>
-        <div class="kanban-body" style="flex:1;display:flex;flex-direction:column">
-            <div style="flex:1;display:flex;flex-direction:column;overflow-y:auto" id="venta-carrito-lista">
-                <div class="kanban-empty">Sin productos en el carrito</div>
+
+        <div class="bento-scroll-block flex-grow-1 mb-2" id="venta-carrito-lista" style="max-height: 220px;">
+            <div class="text-center text-muted py-4 small">Sin productos en carrito</div>
+        </div>
+
+        <!-- ZONA DE TOTALES CARRITO (MT-AUTO Y MB-3 IDÉNTICO A NUEVA VENTA) -->
+        <div class="p-3 rounded-2 mt-auto mb-3 border" style="background:#f8fafc; border-color:#e2e8f0;">
+            <div class="d-flex justify-content-between text-secondary mb-1" style="font-size:0.82rem;">
+                <span>Monto Neto:</span>
+                <span id="venta-neto-total" class="text-dark fw-bold">$0</span>
             </div>
-            
-            <div style="border:1px solid var(--border);border-radius:var(--radius);padding:8px;margin:8px 0;background:var(--bg-card)">
-                <div style="display:flex;justify-content:space-between;font-size:0.85em"><span>Neto:</span><span id="venta-neto-total">$0</span></div>
-                <div style="display:flex;justify-content:space-between;font-size:0.85em"><span>IVA (19%):</span><span id="venta-iva-total">$0</span></div>
-                <div style="display:flex;justify-content:space-between;font-size:0.95em;font-weight:bold;border-top:1px solid var(--border);padding-top:4px;margin-top:4px;color:var(--success)"><span>Total General:</span><span id="venta-gran-total">$0</span></div>
+            <div class="d-flex justify-content-between text-secondary mb-1" style="font-size:0.82rem;">
+                <span>IVA (19%):</span>
+                <span id="venta-iva-total" class="text-dark fw-bold">$0</span>
             </div>
-            
-            <div style="margin-top:auto;padding-top:8px">
-                <button id="btn-realizar-venta" style="width:100%;font-weight:bold;background:var(--success)" disabled>Procesar Venta</button>
+            <div class="d-flex justify-content-between fw-bold pt-2 border-top text-success" style="font-size:0.95rem; border-color:#cbd5e1 !important; color:#059669 !important;">
+                <span>Total Venta:</span>
+                <span id="venta-gran-total">$0</span>
             </div>
         </div>
+
+        <button id="btn-realizar-venta" class="btn btn-outline-success w-100 py-2" disabled>
+            <i class="bi bi-check2-circle me-1"></i> Procesar Venta
+        </button>
     </div>
 
-    <!-- COLUMNA 3: ENVÍO DE TAREAS -->
-    <div class="kanban-col">
-        <div class="kanban-header">
-            <span>📤 Envío Tareas</span>
-            <span class="kanban-badge" id="envio-tareas-count">0</span>
+    <!-- COLUMNA 3: ENVÍO TAREAS (BENTO SPAN 4 CON SCROLLBLOCK) -->
+    <div class="bento-card bento-4 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-send me-1 text-warning"></i> Envío Tareas</h6>
+            <span class="badge bg-warning text-dark px-2 py-1 fw-bold" id="envio-tareas-count">0</span>
         </div>
-        <div class="kanban-body" style="display:flex;flex-direction:column;padding:6px;height:420px;box-sizing:border-box">
-            <div class="kanban-drop" id="envio-tareas-drop" style="flex:1;overflow-y:auto;border:none;padding:0">
-                <div class="kanban-empty">Sin tareas pendientes de envío</div>
-            </div>
-            <div style="margin-top:auto;padding-top:6px;border-top:1px solid var(--border)">
-                <button id="btn-enviar-todo-venta" onclick="appEnviarTodasAlertasVenta()" style="width:100%;font-weight:bold;background:var(--success);padding:8px" disabled>🚀 Enviar Todo</button>
-            </div>
+
+        <div class="bento-scroll-block flex-grow-1 mb-3" id="envio-tareas-drop" style="min-height: 260px; max-height: 330px; overflow-y: auto; padding-bottom: 20px;">
+            <div class="text-center text-muted py-4 small">Sin tareas de envío</div>
         </div>
+
     </div>
+
 </div>
 
-<!-- HISTORIAL DE VENTAS (PARTE INFERIOR) -->
-<div style="margin-top:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-    <div class="kanban-header" style="justify-content:space-between">
-        <span>📜 Historial de Ventas</span>
+<!-- HISTORIAL DE VENTAS BENTO CON ESPACIADO MEJORADO Y TÍTULOS VISIBLES -->
+<div class="bento-card bento-12">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-clock-history me-1 text-primary"></i> Historial de Ventas</h6>
     </div>
-    <div class="scroll-box" style="border:none;border-radius:0;padding:0;max-height:400px">
-        <table>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-historial-ventas">
             <thead>
-                <tr style="font-size:0.85em">
-                    <th style="text-align:center"># ID</th>
-                    <th style="text-align:center">Fecha</th>
-                    <th style="text-align:center">Cliente</th>
-                    <th style="text-align:center">Material / SKU</th>
-                    <th style="text-align:center">Canal</th>
-                    <th style="text-align:center">Entrega</th>
-                    <th style="text-align:center">Cant.</th>
-                    <th style="text-align:center">Neto</th>
-                    <th style="text-align:center">IVA</th>
-                    <th style="text-align:center">Total</th>
-                    <th style="text-align:center">Estado</th>
-                    <th style="text-align:center">Vendedor</th>
+                <tr class="table-light">
+                    <th class="text-center text-dark"># ID</th>
+                    <th class="text-center text-dark">Fecha</th>
+                    <th class="text-center text-dark">Cliente</th>
+                    <th class="text-center text-dark">Material / SKU</th>
+                    <th class="text-center text-dark">Canal</th>
+                    <th class="text-center text-dark">Entrega</th>
+                    <th class="text-center text-dark">Cant.</th>
+                    <th class="text-center text-dark">Neto</th>
+                    <th class="text-center text-dark">IVA</th>
+                    <th class="text-center text-dark">Total</th>
+                    <th class="text-center text-dark">Estado</th>
+                    <th class="text-center text-dark">Vendedor</th>
                 </tr>
             </thead>
             <tbody id="tbody-ventas"></tbody>
         </table>
     </div>
-</div>
-
-
 </div>

@@ -1,23 +1,57 @@
-<div class="section-inicio">
-    <div style="text-align:center;margin-bottom:16px">
-        <div style="font-size:1.8em;font-weight:700;margin:0;color:var(--accent)">Full.Stock</div>
-        <p style="margin:4px 0;color:var(--text-muted)">Sistema de Inventario para Ferreterias - ConstruShop</p>
-    </div>
-    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-        <div class="kanban-header">Modulos</div>
-        <div style="padding:12px;display:grid;gap:8px">
-            <p><strong>Venta:</strong> Registra ventas y valida stock.</p>
-            <p><strong>Bodega:</strong> Gestiona entregas de material.</p>
-            <p><strong>Reposicion:</strong> Gestiona compras y reposicion.</p>
-            <p><strong>Inventario:</strong> Base de datos de materiales.</p>
-            <p><strong>Reportes:</strong> Ingresos, egresos y ganancia.</p>
+<!-- SECCIÓN INICIO - CON ESTILO Y FORMA DE VENTAS -->
+<div class="bento-grid">
+
+    <!-- HERO INFORMATIVO CON ESTILO DE VENTAS -->
+    <div class="bento-card bento-12 p-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <span class="badge mb-2 fw-bold" style="background:#e0e7ff; color:#3730a3;">Módulo 4 • Programación Avanzada JS</span>
+                <h1 class="fw-bold text-dark mb-2">Sistema de Gestión <span class="text-primary">  Full.Stock</span></h1>
+                <p class="text-secondary mb-0" style="max-width: 680px; font-size: 0.88rem;">
+                    Plataforma SPA desarrollada con Programación Orientada a Objetos (POO), asincronía, manipulación del DOM y consumo de APIs externas. Utilice la barra de navegación superior para explorar los distintos módulos.
+                </p>
+            </div>
+            <div class="text-end">
+                <div class="p-3 border rounded-3 text-start" style="min-width: 220px; background:#f8fafc; border-color:#e2e8f0;">
+                    <div class="text-muted small fw-semibold">Estado del Sistema</div>
+                    <div class="text-success fw-bold mt-1" style="color:#059669 !important;"><i class="bi bi-check-circle-fill me-1"></i> Sincronizado</div>
+                    <div class="text-secondary small mt-1">POO + localStorage + Fetch</div>
+                </div>
+            </div>
         </div>
     </div>
-    <div style="margin-top:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-        <div class="kanban-header">Acceso</div>
-        <div style="padding:12px;text-align:center">
-            <p>Inicia sesion para acceder al sistema</p>
-            <p><small>Desarrollado por <strong>Fabian Ortiz Pena</strong></small></p>
+
+    <!-- TARJETAS DE INFORMACIÓN DE MÓDULOS (ESTILO DE TARJETAS DE VENTAS) -->
+    <div class="bento-card bento-3 text-center">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bag-check me-1 text-primary"></i> Ventas</h6>
+            <span class="badge px-2 py-1 fw-bold" style="background:#e0e7ff; color:#3730a3;">POS</span>
         </div>
+        <p class="text-secondary small mb-0" style="font-size: 0.8rem;">Registro de ventas, validación de stock físico y carrito de compras.</p>
     </div>
+
+    <div class="bento-card bento-3 text-center">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-truck me-1 text-success"></i> Bodega</h6>
+            <span class="badge bg-success text-white px-2 py-1 fw-bold">Kanban</span>
+        </div>
+        <p class="text-secondary small mb-0" style="font-size: 0.8rem;">Kanban de despachos, asignación a trabajadores y entregas.</p>
+    </div>
+
+    <div class="bento-card bento-3 text-center">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-box-seam me-1 text-warning"></i> Reposición</h6>
+            <span class="badge bg-warning text-dark px-2 py-1 fw-bold">Compras</span>
+        </div>
+        <p class="text-secondary small mb-0" style="font-size: 0.8rem;">Proceso de compras de insumos y gestión de proveedores.</p>
+    </div>
+
+    <div class="bento-card bento-3 text-center">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bar-chart-line me-1 text-info"></i> Métricas</h6>
+            <span class="badge bg-info text-dark px-2 py-1 fw-bold">Balance</span>
+        </div>
+        <p class="text-secondary small mb-0" style="font-size: 0.8rem;">Balance de caja, ingresos, nómina de empleados y márgenes.</p>
+    </div>
+
 </div>

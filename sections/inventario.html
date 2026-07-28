@@ -1,61 +1,23 @@
-<!-- RESUMEN FINANCIERO -->
-<div class="flex-row mb-3">
-    <div class="flex-col">
-        <strong>Ingresos:</strong> <span id="rep-ingresos">$0</span>
-    </div>
-    <div class="flex-col">
-        <strong>Egresos:</strong> <span id="rep-egresos">$0</span>
-    </div>
-    <div class="flex-col">
-        <strong>Ganancia:</strong> <span id="rep-ganancia">$0</span>
-    </div>
-    <div class="flex-col">
-        <strong>Margen:</strong> <span id="rep-margen">0%</span>
-    </div>
-</div>
+<!-- SECCIÓN INVENTARIO - CON ESTILO Y FORMA DE VENTAS -->
 
-<div class="flex-row mb-3">
-    <div class="flex-col">
-        <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-            <div class="kanban-header">Resumen Ventas</div>
-            <div id="rep-detalle-ventas" class="scroll-box" style="border:none;border-radius:0;padding:0"><p>Sin datos</p></div>
-        </div>
-    </div>
-    <div class="flex-col">
-        <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-            <div class="kanban-header">Resumen Compras</div>
-            <div id="rep-detalle-compras" class="scroll-box" style="border:none;border-radius:0;padding:0"><p>Sin datos</p></div>
-        </div>
-    </div>
-    <div class="flex-col">
-        <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-            <div class="kanban-header">Resumen Reembolsos</div>
-            <div id="rep-detalle-reembolsos" class="scroll-box" style="border:none;border-radius:0;padding:0"><p>Sin datos</p></div>
-        </div>
-    </div>
-</div>
-
-<hr>
-
-<!-- INVENTARIO -->
-<div style="margin-top:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-    <div class="kanban-header" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Stock de Materiales</span>
-        <button id="btn-add-material" style="font-size:0.9em;padding:2px 8px">+ Agregar Material</button>
-    </div>
-    <div class="mb-2" style="padding:8px 12px;border-bottom:1px solid var(--border)">
-        Total: <strong id="inv-total">0</strong> |
-        OK: <strong id="inv-ok">0</strong> |
-        Bajo: <strong id="inv-bajo">0</strong> |
-        Agotado: <strong id="inv-agotado">0</strong>
-    </div>
-    <div id="inv-alerta" class="oculto" style="padding:8px 12px;background:rgba(220,53,69,0.1);border-bottom:1px solid var(--border)"><span id="inv-alerta-texto"></span></div>
-    <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-        <table>
+<div class="bento-card bento-12">
+    <div class="bento-scroll-block" style="max-height: 380px;">
+        <table class="table table-hover align-middle mb-0">
             <thead>
-                <tr><th>ID</th><th>Material</th><th>Stock</th><th>Precio</th><th>Estado</th><th>Accion</th></tr>
+                <tr class="table-light">
+                    <th class="text-center text-dark">SKU</th>
+                    <th class="text-center text-dark">Material</th>
+                    <th class="text-center text-dark">Color</th>
+                    <th class="text-center text-dark">Espesor</th>
+                    <th class="text-center text-dark">Dimensiones (Largo x Ancho)</th>
+                    <th class="text-center text-dark">Marca</th>
+                    <th class="text-center text-dark">Categoría</th>
+                    <th class="text-center text-dark">Stock Actual</th>
+                    <th class="text-center text-dark">Estado Stock</th>
+                    <th class="text-center text-dark">Precio Venta</th>
+                </tr>
             </thead>
-            <tbody id="tbody-inventario"></tbody>
+            <tbody id="lista-inventario-tabla"></tbody>
         </table>
     </div>
 </div>

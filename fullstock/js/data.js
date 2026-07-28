@@ -522,57 +522,152 @@ function crearTareaReposicion(cantidadPedir, proveedor, nota, fechaLimite, prior
 /* ==================== RENDER: VENTAS ==================== */
 function renderVentas() {
     const tbody = document.getElementById('tbody-ventas')
+    const table = document.getElementById('tabla-historial-ventas')
     if (!tbody) return
-    tbody.innerHTML = ''
 
-    if (!ventas || ventas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="12" style="padding:12px;text-align:center;color:var(--text-muted)">Sin ventas registradas en el historial</td></tr>'
+    const sortKey = sessionStorage.getItem('ventasSortKey') || 'fecha'
+    const sortDir = sessionStorage.getItem('ventasSortKeyDir') || 'desc'
+
+    let lista = [...ventas]
+    const numericKeys = ['id', 'cantidad', 'neto', 'iva', 'total']
+    const dir = sortDir === 'desc' ? -1 : 1
+    if (numericKeys.includes(sortKey)) {
+        lista.sort((a, b) => dir * ((a[sortKey] || 0) - (b[sortKey] || 0)))
+    } else if (sortKey === 'fecha') {
+        lista.sort((a, b) => dir * (new Date(a.fecha) - new Date(b.fecha)))
+    } else {
+        lista.sort((a, b) => dir * String(a[sortKey] || '').localeCompare(String(b[sortKey] || ''), 'es', { sensitivity: 'base' }))
+    }
+
+    if (table) {
+        setupSortableHeaders(table, 'ventasSortKey', renderVentas, {0:'id',1:'fecha',2:'cliente',3:'materialNombre',4:'canal',5:'tipoRetiro',6:'cantidad',7:'neto',8:'iva',9:'total',10:'estado',11:'vendedor'})
+    }
+
+    if (lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-secondary">Sin ventas registradas en el historial</td></tr>'
         return
     }
 
-    const ventasOrd = [...ventas].sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-
-    ventasOrd.forEach(v => {
-        const tr = document.createElement('tr')
-        tr.style.borderBottom = '1px solid var(--border)'
-        if (v.estado === 'anulada') {
-            tr.style.background = 'rgba(220, 53, 69, 0.08)'
-        }
+    tbody.innerHTML = lista.map(v => {
+        const esAnulada = v.estado === 'anulada'
         const fecha = v.fecha ? new Date(v.fecha) : new Date()
         const fechaStr = fecha.toLocaleDateString('es-CL')
-        const colorCanal = v.canal === 'online' ? '#0dcaf0' : '#6c757d'
-        const labelCanal = v.canal === 'online' ? 'Online' : 'Local'
+        const labelCanal = v.canal === 'online'
+            ? '<span class="badge px-2 py-1" style="background:#cff4fc;color:#155e75;font-size:0.68rem;font-weight:700;">Online</span>'
+            : '<span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;">Local</span>'
+
         let entregaStr = '-'
         if (v.canal === 'online' && v.fechaEntrega) {
             const tipo = v.tipoRetiro === 'domicilio' ? 'Envío' : 'Retiro'
             entregaStr = `${tipo} ${new Date(v.fechaEntrega).toLocaleDateString('es-CL')}`
         }
 
-        const esAnulada = v.estado === 'anulada'
-        const estadoBadge = esAnulada 
-            ? `<span style="background:var(--danger);color:#fff;padding:2px 6px;border-radius:4px;font-size:0.75em;font-weight:bold">🚫 Anulada & Reembolsada</span>`
-            : `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:4px;font-size:0.75em;font-weight:bold">✅ Completada</span>`
+        const estadoBadge = esAnulada
+            ? '<span class="badge px-2 py-1" style="background:#fecaca;color:#991b1b;font-size:0.68rem;font-weight:700;">Anulada</span>'
+            : '<span class="badge px-2 py-1" style="background:#bbf7d0;color:#166534;font-size:0.68rem;font-weight:700;">Completada</span>'
 
-        const totalDisplay = esAnulada 
-            ? `<span style="text-decoration:line-through;color:var(--text-muted);font-size:0.85em">${formatearCLP(v.total)}</span><br><span style="color:var(--danger);font-weight:bold;font-size:0.85em">Reembolsado: ${formatearCLP(v.total)}</span>`
-            : `<strong style="color:var(--success)">${formatearCLP(v.total)}</strong>`
+        const totalDisplay = esAnulada
+            ? `<span class="text-muted text-decoration-line-through me-1" style="font-size:0.78rem;">${formatearCLP(v.total)}</span><br><span class="text-danger fw-bold" style="font-size:0.8rem;">Reembolso: ${formatearCLP(v.total)}</span>`
+            : `<strong class="text-success fw-bold" style="color:#059669 !important;">${formatearCLP(v.total)}</strong>`
 
-        tr.innerHTML = `
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.id}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${fechaStr}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${v.cliente || '-'}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center"><code>${v.sku || '-'}</code> ${v.materialNombre || '-'}</td>
-            <td style="padding:6px 8px;text-align:center"><span style="background:${colorCanal};color:#000;padding:2px 6px;border-radius:3px;font-size:0.75em">${labelCanal}</span></td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${entregaStr}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.cantidad}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${formatearCLP(v.neto || v.total)}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${formatearCLP(v.iva || 0)}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${totalDisplay}</td>
-            <td style="padding:6px 8px;text-align:center">${estadoBadge}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${v.vendedor || '-'}</td>
-        `
-        tbody.appendChild(tr)
+        const vendedorNombre = v.vendedor || (usuarioActual ? usuarioActual.nombre : 'Gerente')
+        const rowBg = esAnulada ? ' style="background:#fef2f2"' : ''
+
+        return `<tr${rowBg}>
+            <td class="text-center font-monospace fw-bold text-dark" style="padding:10px 12px;font-size:0.8rem;">#${v.id}</td>
+            <td class="text-center text-dark" style="padding:10px 12px;font-size:0.8rem;">${fechaStr}</td>
+            <td class="text-center fw-bold text-dark" style="padding:10px 12px;font-size:0.82rem;">${v.cliente || '-'}</td>
+            <td class="text-center text-dark" style="padding:10px 12px;font-size:0.8rem;"><span class="font-monospace text-primary fw-semibold me-1">${v.sku || '-'}</span> ${v.materialNombre || '-'}</td>
+            <td class="text-center" style="padding:10px 12px;">${labelCanal}</td>
+            <td class="text-center text-secondary" style="padding:10px 12px;font-size:0.78rem;">${entregaStr}</td>
+            <td class="text-center fw-bold text-dark" style="padding:10px 12px;font-size:0.82rem;">${v.cantidad} u.</td>
+            <td class="text-center text-dark" style="padding:10px 12px;font-size:0.8rem;">${formatearCLP(v.neto || v.total)}</td>
+            <td class="text-center text-secondary" style="padding:10px 12px;font-size:0.78rem;">${formatearCLP(v.iva || 0)}</td>
+            <td class="text-center" style="padding:10px 12px;">${totalDisplay}</td>
+            <td class="text-center" style="padding:10px 12px;">${estadoBadge}</td>
+            <td class="text-center" style="padding:10px 12px;"><span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;"><i class="bi bi-person-fill text-primary me-1"></i>${vendedorNombre}</span></td>
+        </tr>`
+    }).join('')
+}
+
+window.onBuscarVentas = function(query) {
+    if (!query || !query.trim()) {
+        renderVentas()
+        return
+    }
+    const q = query.toLowerCase().trim()
+    const filtrados = ventas.filter(v => {
+        return (v.id && String(v.id).includes(q)) ||
+            (v.cliente && v.cliente.toLowerCase().includes(q)) ||
+            (v.materialNombre && v.materialNombre.toLowerCase().includes(q)) ||
+            (v.sku && v.sku.toLowerCase().includes(q)) ||
+            (v.vendedor && v.vendedor.toLowerCase().includes(q))
     })
+    renderVentasFiltradas(filtrados)
+}
+
+function renderVentasFiltradas(lista) {
+    const tbody = document.getElementById('tbody-ventas')
+    const table = document.getElementById('tabla-historial-ventas')
+    if (!tbody) return
+
+    if (table) {
+        setupSortableHeaders(table, 'ventasSortKey', () => renderVentasFiltradas(lista), {0:'id',1:'fecha',2:'cliente',3:'materialNombre',4:'canal',5:'tipoRetiro',6:'cantidad',7:'neto',8:'iva',9:'total',10:'estado',11:'vendedor'})
+    }
+
+    if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-secondary">Sin resultados</td></tr>'
+        return
+    }
+
+    const sortKey = sessionStorage.getItem('ventasSortKey') || 'fecha'
+    const sortDir = sessionStorage.getItem('ventasSortKeyDir') || 'desc'
+    const sorted = [...lista]
+    const numericKeys = ['id', 'cantidad', 'neto', 'iva', 'total']
+    const dir = sortDir === 'desc' ? -1 : 1
+    if (numericKeys.includes(sortKey)) {
+        sorted.sort((a, b) => dir * ((a[sortKey] || 0) - (b[sortKey] || 0)))
+    } else if (sortKey === 'fecha') {
+        sorted.sort((a, b) => dir * (new Date(a.fecha) - new Date(b.fecha)))
+    } else {
+        sorted.sort((a, b) => dir * String(a[sortKey] || '').localeCompare(String(b[sortKey] || ''), 'es', { sensitivity: 'base' }))
+    }
+
+    tbody.innerHTML = sorted.map(v => {
+        const esAnulada = v.estado === 'anulada'
+        const fecha = v.fecha ? new Date(v.fecha) : new Date()
+        const fechaStr = fecha.toLocaleDateString('es-CL')
+        const labelCanal = v.canal === 'online'
+            ? '<span class="badge px-2 py-1" style="background:#cff4fc;color:#155e75;font-size:0.68rem;font-weight:700;">Online</span>'
+            : '<span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;">Local</span>'
+        let entregaStr = '-'
+        if (v.canal === 'online' && v.fechaEntrega) {
+            const tipo = v.tipoRetiro === 'domicilio' ? 'Envío' : 'Retiro'
+            entregaStr = `${tipo} ${new Date(v.fechaEntrega).toLocaleDateString('es-CL')}`
+        }
+        const estadoBadge = esAnulada
+            ? '<span class="badge px-2 py-1" style="background:#fecaca;color:#991b1b;font-size:0.68rem;font-weight:700;">Anulada</span>'
+            : '<span class="badge px-2 py-1" style="background:#bbf7d0;color:#166534;font-size:0.68rem;font-weight:700;">Completada</span>'
+        const totalDisplay = esAnulada
+            ? `<span class="text-muted text-decoration-line-through me-1" style="font-size:0.78rem;">${formatearCLP(v.total)}</span><br><span class="text-danger fw-bold" style="font-size:0.8rem;">Reembolso: ${formatearCLP(v.total)}</span>`
+            : `<strong class="text-success fw-bold" style="color:#059669 !important;">${formatearCLP(v.total)}</strong>`
+        const vendedorNombre = v.vendedor || (usuarioActual ? usuarioActual.nombre : 'Gerente')
+        const rowBg = esAnulada ? ' style="background:#fef2f2"' : ''
+        return `<tr${rowBg}>
+            <td class="text-center font-monospace fw-bold text-dark" style="padding:10px 12px;font-size:0.8rem;">#${v.id}</td>
+            <td class="text-center text-dark" style="padding:10px 12px;font-size:0.8rem;">${fechaStr}</td>
+            <td class="text-center fw-bold text-dark" style="padding:10px 12px;font-size:0.82rem;">${v.cliente || '-'}</td>
+            <td class="text-center text-dark" style="padding:10px 12px;font-size:0.8rem;"><span class="font-monospace text-primary fw-semibold me-1">${v.sku || '-'}</span> ${v.materialNombre || '-'}</td>
+            <td class="text-center" style="padding:10px 12px;">${labelCanal}</td>
+            <td class="text-center text-secondary" style="padding:10px 12px;font-size:0.78rem;">${entregaStr}</td>
+            <td class="text-center fw-bold text-dark" style="padding:10px 12px;font-size:0.82rem;">${v.cantidad} u.</td>
+            <td class="text-center text-dark" style="padding:10px 12px;font-size:0.8rem;">${formatearCLP(v.neto || v.total)}</td>
+            <td class="text-center text-secondary" style="padding:10px 12px;font-size:0.78rem;">${formatearCLP(v.iva || 0)}</td>
+            <td class="text-center" style="padding:10px 12px;">${totalDisplay}</td>
+            <td class="text-center" style="padding:10px 12px;">${estadoBadge}</td>
+            <td class="text-center" style="padding:10px 12px;"><span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;"><i class="bi bi-person-fill text-primary me-1"></i>${vendedorNombre}</span></td>
+        </tr>`
+    }).join('')
 }
 
 function poblarSelectVenta() {
@@ -684,9 +779,9 @@ function renderBodegaInventario() {
 }
 
 function renderBodegaKanban() {
-    const colEnt = document.getElementById('kanban-entrantes')
-    const colProc = document.getElementById('kanban-proceso')
-    const colTerm = document.getElementById('kanban-terminado')
+    const colEnt = document.getElementById('bod-entrantes') || document.getElementById('kanban-entrantes')
+    const colProc = document.getElementById('bod-proceso') || document.getElementById('kanban-proceso')
+    const colTerm = document.getElementById('bod-entregados') || document.getElementById('kanban-terminado')
     if (!colEnt || !colProc || !colTerm) return
 
     // Cargar encargados de bodega
@@ -727,7 +822,7 @@ function renderBodegaKanban() {
 
     // Asegurar timers para tareas en proceso
     tasks.filter(t => t.estado === 'en_proceso' && !timersEnProceso[t.id]).forEach(t => {
-        iniciarTimer(t.id, 10000)
+        iniciarTimer(t.id, 5000)
     })
 
     // Construccion de HTML de Card
@@ -756,25 +851,19 @@ function renderBodegaKanban() {
             colorTipoEntrega = '#6f42c1' // morado
         }
 
-        const labelCanal = canal === 'online' ? 'Online' : 'Local'
-        const colorCanal = canal === 'online' ? '#0dcaf0' : '#6c757d'
+        const colorPrioridadCard = t.prioridad === 'urgente' || t.prioridad === 'alta' ? '#dc3545' : t.prioridad === 'media' || t.prioridad === 'normal' ? '#ffc107' : t.prioridad === 'baja' ? '#198754' : colorTipoEntrega
 
-        let fechaEntregaStr = 'Inmediata'
-        if (!esInmediata && t.fechaEntrega) {
-            fechaEntregaStr = new Date(t.fechaEntrega).toLocaleDateString('es-CL')
-        }
-
-        const tags = `<div class="kanban-card-tags">
-            <span class="kanban-card-estado" style="background:${colorCanal}">${labelCanal}</span>
-            <span class="kanban-card-estado" style="background:${colorTipoEntrega}">${labelTipoEntrega}</span>
-            ${columna === 2 && t.errorStock ? '<span class="kanban-card-estado" style="background:#dc3545">Error de Stock</span>' : ''}
-            ${columna === 3 ? (t.estado === 'cancelada' || t.errorStock ? '<span class="kanban-card-estado" style="background:#dc3545">Anulado</span>' : '<span class="kanban-card-estado" style="background:#198754">Entregado</span>') : ''}
+        const tags = `<div class="kanban-card-tags mb-2 d-flex flex-wrap gap-1 align-items-center">
+            <span class="badge px-2 py-1" style="background:#e0e7ff;color:#3730a3;font-size:0.68rem;font-weight:700;">${labelCanal}</span>
+            <span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;">${labelTipoEntrega}</span>
+            ${columna === 2 && t.errorStock ? '<span class="badge px-2 py-1" style="background:#fecaca;color:#991b1b;font-size:0.68rem;font-weight:700;">Error Stock</span>' : ''}
+            ${columna === 3 ? (t.estado === 'cancelada' || t.errorStock ? '<span class="badge px-2 py-1" style="background:#fecaca;color:#991b1b;font-size:0.68rem;font-weight:700;">Anulado</span>' : '<span class="badge px-2 py-1" style="background:#bbf7d0;color:#166534;font-size:0.68rem;font-weight:700;">Entregado</span>') : ''}
         </div>`
 
-        // Primera linea de datos: Vendedor, fecha de compra
-        const linea1 = `<div class="kanban-card-linea"><strong>Vendedor:</strong> ${vendedor} | <strong>Fecha compra:</strong> ${fechaCompra}</div>`
+        // Primera línea: Vendedor y Fecha
+        const linea1 = `<div class="kanban-card-linea"><strong>Vendedor:</strong> ${vendedor} | <strong>Fecha:</strong> ${fechaCompra}</div>`
 
-        // Segunda linea de datos: SKU, Material y características, cantidad (duplicada si es carrito con multiples items)
+        // Segunda línea: Items
         const items = t.items && t.items.length > 0 
             ? t.items 
             : [{ sku: t.sku, materialNombre: t.materialNombre, cantidad: t.cantidad }]
@@ -782,28 +871,29 @@ function renderBodegaKanban() {
         const linea2 = items.map(item => {
             const invItem = inventario.find(i => i.id === item.materialId || i.sku === item.sku)
             const matNombre = item.materialNombre || (invItem ? `${invItem.material} ${invItem.color} ${invItem.espesor}mm` : 'Material')
-            return `<div class="kanban-card-linea"><strong>SKU:</strong> ${item.sku || '-'} | <strong>Material:</strong> ${matNombre} | <strong>Cant:</strong> ${item.cantidad} und</div>`
+            return `<div class="kanban-card-linea"><strong>SKU:</strong> ${item.sku || '-'} | <strong>${matNombre}</strong> | <strong>${item.cantidad} u.</strong></div>`
         }).join('')
 
-        // Tercera linea de datos: Codigo unico de transaccion, Id del cliente, fecha de entrega
-        let fechaEntregaDisplay = fechaEntregaStr
+        // Tercera línea: Código y Cliente
+        let fechaEntregaDisplay = (tipoRetiro === 'local' || tipoRetiro === 'inmediata' || !tipoRetiro)
+            ? 'Inmediata'
+            : (t.fechaEntrega ? new Date(t.fechaEntrega).toLocaleDateString('es-CL') : 'Pendiente')
         if (columna === 3) {
             const fFinObj = t.fechaFin ? new Date(t.fechaFin) : (t.fechaCompletada ? new Date(t.fechaCompletada) : new Date())
             fechaEntregaDisplay = fFinObj.toLocaleDateString('es-CL')
         }
         const labelFechaCol3 = columna === 3 ? (t.estado === 'cancelada' || t.errorStock ? 'Fecha Anulado' : 'Fecha Entregado') : 'Fecha Entrega'
-        const linea3 = `<div class="kanban-card-linea"><strong>Cod:</strong> ${codigoTrans} | <strong>ID Cli:</strong> ${clienteId} | <strong>${labelFechaCol3}:</strong> ${fechaEntregaDisplay}</div>`
+        const linea3 = `<div class="kanban-card-linea"><strong>Cod:</strong> ${codigoTrans} | <strong>Cli:</strong> ${clienteNombre} | <strong>${labelFechaCol3}:</strong> ${fechaEntregaDisplay}</div>`
 
-        // Cuarta linea de datos (para columna 2 y 3): Encargado de la tarea
-        const linea4 = `<div class="kanban-card-linea"><strong>Encargado:</strong> ${t.trabajadorAsignado || 'Sin asignar'}</div>`
+        // Cuarta línea: Encargado
+        const linea4 = `<div class="kanban-card-linea"><i class="bi bi-person-badge text-primary me-1"></i><strong>Encargado:</strong> ${t.trabajadorAsignado || 'Sin asignar'}</div>`
 
-        return { tags, linea1, linea2, linea3, linea4, clienteNombre, items, esInmediata, labelTipoEntrega }
+        return { tags, linea1, linea2, linea3, linea4, clienteNombre, items, esInmediata, labelTipoEntrega, colorBorder: colorPrioridadCard }
     }
 
     // === COLUMNA 1: ENTRANTES ===
     const entrantes = tasks.filter(t => t.estado === 'pendiente' || t.estado === 'venta')
 
-    // Ordenamiento por urgencia: inmediatas siempre primero, luego fecha de entrega mas proxima arriba
     entrantes.sort((a, b) => {
         const esInmA = a.tipoRetiro === 'local'
         const esInmB = b.tipoRetiro === 'local'
@@ -817,18 +907,18 @@ function renderBodegaKanban() {
     const htmlEnt = entrantes.map(t => {
         const c = buildCardHtml(t, 1)
         const btnsAsignar = bodegueros.map(nombre =>
-            `<button onclick="appBodegaAsignarTrabajador(${t.id}, '${nombre}')" style="font-size:0.7em;padding:3px 6px">${nombre}</button>`
-        ).join('')
+            `<button onclick="appBodegaAsignarTrabajador(${t.id}, '${nombre}')" class="btn btn-sm btn-outline-primary py-0 px-2 mb-1" style="font-size:0.7rem">${nombre}</button>`
+        ).join(' ')
 
         return `
-        <div class="kanban-card" style="border-left-color:#0d6efd">
+        <div class="kanban-card" style="border-left-color:${c.colorBorder} !important">
             ${c.tags}
             ${c.linea1}
             ${c.linea2}
             ${c.linea3}
-            <div class="kanban-card-acciones" style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
-                <div style="display:flex;gap:3px;flex-wrap:wrap">${btnsAsignar}</div>
-                <button onclick="appBodegaCancelar(${t.id})" style="background:var(--danger);font-size:0.75em;padding:3px 8px;margin-left:auto">Cancelar tarea</button>
+            <div class="kanban-card-acciones">
+                <div class="d-flex flex-wrap gap-1">${btnsAsignar}</div>
+                <button onclick="appBodegaCancelar(${t.id})" class="btn btn-sm btn-outline-danger py-0 px-2 ms-auto" style="font-size:0.72rem">Cancelar</button>
             </div>
         </div>`
     }).join('')
@@ -845,27 +935,27 @@ function renderBodegaKanban() {
 
         let btns = ''
         if (!esEnProceso) {
-            btns = `<button onclick="appBodegaIniciar(${t.id})" style="background:var(--success);font-size:0.8em;padding:4px 8px">Iniciar tarea</button>`
+            btns = `<button onclick="appBodegaIniciar(${t.id})" class="btn btn-sm btn-success py-1 px-2" style="font-size:0.75rem"><i class="bi bi-play-fill me-1"></i> Iniciar Tarea</button>`
         } else if (timer && timer.completado) {
-            btns = `<button onclick="appBodegaCompletar(${t.id})" style="background:var(--success);font-size:0.8em;padding:4px 8px">Entregar pedido</button>`
+            btns = `<button onclick="appBodegaCompletar(${t.id})" class="btn btn-sm btn-emerald py-1 px-2" style="font-size:0.75rem"><i class="bi bi-check-circle-fill me-1"></i> Entregar Pedido</button>`
         } else {
-            const durTotal = timer ? (timer.duracion || 10000) : 10000
-            const restante = timer ? Math.max(0, Math.ceil((durTotal - (Date.now() - timer.inicio)) / 1000)) : 10
+            const durTotal = timer ? (timer.duracion || 5000) : 5000
+            const restante = timer ? Math.max(0, Math.ceil((durTotal - (Date.now() - timer.inicio)) / 1000)) : 5
             const esDomicilio = t.tipoRetiro === 'domicilio'
             const msg = esDomicilio ? 'Enviando a domicilio' : 'Preparando entrega'
-            btns = `<div class="kanban-timer" style="color:var(--accent);font-size:0.85em;font-weight:600">⏳ ${msg} (${restante}s)...</div>`
+            btns = `<div class="fw-bold text-amber timer-pulse" style="color:#d97706;font-size:0.78rem"><i class="bi bi-hourglass-split me-1"></i>${msg} (${restante}s)...</div>`
         }
 
         return `
-        <div class="kanban-card" style="border-left-color:#fd7e14">
+        <div class="kanban-card" style="border-left-color:#d97706 !important">
             ${c.tags}
             ${c.linea1}
             ${c.linea2}
             ${c.linea3}
             ${c.linea4}
-            <div class="kanban-card-acciones" style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+            <div class="kanban-card-acciones">
                 <div>${btns}</div>
-                <button onclick="appBodegaCancelar(${t.id})" style="background:var(--danger);font-size:0.75em;padding:3px 8px;margin-left:auto">Cancelar tarea</button>
+                <button onclick="appBodegaCancelar(${t.id})" class="btn btn-sm btn-outline-danger py-0 px-2 ms-auto" style="font-size:0.72rem">Cancelar</button>
             </div>
         </div>`
     }).join('')
@@ -884,17 +974,17 @@ function renderBodegaKanban() {
     const htmlTerm = completadas.map(t => {
         const c = buildCardHtml(t, 3)
         const esCancelada = t.estado === 'cancelada' || t.errorStock
-        const colorLabel = esCancelada ? '#dc3545' : '#198754'
+        const colorLabel = esCancelada ? '#dc2626' : '#059669'
 
         return `
-        <div class="kanban-card" style="border-left-color:${colorLabel};opacity:${esCancelada ? '0.75' : '1'}">
+        <div class="kanban-card" style="border-left-color:${colorLabel} !important; opacity:${esCancelada ? '0.75' : '1'}">
             ${c.tags}
             ${c.linea1}
             ${c.linea2}
             ${c.linea3}
             ${c.linea4}
-            <div class="kanban-card-acciones" style="margin-top:8px;display:flex;justify-content:flex-end">
-                <button onclick="appBodegaArchivar(${t.id})" style="background:#6c757d;font-size:0.75em;padding:3px 8px">Archivar</button>
+            <div class="kanban-card-acciones justify-content-end">
+                <button onclick="appBodegaArchivar(${t.id})" class="btn btn-sm btn-light border text-secondary py-0 px-2" style="font-size:0.72rem">Archivar</button>
             </div>
         </div>`
     }).join('')
@@ -902,9 +992,12 @@ function renderBodegaKanban() {
     colTerm.innerHTML = completadas.length === 0 ? '<div class="kanban-empty">Sin tareas entregadas</div>' : htmlTerm
 
     // Contadores
-    document.getElementById('kanban-ent-count').textContent = entrantes.length
-    document.getElementById('kanban-proc-count').textContent = enProceso.length
-    document.getElementById('kanban-term-count').textContent = completadas.length
+    const c1 = document.getElementById('bod-ent-count') || document.getElementById('kanban-ent-count')
+    const c2 = document.getElementById('bod-proc-count') || document.getElementById('kanban-proc-count')
+    const c3 = document.getElementById('bod-comp-count') || document.getElementById('kanban-term-count')
+    if (c1) c1.textContent = entrantes.length
+    if (c2) c2.textContent = enProceso.length
+    if (c3) c3.textContent = completadas.length
 
     if (typeof renderEnvioTareasBodega === 'function') {
         renderEnvioTareasBodega()
@@ -976,7 +1069,7 @@ window.appBodegaEnviarRepoDesdeInventario = function(materialId) {
     renderBodegaKanban()
     if (typeof renderEnvioTareasBodega === 'function') renderEnvioTareasBodega()
     if (typeof renderReposicionKanban === 'function') renderReposicionKanban()
-    alert(`📦 Solicitud de reposición registrada exitosamente para ${item.sku} (${cant} und).`)
+    if (typeof mostrarSweetToast === 'function') mostrarSweetToast(`📦 Solicitud de reposición registrada exitosamente para ${item.sku} (${cant} und).`, 'success')
 }
 
 /* ==================== HELPER PRIORIDADES REPOSICION ==================== */
@@ -1026,18 +1119,17 @@ function renderReposicionKanban() {
             const nuevoRank = repoPrioridadRank(t.prioridad)
 
             if (nuevoRank > actualRank) {
-                mainTask.prioridad = t.prioridad
+                const idxOld = tareas.findIndex(x => x.id === mainTask.id)
+                if (idxOld !== -1) tareas.splice(idxOld, 1)
+                skuMap[skuKey] = t
+            } else {
+                mainTask.cantidad = Math.max(parseInt(mainTask.cantidad) || 0, parseInt(t.cantidad) || 0)
+                if (t.notas && mainTask.notas && !mainTask.notas.includes(t.notas)) {
+                    mainTask.notas += ` | ${t.notas}`
+                }
+                const idxNew = tareas.findIndex(x => x.id === t.id)
+                if (idxNew !== -1) tareas.splice(idxNew, 1)
             }
-
-            // Acumular la cantidad requerida y fusionar detalles de notas
-            mainTask.cantidad = (parseInt(mainTask.cantidad) || 0) + (parseInt(t.cantidad) || 0)
-            if (t.notas && mainTask.notas && !mainTask.notas.includes(t.notas)) {
-                mainTask.notas += ` | ${t.notas}`
-            }
-
-            // Eliminar el duplicado de la lista global de tareas
-            const idxNew = tareas.findIndex(x => x.id === t.id)
-            if (idxNew !== -1) tareas.splice(idxNew, 1)
         }
     })
 
@@ -1062,21 +1154,39 @@ function renderReposicionKanban() {
         const itemInv = inventario.find(i => i.id === t.materialId || i.sku === t.sku)
         const stockActual = itemInv ? itemInv.stock : 0
         const pc = repoPrioridadColor(t.prioridad)
-        const pl = repoPrioridadLabel(t.prioridad)
-        const fuente = t.fuente || t.origen || 'ventas'
+        const fuente = (t.fuente || t.origen || 'ventas').toUpperCase()
         const enviadoPor = t.enviadoPor || t.trabajadorAsignado || 'Sistema'
 
         return `
-        <div class="kanban-card" style="border-left-color:${pc}">
-            <div class="kanban-card-tags">
-                <span class="kanban-card-estado" style="background:${pc}">${pl}</span>
+        <div class="kanban-card p-2.5 mb-2 bg-white rounded-3 shadow-sm border" style="border-left: 4px solid ${pc} !important;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;font-family:monospace;">#${t.id}</span>
             </div>
-            <div class="kanban-card-linea"><strong>Desde:</strong> ${fuente}</div>
-            <div class="kanban-card-linea"><strong>Enviado por:</strong> ${enviadoPor}</div>
-            <div class="kanban-card-linea"><strong>SKU:</strong> ${t.sku} | <strong>Mat:</strong> ${t.materialNombre} | <strong>Stock actual:</strong> ${stockActual} und</div>
-            <div class="kanban-card-acciones" style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
-                <button onclick="appRepoIniciarCompra(${t.id})" style="background:var(--success);font-size:0.8em;padding:4px 8px">Iniciar proceso de compra</button>
-                <button onclick="appRepoCancelarTarea(${t.id})" style="background:var(--danger);font-size:0.75em;padding:3px 6px;margin-left:auto">Cancelar</button>
+
+            <!-- 1ª línea de datos: desde donde se envía la tarea (ventas, bodega, registros) -->
+            <div class="text-secondary mb-1" style="font-size:0.74rem;">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Desde: <strong class="text-dark">${fuente}</strong>
+            </div>
+
+            <!-- 2ª línea de datos: Nombre de quien envía la tarea -->
+            <div class="text-secondary mb-1" style="font-size:0.74rem;">
+                <i class="bi bi-person me-1"></i>Enviado por: <strong class="text-dark">${enviadoPor}</strong>
+            </div>
+
+            <!-- 3ª línea de datos: sku, Material y características, cantidad en existencia -->
+            <div class="p-2 rounded border bg-light my-1" style="font-size:0.75rem;">
+                <div><span class="font-monospace fw-bold text-primary me-1">${t.sku}</span> <span class="fw-semibold text-dark">${t.materialNombre}</span></div>
+                <div class="mt-1 text-secondary">Stock actual: <strong class="${stockActual === 0 ? 'text-danger' : 'text-warning'}">${stockActual} und</strong> | Pedir: <strong class="text-dark">${t.cantidad} u.</strong></div>
+            </div>
+
+            <!-- Botones: Iniciar proceso de compra + Eliminar -->
+            <div class="mt-2 pt-1 border-top d-flex align-items-center justify-content-between gap-1">
+                <button onclick="appRepoIniciarCompra(${t.id})" class="btn btn-outline-success btn-sm py-1 px-2 fw-bold flex-grow-1" style="font-size:0.72rem;">
+                    <i class="bi bi-play-circle-fill me-1"></i> Iniciar proceso de compra
+                </button>
+                <button onclick="appRepoEliminarTarea(${t.id})" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size:0.72rem;">
+                    <i class="bi bi-trash3 me-1"></i> Eliminar
+                </button>
             </div>
         </div>`
     }).join('')
@@ -1101,8 +1211,7 @@ function renderReposicionKanban() {
         const itemInv = inventario.find(i => i.id === t.materialId || i.sku === t.sku)
         const stockActual = itemInv ? itemInv.stock : 0
         const pc = repoPrioridadColor(t.prioridad)
-        const pl = repoPrioridadLabel(t.prioridad)
-        const fuente = t.fuente || t.origen || 'ventas'
+        const fuente = (t.fuente || t.origen || 'ventas').toUpperCase()
         const enviadoPor = t.enviadoPor || t.trabajadorAsignado || 'Sistema'
         const timer = timersRepo[t.id]
 
@@ -1116,79 +1225,96 @@ function renderReposicionKanban() {
         const ivaCalc = Math.round(netoCalc * IVA_PORCENTAJE)
         const totalCalc = netoCalc + ivaCalc
 
-        // Calcular cantidad maxima comprable segun el dinero disponible del negocio
         const costoUnitarioConIva = valUnit > 0 ? valUnit * (1 + IVA_PORCENTAJE) : 1
         const maxComprable = Math.max(1, Math.floor(dineroDisponible / costoUnitarioConIva))
 
-        // 1ª linea de datos: desde donde se envia por Nombre de quien envia
-        const linea1 = `<div class="kanban-card-linea"><strong>Desde:</strong> ${fuente} <strong>por</strong> ${enviadoPor}</div>`
-        
-        // 2ª linea de datos: sku, Material y caracteristicas, cantidad en existencia
-        const linea2 = `<div class="kanban-card-linea"><strong>${t.sku}</strong> ${t.materialNombre} | Stock: <strong>${stockActual}</strong> und</div>`
-        
-        // 3ª linea de datos: en blanco para generar limpieza visual
-        const linea3Blank = `<div class="kanban-card-linea" style="height:6px"></div>`
-
-        let contenidoForm = ''
-        if (timer && timer.comprando) {
-            const restante = Math.max(0, 10 - Math.ceil((Date.now() - timer.inicio) / 1000))
-            contenidoForm = `
-                <div style="text-align:center;padding:12px 0">
-                    <div class="kanban-timer" style="color:var(--info);font-size:0.9em;font-weight:600">⏳ Negociando compra (${restante}s)...</div>
-                </div>`
-        } else if (timer && timer.compraListo) {
-            contenidoForm = `
-                <div class="kanban-card-linea"><strong>Proveedor:</strong> ${t.proveedorNombre || '-'} | <strong>Cantidad:</strong> ${cantActual} und</div>
-                <div class="kanban-card-linea">Valor unit: <strong>${formatearCLP(valUnit)}</strong> | Stock prv: <strong>${t.stockProveedor || 0} und</strong></div>
-                <div class="kanban-card-linea" style="height:6px"></div>
-                <div class="kanban-card-linea">IVA: <strong>${formatearCLP(ivaCalc)}</strong></div>
-                <div class="kanban-card-linea" style="font-weight:bold;font-size:0.9em;color:var(--success)">Total: <strong>${formatearCLP(totalCalc)}</strong></div>
-                <div class="kanban-card-acciones" style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
-                    <button onclick="appRepoRealizarCompra(${t.id})" style="background:var(--success);font-size:0.8em;padding:4px 10px">Realizar compra</button>
-                    <button onclick="appRepoCancelarCompra(${t.id})" style="background:var(--danger);font-size:0.75em;padding:3px 6px;margin-left:auto">Cancelar</button>
-                </div>`
-        } else {
-            contenidoForm = `
-                <!-- 4ª linea de datos: input de proveedor + input de cantidad a pedir -->
-                <div class="kanban-card-linea" style="display:flex;gap:6px;align-items:flex-end;margin-top:2px">
-                    <div style="flex:2">
-                        <label style="font-size:0.78em;color:var(--text-muted);display:block;margin:0">Proveedor
-                            <select id="repo-prov-${t.id}" onchange="appRepoSelectProveedor(${t.id})" style="width:100%;font-size:0.82em;padding:4px;margin-top:2px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-                                <option value="">Seleccionar...</option>
-                                ${optionsProv}
-                            </select>
-                        </label>
-                    </div>
-                    <div style="flex:1">
-                        <label style="font-size:0.78em;color:var(--text-muted);display:block;margin:0">Cantidad
-                            <input type="number" id="repo-cant-${t.id}" value="${cantActual}" min="1" max="${Math.min(t.stockProveedor || 999, maxComprable)}" onchange="appRepoCalcTotal(${t.id})" oninput="appRepoCalcTotal(${t.id})" style="width:100%;font-size:0.82em;padding:4px;margin-top:2px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-                        </label>
-                    </div>
-                </div>
-                <!-- 5ª linea de datos: valor unidad y stock disponible del proveedor -->
-                <div class="kanban-card-linea" style="margin-top:4px">Valor unit: <strong>${formatearCLP(valUnit)}</strong> | Stock prv: <strong>${t.stockProveedor || 0} und</strong></div>
-                <!-- 6ª linea de datos: en blanco -->
-                <div class="kanban-card-linea" style="height:6px"></div>
-                <!-- 7ª linea de datos: iva -->
-                <div class="kanban-card-linea">IVA: <strong>${formatearCLP(ivaCalc)}</strong></div>
-                <!-- 8ª linea de datos: total de compra -->
-                <div class="kanban-card-linea" style="font-weight:bold;font-size:0.9em;color:var(--accent)">Total: <strong>${formatearCLP(totalCalc)}</strong></div>
-                
-                <div class="kanban-card-acciones" style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
-                    <button onclick="appRepoNegociarCompra(${t.id})" style="background:var(--info);color:#000;font-size:0.8em;padding:4px 8px" ${!t.proveedorId ? 'disabled style="background:#555;color:#888;cursor:not-allowed"' : ''}>Negociar compra</button>
-                    <button onclick="appRepoCancelarCompra(${t.id})" style="background:var(--danger);font-size:0.75em;padding:3px 6px;margin-left:auto">Cancelar</button>
-                </div>`
-        }
+        const restanteNegociando = timer ? Math.max(0, 5 - Math.ceil((Date.now() - timer.inicio) / 1000)) : 5
 
         return `
-        <div class="kanban-card" style="border-left-color:${pc}">
-            <div class="kanban-card-tags">
-                <span class="kanban-card-estado" style="background:${pc}">${pl}</span>
+        <div class="kanban-card p-2.5 mb-2 bg-white rounded-3 shadow-sm border" style="border-left: 4px solid ${pc} !important;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;font-family:monospace;">#${t.id}</span>
             </div>
-            ${linea1}
-            ${linea2}
-            ${linea3Blank}
-            ${contenidoForm}
+
+            <!-- 1ª línea de datos: desde donde se envía la tarea por Nombre de quien envía -->
+            <div class="text-secondary mb-1" style="font-size:0.74rem;">
+                <i class="bi bi-arrow-right-circle me-1"></i>Desde: <strong class="text-dark">${fuente}</strong> por <strong class="text-dark">${enviadoPor}</strong>
+            </div>
+
+            <!-- 2ª línea de datos: sku, Material y características, cantidad en existencia -->
+            <div class="text-secondary mb-1" style="font-size:0.74rem;">
+                <span class="font-monospace fw-bold text-primary me-1">${t.sku}</span> <strong class="text-dark">${t.materialNombre}</strong> | Stock actual: <strong class="${stockActual === 0 ? 'text-danger' : 'text-warning'}">${stockActual} und</strong>
+            </div>
+
+            <!-- 3ª línea de datos: en blanco para generar limpieza visual -->
+            <div style="height: 6px;"></div>
+
+            ${timer && timer.comprando ? `
+                <div class="alert alert-info py-2 px-3 my-2 text-center shadow-sm rounded-3 border-info" style="font-size:0.82rem;">
+                    <div class="fw-bold text-indigo mb-1 timer-pulse"><i class="bi bi-cash-coin me-1"></i>Negociando compra...</div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-indigo" role="progressbar" style="width: ${(5 - restanteNegociando) * 20}%;"></div>
+                    </div>
+                </div>
+            ` : timer && timer.compraListo ? `
+                <div class="p-2 rounded border bg-light my-1" style="font-size:0.75rem;">
+                    <div><strong>Proveedor:</strong> ${t.proveedorNombre || '-'} | <strong>Cantidad:</strong> ${cantActual} und</div>
+                    <div>Valor unit: <strong>${formatearCLP(valUnit)}</strong> | Stock prv: <strong>${t.stockProveedor || 0} und</strong></div>
+                    <div style="height:4px"></div>
+                    <div>IVA (19%): <strong>${formatearCLP(ivaCalc)}</strong></div>
+                    <div class="fw-bold text-success fs-6 mt-1">Total: <strong>${formatearCLP(totalCalc)}</strong></div>
+                </div>
+                <div class="mt-2 pt-1 border-top d-flex align-items-center justify-content-between gap-1">
+                    <button onclick="appRepoRealizarCompra(${t.id})" class="btn btn-outline-success btn-sm py-1 px-2 fw-bold flex-grow-1" style="font-size:0.72rem;">
+                        <i class="bi bi-cart-check-fill me-1"></i> Realizar compra
+                    </button>
+                    <button onclick="appRepoEliminarTarea(${t.id})" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size:0.72rem;">
+                        <i class="bi bi-trash3 me-1"></i> Eliminar
+                    </button>
+                </div>
+            ` : `
+                <!-- 4ª línea de datos: input de proveedor (desplegable) + input de cantidad a pedir -->
+                <div class="row g-1 align-items-end mb-1">
+                    <div class="col-7">
+                        <label class="form-label text-muted mb-0" style="font-size:0.72rem;">Proveedor</label>
+                        <select id="repo-prov-${t.id}" onchange="appRepoSelectProveedor(${t.id})" class="form-select form-select-sm" style="font-size:0.74rem;">
+                            <option value="">Seleccionar...</option>
+                            ${optionsProv}
+                        </select>
+                    </div>
+                    <div class="col-5">
+                        <label class="form-label text-muted mb-0" style="font-size:0.72rem;">Cantidad</label>
+                        <input type="number" id="repo-cant-${t.id}" value="${cantActual}" min="1" max="${Math.min(t.stockProveedor || 999, maxComprable)}" onchange="appRepoCalcTotal(${t.id})" oninput="appRepoCalcTotal(${t.id})" class="form-control form-control-sm font-monospace fw-bold" style="font-size:0.74rem;">
+                    </div>
+                </div>
+
+                <!-- 5ª línea de datos: valor unidad y stock disponible del proveedor -->
+                <div class="text-secondary" style="font-size:0.73rem;">
+                    Valor unit: <strong class="text-dark">${formatearCLP(valUnit)}</strong> | Stock prv: <strong class="text-dark">${t.stockProveedor || 0} und</strong>
+                </div>
+
+                <!-- 6ª línea de datos: en blanco -->
+                <div style="height: 6px;"></div>
+
+                <!-- 7ª línea de datos: iva -->
+                <div class="text-secondary" style="font-size:0.73rem;">
+                    IVA (19%): <strong class="text-dark">${formatearCLP(ivaCalc)}</strong>
+                </div>
+
+                <!-- 8ª línea de datos: total de compra -->
+                <div class="fw-bold text-indigo mt-1" style="font-size:0.85rem;">
+                    Total: <strong class="text-indigo">${formatearCLP(totalCalc)}</strong>
+                </div>
+
+                <div class="mt-2 pt-1 border-top d-flex align-items-center justify-content-between gap-1">
+                    <button onclick="appRepoNegociarCompra(${t.id})" class="btn btn-outline-warning btn-sm py-1 px-2 fw-bold flex-grow-1" style="font-size:0.72rem;" ${!t.proveedorId ? 'disabled' : ''}>
+                        <i class="bi bi-handshake me-1"></i> Negociar compra
+                    </button>
+                    <button onclick="appRepoEliminarTarea(${t.id})" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size:0.72rem;">
+                        <i class="bi bi-trash3 me-1"></i> Eliminar
+                    </button>
+                </div>
+            `}
         </div>`
     }).join('')
 
@@ -1210,43 +1336,88 @@ function renderReposicionKanban() {
     const htmlComp = compradas.map(t => {
         const proveedor = proveedores.find(p => p.id === t.proveedorId)
         const provNombre = t.proveedorNombre || (proveedor ? proveedor.nombre : 'Proveedor')
-        const provContacto = t.proveedorContacto || (proveedor ? `${proveedor.telefono} | ${proveedor.email}` : '-')
+        const provContacto = t.proveedorContacto || (proveedor ? `${proveedor.telefono || ''} | ${proveedor.email || ''}` : 'Sin datos')
         const fechaCompraStr = t.fechaCompra ? new Date(t.fechaCompra).toLocaleDateString('es-CL') : new Date().toLocaleDateString('es-CL')
-        const idCompra = t.codigoCompra || `C-${String(t.id).padStart(4, '0')}`
+        const idCompra = t.codigoCompra || `OC-${String(t.id).padStart(4, '0')}`
         const timer = timersRepo[t.id]
+        const cantComprada = t.cantidadCompra || t.cantidad || 1
 
         let contenidoAccion = ''
-        if (timer && timer.recibiendo) {
-            const restante = Math.max(0, 10 - Math.ceil((Date.now() - timer.inicio) / 1000))
-            const msg = restante > 5 ? '📦 Ingresando materiales a bodega' : '✅ Nuevo stock registrado'
+
+        if (timer && timer.esperandoProveedor) {
+            const restante = Math.max(0, 5 - Math.ceil((Date.now() - timer.inicio) / 1000))
             contenidoAccion = `
-                <div style="text-align:center;padding:8px 0">
-                    <div class="kanban-timer" style="color:var(--success);font-size:0.85em;font-weight:600">⏳ ${msg} (${restante}s)...</div>
+                <div class="alert alert-warning py-2 px-3 my-2 text-center shadow-sm rounded-3 border-warning" style="font-size:0.82rem;">
+                    <div class="fw-bold mb-1 timer-pulse" style="color:#b45309;">
+                        <i class="bi bi-truck me-1"></i>Esperando que llegue el proveedor...
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" style="width: ${(5 - restante) * 20}%;"></div>
+                    </div>
                 </div>`
-        } else if (timer && timer.recibido || t.estado === 'completada') {
+        } else if (timer && timer.recibiendo) {
+            const restante = Math.max(0, 5 - Math.ceil((Date.now() - timer.inicio) / 1000))
             contenidoAccion = `
-                <div class="kanban-card-acciones" style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
-                    <button onclick="appRepoArchivar(${t.id})" style="background:#6c757d;font-size:0.8em;padding:4px 8px">Archivar</button>
-                    <button onclick="appRepoCancelarTarea(${t.id})" style="background:var(--danger);font-size:0.75em;padding:3px 6px;margin-left:auto">Cancelar</button>
+                <div class="alert alert-info py-2 px-3 my-2 text-center shadow-sm rounded-3 border-info" style="font-size:0.82rem;">
+                    <div class="fw-bold text-indigo mb-1 timer-pulse">
+                        <i class="bi bi-box-arrow-in-down me-1"></i>Ingresando compra...
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-indigo" role="progressbar" style="width: ${(5 - restante) * 20}%;"></div>
+                    </div>
+                </div>`
+        } else if ((timer && timer.recibido) || t.estado === 'completada') {
+            contenidoAccion = `
+                <div class="alert alert-success py-1 px-2 my-1 text-center font-monospace fw-bold shadow-sm" style="font-size:0.73rem;">
+                    <i class="bi bi-check-circle-fill text-success me-1"></i>Nuevo stock registrado en inventario (+${cantComprada} u.)
+                </div>
+                <div class="mt-2 pt-1 border-top">
+                    <button onclick="appRepoArchivar(${t.id})" class="btn btn-outline-secondary btn-sm py-1 px-2 w-100 fw-semibold" style="font-size:0.72rem;">
+                        <i class="bi bi-archive me-1"></i> Archivar
+                    </button>
                 </div>`
         } else {
             contenidoAccion = `
-                <div class="kanban-card-acciones" style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
-                    <button onclick="appRepoRecibirCompra(${t.id})" style="background:var(--success);font-size:0.8em;padding:4px 8px">Recepcionar compra</button>
-                    <button onclick="appRepoCancelarTarea(${t.id})" style="background:var(--danger);font-size:0.75em;padding:3px 6px;margin-left:auto">Cancelar</button>
+                <div class="mt-2 pt-1 border-top">
+                    <button onclick="appRepoRecibirCompra(${t.id})" class="btn btn-outline-success btn-sm py-1 px-2 w-100 fw-bold" style="font-size:0.72rem;">
+                        <i class="bi bi-box-arrow-in-down me-1"></i> Recepcionar compra
+                    </button>
                 </div>`
         }
 
         return `
-        <div class="kanban-card" style="border-left-color:#0d6efd">
-            <div class="kanban-card-tags">
-                <span class="kanban-card-estado" style="background:#0d6efd">Compras</span>
+        <div class="kanban-card p-2.5 mb-2 bg-white rounded-3 shadow-sm border border-success" style="border-left: 4px solid #10b981 !important;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge px-2 py-1" style="background:#bbf7d0;color:#166534;font-size:0.68rem;font-weight:700;"><i class="bi bi-box-seam me-1"></i>Compras</span>
+                <span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;font-family:monospace;">#${t.id}</span>
             </div>
-            <div class="kanban-card-linea"><strong>1. Proveedor:</strong> ${provNombre}</div>
-            <div class="kanban-card-linea"><strong>2. Contacto:</strong> ${provContacto}</div>
-            <div class="kanban-card-linea"><strong>3. SKU:</strong> ${t.sku} | <strong>Mat:</strong> ${t.materialNombre} | <strong>Cant:</strong> ${t.cantidadCompra || t.cantidad} und</div>
-            <div class="kanban-card-linea"><strong>4. Fecha compra:</strong> ${fechaCompraStr}</div>
-            <div class="kanban-card-linea"><strong>5. ID Compra:</strong> ${idCompra}</div>
+
+            <!-- 1ª línea de datos: Nombre proveedor -->
+            <div class="text-secondary mb-1" style="font-size:0.74rem;">
+                <i class="bi bi-building me-1"></i>Proveedor: <strong class="text-dark">${provNombre}</strong>
+            </div>
+
+            <!-- 2ª línea de datos: Contactos proveedor -->
+            <div class="text-secondary mb-1" style="font-size:0.73rem;">
+                <i class="bi bi-telephone me-1"></i>Contacto: <strong class="text-dark">${provContacto}</strong>
+            </div>
+
+            <!-- 3ª línea de datos: sku, Material y características, cantidad -->
+            <div class="p-2 rounded border bg-light my-1" style="font-size:0.75rem;">
+                <span class="font-monospace fw-bold text-primary me-1">${t.sku}</span> <span class="fw-semibold text-dark">${t.materialNombre}</span>
+                <div class="mt-1 text-secondary">Cantidad comprada: <strong class="text-success">${cantComprada} und</strong></div>
+            </div>
+
+            <!-- 4ª línea de datos: fecha en que se realizo la compra -->
+            <div class="text-secondary mb-1" style="font-size:0.73rem;">
+                <i class="bi bi-calendar-check me-1"></i>Fecha de compra: <strong class="text-dark">${fechaCompraStr}</strong>
+            </div>
+
+            <!-- 5ª línea de datos: id de la compra -->
+            <div class="text-secondary mb-2" style="font-size:0.73rem;">
+                <i class="bi bi-receipt me-1"></i>ID Compra: <strong class="text-indigo font-monospace">${idCompra}</strong>
+            </div>
+
             ${contenidoAccion}
         </div>`
     }).join('')
@@ -1254,22 +1425,65 @@ function renderReposicionKanban() {
     colComp.innerHTML = compradas.length === 0 ? '<div class="kanban-empty">Sin compras pendientes</div>' : htmlComp
 
     // Contadores
-    document.getElementById('repo-ent-count').textContent = entrantes.length
-    document.getElementById('repo-proc-count').textContent = enProceso.length
-    document.getElementById('repo-comp-count').textContent = compradas.length
+    const c1 = document.getElementById('repo-ent-count')
+    const c2 = document.getElementById('repo-proc-count')
+    const c3 = document.getElementById('repo-comp-count')
+    if (c1) c1.textContent = entrantes.length
+    if (c2) c2.textContent = enProceso.length
+    if (c3) c3.textContent = compradas.length
 }
 
 /* ==================== FUNCIONES GLOBALES: FLUJO REPOSICION ==================== */
-window.appRepoCancelarTarea = function(tareaId) {
-    const idx = tareas.findIndex(t => t.id === tareaId)
-    if (idx !== -1) tareas.splice(idx, 1)
-    if (timersRepo[tareaId]) {
-        clearInterval(timersRepo[tareaId].intervalId)
-        delete timersRepo[tareaId]
+window.appRepoEliminarTarea = function(tareaId) {
+    const tarea = tareas.find(t => t.id === tareaId)
+    if (!tarea) return
+
+    const ejecutarEliminacion = () => {
+        tarea.estado = 'eliminada'
+
+        // Remover alertas pendientes asociadas en Bodega para este material/SKU
+        if (typeof alertasStockPendientes !== 'undefined' && Array.isArray(alertasStockPendientes)) {
+            alertasStockPendientes = alertasStockPendientes.filter(a => a.materialId !== tarea.materialId && a.sku !== tarea.sku)
+        }
+
+        if (timersRepo[tareaId]) {
+            if (timersRepo[tareaId].intervalId) clearInterval(timersRepo[tareaId].intervalId)
+            delete timersRepo[tareaId]
+        }
+        guardarTodo()
+        renderReposicionKanban()
+        if (typeof renderEnvioTareasBodega === 'function') {
+            renderEnvioTareasBodega()
+        }
+        if (typeof mostrarSweetToast === 'function') {
+            mostrarSweetToast(`🗑️ Tarea #${tareaId} eliminada del sistema`, 'info')
+        }
     }
-    guardarTodo()
-    renderReposicionKanban()
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '¿Eliminar tarea de reposición?',
+            text: `¿Está seguro de eliminar definitivamente la tarea #${tareaId} (${tarea.sku || tarea.materialNombre || ''})? Se eliminará del sistema y no volverá a bodega.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                ejecutarEliminacion()
+            }
+        })
+    } else {
+        if (confirm(`¿Está seguro de eliminar la tarea de reposición #${tareaId}? Se eliminará del sistema y no volverá a bodega.`)) {
+            ejecutarEliminacion()
+        }
+    }
 }
+
+window.appRepoCancelarTarea = window.appRepoEliminarTarea
+window.appRepoCancelarCompra = window.appRepoEliminarTarea
 
 window.appRepoIniciarCompra = function(tareaId) {
     const tarea = tareas.find(t => t.id === tareaId)
@@ -1313,7 +1527,6 @@ window.appRepoCalcTotal = function(tareaId) {
     if (!tarea) return
     let cant = parseInt(input.value) || 1
 
-    // Validar con dinero disponible
     const dineroDisponible = tiendaConfig.dineroInicial !== undefined ? tiendaConfig.dineroInicial : 5000000
     const valUnit = tarea.valorUnidad || 0
     const costoUnitarioConIva = valUnit > 0 ? valUnit * (1 + IVA_PORCENTAJE) : 1
@@ -1322,7 +1535,9 @@ window.appRepoCalcTotal = function(tareaId) {
     if (cant > maxComprable) {
         cant = maxComprable
         input.value = cant
-        alert(`La cantidad ha sido limitada a ${maxComprable} unidades segun el dinero disponible del negocio (${formatearCLP(dineroDisponible)}).`)
+        if (typeof mostrarSweetToast === 'function') {
+            mostrarSweetToast(`⚠️ Cantidad limitada a ${maxComprable} u. según presupuesto disponible`, 'warning')
+        }
     }
 
     tarea.cantidadCompra = cant
@@ -1340,15 +1555,19 @@ window.appRepoNegociarCompra = function(tareaId) {
     const neto = valUnit * (tarea.cantidadCompra || 1)
     tarea.totalCompra = neto + Math.round(neto * IVA_PORCENTAJE)
 
-    if (timersRepo[tareaId]) clearInterval(timersRepo[tareaId].intervalId)
+    if (timersRepo[tareaId] && timersRepo[tareaId].intervalId) clearInterval(timersRepo[tareaId].intervalId)
     timersRepo[tareaId] = {
         inicio: Date.now(),
         comprando: true,
         compraListo: false,
+        esperandoProveedor: false,
+        proveedorLlego: false,
         recibiendo: false,
+        recibido: false,
         intervalId: setInterval(() => {
+            if (!timersRepo[tareaId]) return
             const elapsed = Date.now() - timersRepo[tareaId].inicio
-            if (elapsed >= 10000) {
+            if (elapsed >= 5000) {
                 clearInterval(timersRepo[tareaId].intervalId)
                 timersRepo[tareaId].comprando = false
                 timersRepo[tareaId].compraListo = true
@@ -1370,7 +1589,11 @@ window.appRepoRealizarCompra = function(tareaId) {
 
     const dineroDisponible = tiendaConfig.dineroInicial !== undefined ? tiendaConfig.dineroInicial : 5000000
     if (totalCompra > dineroDisponible) {
-        alert(`Error: No hay suficiente dinero disponible en el negocio. Dinero disponible: ${formatearCLP(dineroDisponible)}, Total compra: ${formatearCLP(totalCompra)}`)
+        if (typeof Swal !== 'undefined') {
+            Swal.fire('Sin fondos', `Disponible: ${formatearCLP(dineroDisponible)} | Total compra: ${formatearCLP(totalCompra)}`, 'error')
+        } else if (typeof mostrarSweetToast === 'function') {
+            mostrarSweetToast(`❌ No hay suficiente dinero disponible. Disponible: ${formatearCLP(dineroDisponible)}, Total: ${formatearCLP(totalCompra)}`, 'error')
+        }
         return
     }
 
@@ -1378,32 +1601,62 @@ window.appRepoRealizarCompra = function(tareaId) {
     tiendaConfig.dineroInicial = dineroDisponible - totalCompra
 
     tarea.totalCompra = totalCompra
-    tarea.codigoCompra = `C-${String(tarea.id).padStart(4, '0')}`
+    tarea.codigoCompra = `OC-${String(tarea.id).padStart(4, '0')}`
     tarea.estado = 'comprada'
     tarea.fechaCompra = new Date().toISOString()
 
-    if (timersRepo[tareaId]) {
+    if (timersRepo[tareaId] && timersRepo[tareaId].intervalId) {
         clearInterval(timersRepo[tareaId].intervalId)
-        delete timersRepo[tareaId]
+    }
+
+    // Iniciar temporizador de 5s: Esperando que llegue el proveedor
+    timersRepo[tareaId] = {
+        inicio: Date.now(),
+        comprando: false,
+        compraListo: false,
+        esperandoProveedor: true,
+        proveedorLlego: false,
+        recibiendo: false,
+        recibido: false,
+        intervalId: setInterval(() => {
+            if (!timersRepo[tareaId]) return
+            const elapsed = Date.now() - timersRepo[tareaId].inicio
+            if (elapsed >= 5000) {
+                clearInterval(timersRepo[tareaId].intervalId)
+                timersRepo[tareaId].esperandoProveedor = false
+                timersRepo[tareaId].proveedorLlego = true
+            }
+            renderReposicionKanban()
+        }, 1000)
     }
 
     guardarTodo()
     renderReposicionKanban()
-    alert(`🛒 Compra realizada exitosamente. Codigo de compra: ${tarea.codigoCompra}. Se descontaron ${formatearCLP(totalCompra)} del dinero del negocio.`)
+    if (typeof mostrarSweetToast === 'function') {
+        mostrarSweetToast(`🛒 Compra realizada (${tarea.codigoCompra}). -$${formatearCLP(totalCompra)}. Esperando proveedor...`, 'success')
+    }
 }
 
 window.appRepoRecibirCompra = function(tareaId) {
     const tarea = tareas.find(t => t.id === tareaId)
     if (!tarea) return
-    if (timersRepo[tareaId]) clearInterval(timersRepo[tareaId].intervalId)
+    if (timersRepo[tareaId] && timersRepo[tareaId].intervalId) {
+        clearInterval(timersRepo[tareaId].intervalId)
+    }
 
+    // Iniciar temporizador de 5s: Ingresando compra a bodega
     timersRepo[tareaId] = {
         inicio: Date.now(),
+        comprando: false,
+        compraListo: false,
+        esperandoProveedor: false,
+        proveedorLlego: true,
         recibiendo: true,
         recibido: false,
         intervalId: setInterval(() => {
+            if (!timersRepo[tareaId]) return
             const elapsed = Date.now() - timersRepo[tareaId].inicio
-            if (elapsed >= 10000) {
+            if (elapsed >= 5000) {
                 clearInterval(timersRepo[tareaId].intervalId)
                 timersRepo[tareaId].recibiendo = false
                 timersRepo[tareaId].recibido = true
@@ -1411,11 +1664,16 @@ window.appRepoRecibirCompra = function(tareaId) {
                 // Sumar nuevo stock al inventario
                 const item = inventario.find(i => i.id === tarea.materialId || i.sku === tarea.sku)
                 if (item) item.stock += (tarea.cantidadCompra || tarea.cantidad || 1)
-                
+
                 tarea.estado = 'completada'
-                tarea.marcarCompletada()
+                if (typeof tarea.marcarCompletada === 'function') tarea.marcarCompletada()
                 guardarTodo()
                 renderRepoInventario()
+                renderTablaInventario()
+                renderBodegaInventario()
+                if (typeof mostrarSweetToast === 'function') {
+                    mostrarSweetToast(`📦 Nuevo stock registrado (+${tarea.cantidadCompra || tarea.cantidad} u. a "${tarea.sku}")`, 'success')
+                }
             }
             renderReposicionKanban()
         }, 1000)
@@ -1453,40 +1711,100 @@ window.appRepoArchivar = function(tareaId) {
     renderReposicionKanban()
 }
 
-function renderListaProveedores() {
+window.renderListaProveedores = function() {
     const container = document.getElementById('lista-proveedores')
     if (!container) return
 
-    if (proveedores.length === 0) {
-        container.innerHTML = '<tr><td colspan="3" style="padding:12px;text-align:center;color:var(--text-muted)">Sin proveedores</td></tr>'
+    if (!proveedores || proveedores.length === 0) {
+        if (container.tagName === 'TBODY') {
+            container.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-muted small">Sin proveedores registrados</td></tr>'
+        } else {
+            container.innerHTML = '<div class="text-center text-muted py-4 small">Sin proveedores registrados</div>'
+        }
         return
     }
 
-    container.innerHTML = proveedores.map(p => `
-        <tr style="border-bottom:1px solid var(--border)">
-            <td style="padding:6px 4px;font-size:0.8em;text-align:left;font-weight:bold">
-                ${p.nombre}
-                <div style="font-size:0.75em;color:var(--text-muted);font-weight:normal">${p.marcas || ''}</div>
-            </td>
-            <td style="padding:6px 4px;font-size:0.8em;text-align:center">
-                ${p.contacto || '-'}<br>
-                <small style="color:var(--text-muted)">${p.telefono || ''}</small>
-            </td>
-            <td style="padding:6px 4px;text-align:center">
-                <button onclick="appRepoEditarProveedor(${p.id})" style="font-size:0.7em;background:var(--info);color:#000;padding:2px 4px">✏️</button>
-                <button onclick="appRepoEliminarProveedor(${p.id})" style="font-size:0.7em;background:var(--danger);padding:2px 4px;margin-left:2px">🗑️</button>
-            </td>
-        </tr>
-    `).join('')
+    if (container.tagName === 'TBODY') {
+        container.innerHTML = proveedores.map(p => `
+            <tr>
+                <td style="padding:10px 12px;word-break:break-word;max-width:200px;">
+                    <div class="fw-bold text-dark" style="font-size:0.82rem;">
+                        <i class="bi bi-building text-primary me-1"></i>${p.nombre}
+                    </div>
+                    ${p.marcas ? `<span class="badge px-2 py-1 mt-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><i class="bi bi-tag me-1 text-secondary"></i>${p.marcas}</span>` : ''}
+                </td>
+                <td style="padding:10px 12px;" class="text-center">
+                    <div class="fw-semibold text-dark" style="font-size:0.8rem;">${p.contacto || 'Sin contacto'}</div>
+                    ${p.telefono ? `<div class="text-muted" style="font-size:0.73rem;"><i class="bi bi-telephone me-1"></i>${p.telefono}</div>` : ''}
+                    ${p.email ? `<div class="text-muted" style="font-size:0.73rem;"><i class="bi bi-envelope me-1"></i>${p.email}</div>` : ''}
+                </td>
+                <td style="padding:10px 12px;" class="text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                        <button onclick="appRepoAbrirFormProveedor(${p.id})" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size:0.72rem;" title="Editar proveedor">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button onclick="appRepoEliminarProveedor(${p.id})" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size:0.72rem;" title="Eliminar proveedor">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('')
+} else {
+        return proveedores.map(p => `
+            <div class="kanban-card p-2.5 mb-2 bg-white rounded-3 shadow-sm border" style="border-left: 4px solid var(--bs-primary) !important; max-width: 100%; word-break: break-word; overflow-x: hidden;">
+                <div class="d-flex justify-content-between align-items-start mb-1 gap-1">
+                    <div style="min-width:0; flex-grow:1;">
+                        <div class="fw-bold text-dark text-truncate" style="font-size:0.84rem;">
+                            <i class="bi bi-building me-1 text-primary"></i>${p.nombre}
+                        </div>
+                        ${p.marcas ? `<div class="mt-1 d-flex flex-wrap gap-1" style="max-width:100%;"><span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;white-space:normal;word-break:break-word;text-align:left;"><i class="bi bi-tag me-1 text-secondary"></i>${p.marcas}</span></div>` : ''}
+                    </div>
+                    <span class="badge px-2 py-1 flex-shrink-0" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;font-family:monospace;">ID #${p.id}</span>
+                </div>
+
+                <div class="text-secondary mt-1" style="font-size:0.75rem;">
+                    <i class="bi bi-person me-1"></i>Contacto: <strong class="text-dark">${p.contacto || 'Sin contacto'}</strong>
+                </div>
+
+                ${(p.telefono || p.email) ? `
+                    <div class="text-secondary mt-1" style="font-size:0.73rem;">
+                        ${p.telefono ? `<span class="me-2"><i class="bi bi-telephone me-1 text-muted"></i>${p.telefono}</span>` : ''}
+                        ${p.email ? `<span><i class="bi bi-envelope me-1 text-muted"></i>${p.email}</span>` : ''}
+                    </div>
+                ` : ''}
+
+                <div class="mt-2 pt-1 border-top d-flex justify-content-end gap-1">
+                    <button onclick="appRepoAbrirFormProveedor(${p.id})" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size:0.72rem;" title="Editar proveedor">
+                        <i class="bi bi-pencil-square me-1"></i>Editar
+                    </button>
+                    <button onclick="appRepoEliminarProveedor(${p.id})" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size:0.72rem;" title="Eliminar proveedor">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('')
+    }
 }
 
 
 window.appRepoEliminarProveedor = function(provId) {
-    if (!confirm('Eliminar proveedor?')) return
-    const idx = proveedores.findIndex(p => p.id === provId)
-    if (idx !== -1) proveedores.splice(idx, 1)
-    guardarTodo()
-    renderListaProveedores()
+    Swal.fire({
+        title: '¿Eliminar proveedor?',
+        text: 'Esta acción no se puede deshacer.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then(res => {
+        if (!res.isConfirmed) return
+        const idx = proveedores.findIndex(p => p.id === provId)
+        if (idx !== -1) proveedores.splice(idx, 1)
+        guardarTodo()
+        renderListaProveedores()
+    })
 }
 
 window.appRepoAbrirFormProveedor = function(provId) {
@@ -1530,7 +1848,7 @@ window.appRepoGuardarProveedor = function() {
     const email = document.getElementById('prov-form-email').value.trim()
     const telefono = document.getElementById('prov-form-telefono').value.trim()
 
-    if (!nombre) { alert('Ingrese el nombre de la empresa'); return }
+    if (!nombre) { if (typeof mostrarSweetToast === 'function') mostrarSweetToast('Ingrese el nombre de la empresa', 'warning'); return }
 
     if (id) {
         const prov = proveedores.find(p => p.id === parseInt(id))
@@ -1601,27 +1919,69 @@ function renderRepoInventario() {
 window.appAbrirStock = function(id) {
     const item = inventario.find(i => i.id === id)
     if (!item) return
-    const nuevoStock = prompt(`Stock de "${item.material} ${item.color}": ${item.stock}\nNuevo stock:`, item.stock)
-    if (nuevoStock === null) return
-    const val = parseInt(nuevoStock)
-    if (isNaN(val) || val < 0) { alert('Valor invalido'); return }
-    item.stock = val
-    guardarTodo()
-    renderTablaInventario()
+    Swal.fire({
+        title: `Ajustar stock`,
+        text: `${item.material} ${item.color} — Stock actual: ${item.stock} u.`,
+        input: 'number',
+        inputValue: item.stock,
+        inputAttributes: { min: 0, step: 1 },
+        showCancelButton: true,
+        confirmButtonText: 'Actualizar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#3b82f6',
+        cancelButtonColor: '#64748b',
+        inputValidator: (v) => {
+            if (v === '' || isNaN(parseInt(v)) || parseInt(v) < 0) return 'Ingrese un valor válido (0 o más)'
+        }
+    }).then(res => {
+        if (!res.isConfirmed) return
+        item.stock = parseInt(res.value)
+        guardarTodo()
+        renderTablaInventario()
+        renderBodegaInventario()
+        renderRepoInventario()
+        if (typeof mostrarSweetToast === 'function') mostrarSweetToast(`Stock de ${item.sku} actualizado a ${item.stock} u.`, 'success')
+    })
 }
 
 /* ==================== FUNCIONES GLOBALES: FLUJO BODEGA ==================== */
 window.appBodegaAsignarTrabajador = function(tareaId, trabajador) {
     const tarea = tareas.find(t => t.id === tareaId)
     if (!tarea) return
-    tarea.estado = 'asignada'
     tarea.trabajadorAsignado = trabajador
-    tarea.asignadoA = 'bodega'
     guardarTodo()
     renderBodegaKanban()
+
+    if (typeof mostrarSweetToast === 'function') {
+        mostrarSweetToast(`👤 Asignado a ${trabajador}. Moviendo a En Proceso en 2s...`, 'info')
+    }
+
+    setTimeout(() => {
+        tarea.estado = 'asignada'
+        tarea.asignadoA = 'bodega'
+        guardarTodo()
+        renderBodegaKanban()
+        if (typeof mostrarSweetToast === 'function') {
+            mostrarSweetToast(`✅ Tarea POO #${tarea.id} movida a En Proceso (Encargado: ${trabajador})`, 'success')
+        }
+    }, 2000)
 }
 
 window.appBodegaIniciar = function(tareaId) {
+    const tarea = tareas.find(t => t.id === tareaId)
+    if (!tarea) return
+
+    tarea.estado = 'preparando'
+    tarea.fechaInicio = new Date().toISOString()
+    guardarTodo()
+
+    const esDomicilio = tarea.tipoRetiro === 'domicilio' || tarea.tipoRetiro === 'envio'
+    const duracion = esDomicilio ? 10000 : 5000
+    iniciarTimer(tareaId, duracion)
+    renderBodegaKanban()
+}
+
+window.appBodegaCompletar = function(tareaId) {
     const tarea = tareas.find(t => t.id === tareaId)
     if (!tarea) return
 
@@ -1629,7 +1989,7 @@ window.appBodegaIniciar = function(tareaId) {
         ? tarea.items 
         : [{ materialId: tarea.materialId, sku: tarea.sku, materialNombre: tarea.materialNombre, cantidad: tarea.cantidad }]
 
-    // 1. Verificar si existe la cantidad de stock necesaria
+    // 1. Verificar disponibilidad de stock al momento de la entrega
     let stockInsuficiente = false
     let itemFaltante = null
 
@@ -1643,7 +2003,7 @@ window.appBodegaIniciar = function(tareaId) {
     }
 
     if (stockInsuficiente) {
-        // ERROR DE STOCK!
+        // ERROR DE STOCK AL MOMENTO DE ENTREGAR!
         tarea.errorStock = true
         tarea.estado = 'cancelada'
         tarea.fechaFin = new Date().toISOString()
@@ -1653,28 +2013,18 @@ window.appBodegaIniciar = function(tareaId) {
         const matNombre = reqItem.materialNombre || (invItem ? `${invItem.material} ${invItem.color}` : 'Material')
         const stockActual = invItem ? invItem.stock : 0
 
-// Activar mensaje de alerta de stock
-let prioridadAlert = 'alta';
-if (invItem) {
-  if (invItem.stock === 0) {
-    prioridadAlert = 'alta'; // stock agotado
-  } else if (invItem.stock < 5) {
-    prioridadAlert = 'media'; // stock bajo
-  } else {
-    prioridadAlert = 'alta'; // still insufficient but treat as alta
-  }
-}
-alertasStockPendientes.push({
-    materialId: invItem ? invItem.id : reqItem.materialId,
-    sku: reqItem.sku || (invItem ? invItem.sku : ''),
-    materialNombre: matNombre,
-    cantidad: reqItem.cantidad,
-    prioridad: prioridadAlert,
-    origen: 'stock-agotado',
-    notas: `ERROR DE STOCK: Se necesitaban ${reqItem.cantidad} und, solo hay ${stockActual}. Venta #${tarea.ventaId || '?'} cancelada.`,
-    ventaId: tarea.ventaId,
-    enviadoPor: tarea.trabajadorAsignado || 'Bodega'
-});
+        // Activar mensaje ROJO a reposición
+        alertasStockPendientes.push({
+            materialId: invItem ? invItem.id : reqItem.materialId,
+            sku: reqItem.sku || (invItem ? invItem.sku : ''),
+            materialNombre: matNombre,
+            cantidad: reqItem.cantidad,
+            prioridad: 'urgente',
+            origen: 'stock-insuficiente',
+            notas: `🔴 ERROR DE STOCK AL ENTREGAR: Se requerían ${reqItem.cantidad} und, solo hay ${stockActual}. Venta #${tarea.ventaId || '?'} cancelada.`,
+            ventaId: tarea.ventaId,
+            enviadoPor: tarea.trabajadorAsignado || 'Bodega'
+        })
 
         // Cancelar venta y realizar reembolso
         if (tarea.ventaId) {
@@ -1690,7 +2040,7 @@ alertasStockPendientes.push({
                     sku: venta.sku,
                     cantidad: venta.cantidad,
                     montoReembolso: reembolso,
-                    motivo: 'Error de stock en bodega',
+                    motivo: 'Error de stock en bodega al entregar',
                     vendedor: venta.vendedor
                 })
                 venta.estado = 'anulada'
@@ -1709,11 +2059,14 @@ alertasStockPendientes.push({
         guardarTodo()
         renderBodegaKanban()
         renderBodegaInventario()
-        alert(`❌ Error de stock: Se requieren ${reqItem.cantidad} unidades de ${matNombre}, pero solo hay ${stockActual} en inventario. La tarea fue terminada inmediatamente, la venta fue cancelada y se realizó el reembolso.`)
+        renderEnvioTareasBodega()
+        if (typeof mostrarSweetToast === 'function') {
+            mostrarSweetToast(`❌ Error de stock al entregar. Venta cancelada y reembolsada.`, 'error')
+        }
         return
     }
 
-    // 2. Si hay suficiente stock: descontar la cantidad a entregar del inventario durante la preparación
+    // 2. DESCONTAR STOCK SOLO AL PROCEDER A ENTREGAR EL PRODUCTO
     if (!tarea.stockDescontado) {
         for (const it of items) {
             const itemInv = inventario.find(i => i.id === it.materialId || i.sku === it.sku)
@@ -1722,61 +2075,36 @@ alertasStockPendientes.push({
 
             // Si el stock baja a <= 5 ítems (y > 0) -> Mensaje NARANJA a reposición
             if (itemInv.stock <= 5 && itemInv.stock > 0) {
-                const existente = alertasStockPendientes.find(a => a.materialId === itemInv.id)
-                if (existente) {
-                    existente.notas = `Stock bajo (${itemInv.stock} und restantes). Tarea #${tarea.id}`
-                } else {
-                    alertasStockPendientes.push({
-                        materialId: itemInv.id,
-                        sku: itemInv.sku,
-                        materialNombre: `${itemInv.material} ${itemInv.color} ${itemInv.espesor}mm`,
-                        cantidad: Math.max(1, STOCK_MINIMO + 1 - itemInv.stock),
-                        prioridad: 'media',
-                        origen: 'stock-bajo',
-                        notas: `Stock bajo (${itemInv.stock} und restantes tras preparación). Tarea #${tarea.id}`,
-                        ventaId: tarea.ventaId,
-                        enviadoPor: tarea.trabajadorAsignado || 'Bodega'
-                    })
-                }
+                alertasStockPendientes.push({
+                    materialId: itemInv.id,
+                    sku: itemInv.sku,
+                    materialNombre: `${itemInv.material} ${itemInv.color} ${itemInv.espesor}mm`,
+                    cantidad: Math.max(1, STOCK_MINIMO + 1 - itemInv.stock),
+                    prioridad: 'media',
+                    origen: 'stock-bajo',
+                    notas: `🟠 Stock bajo (${itemInv.stock} und restantes tras entrega). Tarea #${tarea.id}`,
+                    ventaId: tarea.ventaId,
+                    enviadoPor: tarea.trabajadorAsignado || 'Bodega'
+                })
             }
 
             // Si el stock baja a 0 -> Mensaje ROJO a reposición
             if (itemInv.stock === 0) {
-                const existente = alertasStockPendientes.find(a => a.materialId === itemInv.id)
-                if (existente) {
-                    existente.prioridad = 'urgente'
-                    existente.notas = `Stock AGOTADO (0 und). Tarea #${tarea.id}`
-                } else {
-                    alertasStockPendientes.push({
-                        materialId: itemInv.id,
-                        sku: itemInv.sku,
-                        materialNombre: `${itemInv.material} ${itemInv.color} ${itemInv.espesor}mm`,
-                        cantidad: Math.max(1, STOCK_MINIMO + 1),
-                        prioridad: 'urgente',
-                        origen: 'stock-agotado',
-                        notas: `Stock AGOTADO (0 und restantes tras preparación). Tarea #${tarea.id}`,
-                        ventaId: tarea.ventaId,
-                        enviadoPor: tarea.trabajadorAsignado || 'Bodega'
-                    })
-                }
+                alertasStockPendientes.push({
+                    materialId: itemInv.id,
+                    sku: itemInv.sku,
+                    materialNombre: `${itemInv.material} ${itemInv.color} ${itemInv.espesor}mm`,
+                    cantidad: 10,
+                    prioridad: 'urgente',
+                    origen: 'stock-agotado',
+                    notas: `🔴 Stock AGOTADO (0 und restantes tras entrega). Tarea #${tarea.id}`,
+                    ventaId: tarea.ventaId,
+                    enviadoPor: tarea.trabajadorAsignado || 'Bodega'
+                })
             }
         }
         tarea.stockDescontado = true
     }
-
-    tarea.estado = 'en_proceso'
-    tarea.fechaInicio = new Date().toISOString()
-    guardarTodo()
-
-    // 3. Iniciar contador de 10s que representa el tiempo de preparación
-    iniciarTimer(tareaId, 10000)
-    renderBodegaKanban()
-    renderBodegaInventario()
-}
-
-window.appBodegaCompletar = function(tareaId) {
-    const tarea = tareas.find(t => t.id === tareaId)
-    if (!tarea) return
 
     tarea.estado = 'completada'
     tarea.fechaFin = new Date().toISOString()
@@ -1786,9 +2114,16 @@ window.appBodegaCompletar = function(tareaId) {
         clearInterval(timersEnProceso[tareaId].intervalId)
         delete timersEnProceso[tareaId]
     }
+
     guardarTodo()
     renderBodegaKanban()
     renderBodegaInventario()
+    renderTablaInventario()
+    renderRepoInventario()
+    renderEnvioTareasBodega()
+    if (typeof mostrarSweetToast === 'function') {
+        mostrarSweetToast(`✅ Pedido entregado y stock descontado del inventario`, 'success')
+    }
 }
 
 window.appBodegaCancelar = function(tareaId) {
@@ -1842,6 +2177,13 @@ window.appBodegaCancelar = function(tareaId) {
     guardarTodo()
     renderBodegaKanban()
     renderBodegaInventario()
+    if (typeof mostrarSweetToast === 'function') {
+        mostrarSweetToast(`❌ Tarea #${tarea.id} cancelada. Reembolso de ${formatearCLP(tarea.montoReembolsado)} realizado.`, 'warning')
+    }
+}
+
+window.appBodegaCancelarTarea = function(tareaId) {
+    appBodegaCancelar(tareaId)
 }
 
 window.appBodegaArchivar = function(tareaId) {
@@ -1852,24 +2194,117 @@ window.appBodegaArchivar = function(tareaId) {
     renderBodegaKanban()
 }
 
-/* ==================== TIMER EN PROCESO (10s) ==================== */
+/* ==================== TIMER EN PROCESO CON VERIFICACIÓN A LA MITAD ==================== */
 function iniciarTimer(id, duracion) {
     if (timersEnProceso[id]) {
         clearInterval(timersEnProceso[id].intervalId)
     }
-    const durMs = duracion || 10000
+    const durMs = duracion || 5000
+    const mitadMs = durMs / 2
+
     timersEnProceso[id] = {
         inicio: Date.now(),
         duracion: durMs,
         completado: false,
+        verificadoMitad: false,
         intervalId: setInterval(() => {
-            const elapsed = Date.now() - timersEnProceso[id].inicio
+            const timer = timersEnProceso[id]
+            if (!timer) return
+            const elapsed = Date.now() - timer.inicio
+
+            // VERIFICACIÓN DE STOCK A LA MITAD DEL TIEMPO DE PREPARACIÓN (2.5 segundos)
+            if (elapsed >= mitadMs && !timer.verificadoMitad) {
+                timer.verificadoMitad = true
+                const tarea = tareas.find(t => t.id === id)
+                if (tarea) {
+                    const items = tarea.items && tarea.items.length > 0 
+                        ? tarea.items 
+                        : [{ materialId: tarea.materialId, sku: tarea.sku, materialNombre: tarea.materialNombre, cantidad: tarea.cantidad }]
+
+                    let stockInsuficiente = false
+                    let itemFaltante = null
+
+                    for (const it of items) {
+                        const itemInv = inventario.find(i => i.id === it.materialId || i.sku === it.sku)
+                        if (!itemInv || itemInv.stock < it.cantidad) {
+                            stockInsuficiente = true
+                            itemFaltante = { itemReq: it, inv: itemInv }
+                            break
+                        }
+                    }
+
+                    if (stockInsuficiente) {
+                        // ❌ ANULACIÓN Y CANCELACIÓN POR FALTA DE STOCK DETECTADA A LA MITAD
+                        clearInterval(timer.intervalId)
+                        delete timersEnProceso[id]
+
+                        tarea.errorStock = true
+                        tarea.estado = 'cancelada'
+                        tarea.fechaFin = new Date().toISOString()
+
+                        const invItem = itemFaltante ? itemFaltante.inv : null
+                        const reqItem = itemFaltante ? itemFaltante.itemReq : items[0]
+                        const matNombre = reqItem.materialNombre || (invItem ? `${invItem.material} ${invItem.color}` : 'Material')
+                        const stockActual = invItem ? invItem.stock : 0
+
+                        // Activar mensaje ROJO a reposición
+                        alertasStockPendientes.push({
+                            id: Date.now() + Math.random(),
+                            materialId: invItem ? invItem.id : reqItem.materialId,
+                            sku: reqItem.sku || (invItem ? invItem.sku : ''),
+                            materialNombre: matNombre,
+                            cantidad: reqItem.cantidad,
+                            prioridad: 'urgente',
+                            origen: 'stock-insuficiente',
+                            notas: `🔴 ERROR DE STOCK EN PREPARACIÓN (Detectado a los ${mitadMs / 1000}s): Requeridas ${reqItem.cantidad} u., hay ${stockActual} u. Venta #${tarea.ventaId || '?'} cancelada.`,
+                            ventaId: tarea.ventaId,
+                            enviadoPor: tarea.trabajadorAsignado || 'Bodega'
+                        })
+
+                        // Cancelar venta y reembolso automático
+                        if (tarea.ventaId) {
+                            const ventasRelacionadas = ventas.filter(v => v.ventaGroupId === tarea.ventaId || v.id === tarea.ventaId)
+                            ventasRelacionadas.forEach(venta => {
+                                const reembolso = venta.total
+                                ventasAnuladas.push({
+                                    id: ventasAnuladas.length + 1,
+                                    ventaOriginalId: venta.id,
+                                    fecha: new Date().toISOString(),
+                                    cliente: venta.cliente,
+                                    materialNombre: venta.materialNombre,
+                                    sku: venta.sku,
+                                    cantidad: venta.cantidad,
+                                    montoReembolso: reembolso,
+                                    motivo: 'Error de stock en preparación de bodega (a la mitad del tiempo)',
+                                    vendedor: venta.vendedor
+                                })
+                                venta.estado = 'anulada'
+
+                                const clienteObj = clientes.find(c => c.nombre === venta.cliente)
+                                if (clienteObj) clienteObj.saldo += reembolso
+                            })
+                        }
+                        tarea.montoReembolsado = tarea.items ? tarea.items.reduce((s, it) => s + (it.precioUnitario * it.cantidad), 0) : 0
+
+                        guardarTodo()
+                        renderBodegaKanban()
+                        renderBodegaInventario()
+                        renderEnvioTareasBodega()
+                        renderReposicionKanban()
+                        if (typeof mostrarSweetToast === 'function') {
+                            mostrarSweetToast(`❌ Error de stock detectado a la mitad de preparación (${mitadMs / 1000}s). Venta cancelada y dinero reembolsado.`, 'error')
+                        }
+                        return
+                    }
+                }
+            }
+
             if (elapsed >= durMs) {
-                clearInterval(timersEnProceso[id].intervalId)
-                timersEnProceso[id].completado = true
+                clearInterval(timer.intervalId)
+                timer.completado = true
             }
             renderBodegaKanban()
-        }, 1000)
+        }, 500)
     }
 }
 
@@ -1922,7 +2357,7 @@ function actualizarPreviewVenta() {
     const item = inventario.find(i => i.id === parseInt(matId))
     if (!item) return
 
-
+    if (stockEl) stockEl.textContent = item.stock
     if (precioEl) precioEl.textContent = formatearCLP(item.precio)
     if (totalEl) totalEl.textContent = formatearCLP(cant * item.precio)
 }

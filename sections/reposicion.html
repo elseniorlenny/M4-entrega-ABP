@@ -1,115 +1,107 @@
-<!-- BARRA DE HERRAMIENTAS MÓDULO REPOSICIÓN -->
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;background:var(--bg-card);padding:12px;border:1px solid var(--border);border-radius:var(--radius)">
-    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:260px">
-        <span style="font-weight:600;font-size:0.9em">🔍 Buscar:</span>
-        <input type="text" id="input-busqueda-reposicion" placeholder="Filtrar por SKU, proveedor, notas, id..." style="flex:1;padding:6px 10px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-    </div>
-    <div style="display:flex;gap:8px">
-        <button id="btn-nueva-tarea-reposicion" onclick="abrirModalNuevaTarea('reposicion')" style="background:var(--primary);color:#000;font-weight:600;padding:6px 12px">+ Nueva Tarea</button>
-        <button id="btn-api-reposicion" onclick="sincronizarConAPIExterna()" style="background:#0dcaf0;color:#000;font-weight:600;padding:6px 12px">🌐 Cargar API</button>
-    </div>
-</div>
+<!-- SECCIÓN REPOSICIÓN - CON ESTILO Y FORMA DE VENTAS -->
 
-<!-- KANBAN 4 COLUMNAS SUPERIORES -->
-<div class="kanban">
+<!-- KANBAN COLUMNAS LADO A LADO CON ESTILO VENTAS -->
+<div class="kanban-bento mb-3">
+
     <!-- COLUMNA 1: ENTRANTE -->
-    <div class="kanban-col">
-        <div class="kanban-header">
-            <span>📥 Entrante</span>
-            <span class="kanban-badge" id="repo-ent-count">0</span>
+    <div class="bento-card p-3 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-inbox me-1 text-primary"></i> Entrante</h6>
+            <span class="badge bg-primary text-white px-2 py-1 fw-bold" id="repo-ent-count">0</span>
         </div>
-        <div class="kanban-drop" id="repo-entrantes"></div>
+        <div class="bento-scroll-block flex-grow-1" id="repo-entrantes" style="max-height: 380px; overflow-y: auto;"></div>
     </div>
 
     <!-- COLUMNA 2: PROCESO DE COMPRA -->
-    <div class="kanban-col">
-        <div class="kanban-header">
-            <span>🛒 Proceso de Compra</span>
-            <span class="kanban-badge" id="repo-proc-count">0</span>
+    <div class="bento-card p-3 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bag-check me-1 text-warning"></i> Proceso Compra</h6>
+            <span class="badge bg-warning text-dark px-2 py-1 fw-bold" id="repo-proc-count">0</span>
         </div>
-        <div class="kanban-drop" id="repo-proceso"></div>
+        <div class="bento-scroll-block flex-grow-1" id="repo-proceso" style="max-height: 380px; overflow-y: auto;"></div>
     </div>
 
     <!-- COLUMNA 3: RECEPCIÓN -->
-    <div class="kanban-col">
-        <div class="kanban-header">
-            <span>📦 Recepción</span>
-            <span class="kanban-badge" id="repo-comp-count">0</span>
+    <div class="bento-card p-3 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-box-seam me-1 text-success"></i> Recepción</h6>
+            <span class="badge bg-success text-white px-2 py-1 fw-bold" id="repo-comp-count">0</span>
         </div>
-        <div class="kanban-drop" id="repo-completado"></div>
+        <div class="bento-scroll-block flex-grow-1" id="repo-completado" style="max-height: 380px; overflow-y: auto;"></div>
     </div>
 
     <!-- COLUMNA 4: PROVEEDORES -->
-    <div class="kanban-col">
-        <div class="kanban-header" style="justify-content:space-between">
-            <span>🏬 Proveedores</span>
-            <button id="btn-add-proveedor" onclick="appRepoAbrirFormProveedor()" style="font-size:0.75em;padding:2px 6px;background:var(--primary);color:#000;font-weight:bold;border-radius:var(--radius)">+ Nuevo</button>
+    <div class="bento-card p-3 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-building me-1 text-primary"></i> Proveedores</h6>
+            <button id="btn-add-proveedor" onclick="appRepoAbrirFormProveedor()" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size:0.75rem;">
+                <i class="bi bi-plus-lg me-1"></i>Nuevo
+            </button>
         </div>
-        <div class="kanban-body" style="padding:0;overflow-y:auto;height:420px">
-            <table style="width:100%;border-collapse:collapse">
-                <thead>
-                    <tr style="background:var(--bg-input);font-size:0.75em;color:var(--text-muted);border-bottom:1px solid var(--border)">
-                        <th style="padding:4px;text-align:center">Empresa</th>
-                        <th style="padding:4px;text-align:center">Contacto</th>
-                        <th style="padding:4px;text-align:center">Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="lista-proveedores"></tbody>
-            </table>
+        <div class="bento-scroll-block flex-grow-1" style="max-height: 380px; overflow-y: auto;">
+            <div id="lista-proveedores"></div>
         </div>
     </div>
+
 </div>
 
-<!-- MODAL FORM PROVEEDOR -->
-<div id="modal-proveedor" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
-    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;width:400px;max-width:90%">
-        <div style="font-weight:600;font-size:1em;margin-bottom:12px" id="prov-form-titulo">Nuevo Proveedor</div>
-        <input type="hidden" id="prov-form-id">
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Empresa
-            <input type="text" id="prov-form-nombre" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Marcas que vende
-            <input type="text" id="prov-form-marcas" placeholder="Ej: Trupan, Maderas del Sur" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Nombre contacto
-            <input type="text" id="prov-form-contacto" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Correo
-            <input type="email" id="prov-form-email" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Teléfono
-            <input type="text" id="prov-form-telefono" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <div style="display:flex;gap:8px;margin-top:12px">
-            <button onclick="appRepoGuardarProveedor()" style="background:var(--success);flex:1;font-weight:bold">Guardar</button>
-            <button onclick="appRepoCerrarFormProveedor()" style="background:#6c757d;flex:1;font-weight:bold">Cancelar</button>
-        </div>
+<!-- SECCIÓN INVENTARIO REPOSICIÓN (TABLA CON ESTILO DE HISTORIAL DE VENTAS) -->
+<div class="bento-card bento-12 mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-box-seam me-1 text-primary"></i> Control de Insumos & Reposición</h6>
     </div>
-</div>
-
-<!-- COLUMNA ANCHA: INVENTARIO -->
-<div style="margin-top:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-    <div class="kanban-header" style="justify-content:space-between">
-        <span>📦 Inventario General de Reposición</span>
-    </div>
-    <div class="scroll-box" style="border:none;border-radius:0;padding:0;max-height:350px">
-        <table>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0">
             <thead>
-                <tr>
-                    <th style="text-align:center">ID</th>
-                    <th style="text-align:center">SKU</th>
-                    <th style="text-align:center">Material</th>
-                    <th style="text-align:center">Marca</th>
-                    <th style="text-align:center">Color</th>
-                    <th style="text-align:center">Espesor</th>
-                    <th style="text-align:center">Cantidad</th>
-                    <th style="text-align:center">Precio Unit.</th>
-                    <th style="text-align:center">Margen</th>
-                    <th style="text-align:center">IVA</th>
-                    <th style="text-align:center">Precio Venta</th>
+                <tr class="table-light">
+                    <th class="text-center text-dark">SKU</th>
+                    <th class="text-center text-dark">Material</th>
+                    <th class="text-center text-dark">Color</th>
+                    <th class="text-center text-dark">Espesor</th>
+                    <th class="text-center text-dark">Dimensiones (Largo x Ancho)</th>
+                    <th class="text-center text-dark">Marca</th>
+                    <th class="text-center text-dark">Categoría</th>
+                    <th class="text-center text-dark">Stock Actual</th>
+                    <th class="text-center text-dark">Estado Stock</th>
+                    <th class="text-center text-dark">Acción Directa</th>
                 </tr>
             </thead>
-            <tbody id="repo-inv-lista"></tbody>
+            <tbody id="tbody-inventario-reposicion"></tbody>
         </table>
+    </div>
+</div>
+
+<!-- MODAL PROVEEDOR -->
+<div id="modal-proveedor" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.4);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center">
+    <div class="bento-card bg-white shadow-lg" style="width:420px;max-width:92%">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark" id="prov-form-titulo"><i class="bi bi-building me-1 text-primary"></i> Proveedor</h6>
+            <button type="button" class="btn-close" onclick="appRepoCerrarFormProveedor()"></button>
+        </div>
+        <input type="hidden" id="prov-form-id">
+        <div class="mb-2">
+            <label class="form-label small fw-semibold">Empresa</label>
+            <input type="text" id="prov-form-nombre" class="form-control">
+        </div>
+        <div class="mb-2">
+            <label class="form-label small fw-semibold">Contacto Directo</label>
+            <input type="text" id="prov-form-contacto" class="form-control">
+        </div>
+        <div class="mb-2">
+            <label class="form-label small fw-semibold">Teléfono</label>
+            <input type="text" id="prov-form-telefono" class="form-control">
+        </div>
+        <div class="mb-2">
+            <label class="form-label small fw-semibold">Email</label>
+            <input type="email" id="prov-form-email" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-semibold">Marcas</label>
+            <input type="text" id="prov-form-marcas" class="form-control" placeholder="Ej. Masisa, Arauco">
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="appRepoGuardarProveedor()" class="btn btn-outline-primary flex-grow-1"><i class="bi bi-save me-1"></i>Guardar</button>
+            <button onclick="appRepoCerrarFormProveedor()" class="btn btn-outline-secondary px-3">Cancelar</button>
+        </div>
     </div>
 </div>

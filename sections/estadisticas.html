@@ -1,343 +1,303 @@
-<!-- TABS NAV -->
-<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">
-    <button class="tab-btn active" onclick="showEstTab('metricas', event)">Metricas</button>
-    <button class="tab-btn" onclick="showEstTab('ventas-list', event)">Ventas</button>
-    <button class="tab-btn" onclick="showEstTab('entregas-list', event)">Entregas</button>
-    <button class="tab-btn" onclick="showEstTab('anulados-list', event)">Anulados</button>
-    <button class="tab-btn" onclick="showEstTab('reembolsos-list', event)">Reembolsos</button>
-    <button class="tab-btn" onclick="showEstTab('empleados', event)">Empleados</button>
-    <button class="tab-btn" onclick="showEstTab('clientes', event)">Clientes</button>
-    <button class="tab-btn" onclick="showEstTab('archivo', event)">Archivos</button>
-    <button class="tab-btn" onclick="showEstTab('inventario-est', event)">Inventario</button>
-    <button class="tab-btn" onclick="showEstTab('proveedores-est', event)">Proveedores</button>
+<!-- SECCIÓN ESTADÍSTICAS - CON ESTILO Y FORMA DE VENTAS -->
+<div class="bento-grid mb-3">
+    <!-- MÉTRICA 1: CAJA -->
+    <div class="bento-card bento-3 text-center p-2">
+        <div class="text-secondary small fw-semibold mb-1">Caja / Dinero Inicial</div>
+        <div id="est-dinero" class="fw-bold text-warning" style="font-size:1.1rem;">$0</div>
+    </div>
+    <!-- MÉTRICA 2: INGRESOS -->
+    <div class="bento-card bento-3 text-center p-2">
+        <div class="text-secondary small fw-semibold mb-1">Ingresos Ventas</div>
+        <div id="est-ingresos" class="fw-bold text-success" style="font-size:1.1rem;color:#059669 !important;">$0</div>
+    </div>
+    <!-- MÉTRICA 3: EGRESOS -->
+    <div class="bento-card bento-3 text-center p-2">
+        <div class="text-secondary small fw-semibold mb-1">Egresos Totales</div>
+        <div id="est-egresos" class="fw-bold text-danger" style="font-size:1.1rem;color:#dc2626 !important;">$0</div>
+    </div>
+    <!-- MÉTRICA 4: GANANCIA BRUTA -->
+    <div class="bento-card bento-3 text-center p-2">
+        <div class="text-secondary small fw-semibold mb-1">Ganancia Bruta</div>
+        <div id="est-margen-ganancia" class="fw-bold text-primary" style="font-size:0.95rem;">$0 (0%)</div>
+    </div>
 </div>
 
-<!-- TAB: METRICAS -->
-<div id="tab-metricas" class="est-tab">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px">
-        <div class="metric-card" style="border-left:4px solid var(--success)">
-            <div class="metric-label">Dinero Disponible</div>
-            <div class="metric-value" id="est-dinero">$0</div>
+<!-- GRÁFICOS COMPACTOS (140px) -->
+<div class="bento-grid mb-3">
+    <div class="bento-card bento-6 p-2">
+        <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+            <h6 class="m-0 fw-bold text-dark small"><i class="bi bi-bar-chart-fill me-1 text-primary"></i> Balance: Ingresos vs Egresos</h6>
+            <span class="badge font-monospace fw-bold" style="background:#e0e7ff; color:#3730a3;">Finanzas</span>
         </div>
-        <div class="metric-card" style="border-left:4px solid var(--danger)">
-            <div class="metric-label">Egresos Totales</div>
-            <div class="metric-value" id="est-egresos">$0</div>
+        <div style="height: 140px; position: relative;">
+            <canvas id="chart-ventas-egresos"></canvas>
         </div>
-        <div class="metric-card" style="border-left:4px solid #0d6efd">
-            <div class="metric-label">Ingresos Totales</div>
-            <div class="metric-value" id="est-ingresos">$0</div>
+    </div>
+    <div class="bento-card bento-6 p-2">
+        <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+            <h6 class="m-0 fw-bold text-dark small"><i class="bi bi-pie-chart-fill me-1 text-success"></i> Stock por Categoría</h6>
+            <span class="badge font-monospace fw-bold" style="background:#dcfce7; color:#166534;">Inventario</span>
         </div>
-        <div class="metric-card" style="border-left:4px solid var(--accent)">
-            <div class="metric-label">Margen Ganancia</div>
-            <div class="metric-value" id="est-margen-ganancia">$0 (0%)</div>
-        </div>
-        <div class="metric-card" style="border-left:4px solid var(--danger)">
-            <div class="metric-label">Margen Pérdida / Reembolsos</div>
-            <div class="metric-value" id="est-margen-perdida">$0 (0%)</div>
+        <div style="height: 140px; position: relative;" class="d-flex justify-content-center">
+            <canvas id="chart-stock-categoria"></canvas>
         </div>
     </div>
 </div>
 
-<!-- TAB: VENTAS -->
-<div id="tab-ventas-list" class="est-tab" style="display:none">
-    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-        <div class="kanban-header">Listado de Ventas</div>
-        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align:center">ID</th>
-                        <th style="text-align:center">Fecha</th>
-                        <th style="text-align:center">Cliente</th>
-                        <th style="text-align:center">Vendedor</th>
-                        <th style="text-align:center">Material</th>
-                        <th style="text-align:center">Cantidad</th>
-                        <th style="text-align:center">Total</th>
-                        <th style="text-align:center">Estado</th>
-                    </tr>
-                </thead>
-                <tbody id="est-ventas-lista"></tbody>
-            </table>
-        </div>
+<!-- NAVEGACIÓN PESTAÑAS -->
+<div class="bento-card bento-12 mb-3 py-2 px-3">
+    <div class="d-flex justify-content-center gap-2 gap-md-3 flex-wrap">
+        <button class="btn btn-outline-primary btn-sm active tab-btn px-3" onclick="showEstTab('ventas', event)"><i class="bi bi-clock-history me-1"></i>Ventas</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('entregas', event)"><i class="bi bi-truck me-1"></i>Entregas</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('anulados', event)"><i class="bi bi-x-circle me-1"></i>Anulaciones</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('reembolsos', event)"><i class="bi bi-cash-stack me-1"></i>Reembolsos</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('empleados', event)"><i class="bi bi-people me-1"></i>Empleados</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('clientes', event)"><i class="bi bi-person-lines-fill me-1"></i>Clientes</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('precios', event)"><i class="bi bi-tags me-1"></i>Márgenes/Precios</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('proveedores', event)"><i class="bi bi-building me-1"></i>Proveedores</button>
     </div>
 </div>
 
-<!-- TAB: ENTREGAS -->
-<div id="tab-entregas-list" class="est-tab" style="display:none">
-    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-        <div class="kanban-header">Listado de Entregas</div>
-        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align:center">ID</th>
-                        <th style="text-align:center">Venta</th>
-                        <th style="text-align:center">Cliente</th>
-                        <th style="text-align:center">Material</th>
-                        <th style="text-align:center">Cantidad</th>
-                        <th style="text-align:center">Encargado</th>
-                        <th style="text-align:center">Fecha Inicio</th>
-                        <th style="text-align:center">Fecha Fin</th>
-                    </tr>
-                </thead>
-                <tbody id="est-entregas-lista"></tbody>
-            </table>
-        </div>
+<!-- CONTENIDOS PESTAÑAS EN SCROLLBLOCKS (ESTILO VENTAS) -->
+<div id="tab-ventas" class="est-tab bento-card bento-12">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-clock-history me-1 text-primary"></i> Historial de Ventas</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-ventas">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark"># ID</th>
+                    <th class="text-center text-dark">Fecha</th>
+                    <th class="text-center text-dark">Cliente</th>
+                    <th class="text-center text-dark">Material / SKU</th>
+                    <th class="text-center text-dark">Canal</th>
+                    <th class="text-center text-dark">Entrega</th>
+                    <th class="text-center text-dark">Cant.</th>
+                    <th class="text-center text-dark">Neto</th>
+                    <th class="text-center text-dark">IVA</th>
+                    <th class="text-center text-dark">Total</th>
+                    <th class="text-center text-dark">Estado</th>
+                    <th class="text-center text-dark">Vendedor</th>
+                </tr>
+            </thead>
+            <tbody id="est-ventas-lista"></tbody>
+        </table>
     </div>
 </div>
 
-<!-- TAB: ANULADOS -->
-<div id="tab-anulados-list" class="est-tab" style="display:none">
-    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-        <div class="kanban-header">Listado de Ventas Anuladas</div>
-        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align:center">ID</th>
-                        <th style="text-align:center">Venta Original</th>
-                        <th style="text-align:center">Fecha</th>
-                        <th style="text-align:center">Cliente</th>
-                        <th style="text-align:center">Material</th>
-                        <th style="text-align:center">Cantidad</th>
-                        <th style="text-align:center">Monto Reembolso</th>
-                        <th style="text-align:center">Motivo</th>
-                    </tr>
-                </thead>
-                <tbody id="est-anulados-lista"></tbody>
-            </table>
-        </div>
+<div id="tab-entregas" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-truck me-1 text-primary"></i> Historial de Entregas</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-entregas">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">ID Tarea</th>
+                    <th class="text-center text-dark">Venta</th>
+                    <th class="text-center text-dark">Cliente</th>
+                    <th class="text-center text-dark">Material</th>
+                    <th class="text-center text-dark">Cant.</th>
+                    <th class="text-center text-dark">Despachador</th>
+                    <th class="text-center text-dark">Inicio</th>
+                    <th class="text-center text-dark">Fin</th>
+                </tr>
+            </thead>
+            <tbody id="est-entregas-lista"></tbody>
+        </table>
     </div>
 </div>
 
-<!-- TAB: REEMBOLSOS -->
-<div id="tab-reembolsos-list" class="est-tab" style="display:none">
-    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-        <div class="kanban-header">Listado de Reembolsos</div>
-        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align:center">ID</th>
-                        <th style="text-align:center">Venta</th>
-                        <th style="text-align:center">Cliente</th>
-                        <th style="text-align:center">Monto</th>
-                        <th style="text-align:center">Fecha</th>
-                        <th style="text-align:center">Motivo</th>
-                    </tr>
-                </thead>
-                <tbody id="est-reembolsos-lista"></tbody>
-            </table>
-        </div>
+<div id="tab-anulados" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-x-circle me-1 text-danger"></i> Registro de Anulaciones</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-anulados">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">ID Anulación</th>
+                    <th class="text-center text-dark">Venta Orig.</th>
+                    <th class="text-center text-dark">Fecha</th>
+                    <th class="text-center text-dark">Cliente</th>
+                    <th class="text-center text-dark">Material</th>
+                    <th class="text-center text-dark">Cant.</th>
+                    <th class="text-center text-dark">Monto</th>
+                    <th class="text-center text-dark">Motivo</th>
+                </tr>
+            </thead>
+            <tbody id="est-anulados-lista"></tbody>
+        </table>
     </div>
 </div>
 
-<!-- TAB: EMPLEADOS -->
-<div id="tab-empleados" class="est-tab" style="display:none">
-    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-        <div class="kanban-header" style="display:flex;justify-content:space-between;align-items:center">
-            <span>Listado de Empleados</span>
-            <button onclick="estAbrirFormEmpleado()" style="font-size:0.85em;padding:4px 10px;background:var(--success)">+ Contratar Empleado</button>
-        </div>
-        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align:center">ID</th>
-                        <th style="text-align:center">Nombre y Apellido</th>
-                        <th style="text-align:center">RUT</th>
-                        <th style="text-align:center">Cargo</th>
-                        <th style="text-align:center">Email Corporativo</th>
-                        <th style="text-align:center">Cumpleaños</th>
-                        <th style="text-align:center">Teléfono</th>
-                        <th style="text-align:center">Editar</th>
-                        <th style="text-align:center">Despedir</th>
-                    </tr>
-                </thead>
-                <tbody id="est-empleados-lista"></tbody>
-            </table>
-        </div>
+<div id="tab-reembolsos" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-cash-stack me-1 text-danger"></i> Historial de Reembolsos</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-reembolsos">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">ID</th>
+                    <th class="text-center text-dark">Venta</th>
+                    <th class="text-center text-dark">Cliente</th>
+                    <th class="text-center text-dark">Reembolso</th>
+                    <th class="text-center text-dark">Fecha</th>
+                    <th class="text-center text-dark">Motivo</th>
+                </tr>
+            </thead>
+            <tbody id="est-reembolsos-lista"></tbody>
+        </table>
     </div>
 </div>
 
-<!-- TAB: CLIENTES -->
-<div id="tab-clientes" class="est-tab" style="display:none">
-    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-        <div class="kanban-header" style="display:flex;justify-content:space-between;align-items:center">
-            <span>Clientes Registrados</span>
-            <button onclick="estAbrirFormCliente()" style="font-size:0.85em;padding:4px 10px;background:var(--success)">+ Registrar Cliente</button>
-        </div>
-        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align:center">ID</th>
-                        <th style="text-align:center">Nombre / Razón Social</th>
-                        <th style="text-align:center">RUT</th>
-                        <th style="text-align:center">Email</th>
-                        <th style="text-align:center">Teléfono</th>
-                        <th style="text-align:center">Total Compras</th>
-                        <th style="text-align:center">Editar</th>
-                        <th style="text-align:center">Eliminar</th>
-                    </tr>
-                </thead>
-                <tbody id="est-clientes-lista"></tbody>
-            </table>
-        </div>
+<div id="tab-empleados" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-people me-1 text-primary"></i> Nómina de Empleados</h6>
+        <button onclick="estAbrirFormEmpleado()" class="btn btn-indigo btn-sm">+ Contratar Empleado</button>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-empleados">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">ID</th>
+                    <th class="text-center text-dark">Nombre</th>
+                    <th class="text-center text-dark">RUT</th>
+                    <th class="text-center text-dark">Rol</th>
+                    <th class="text-center text-dark">Email</th>
+                    <th class="text-center text-dark">Cumpleaños</th>
+                    <th class="text-center text-dark">Teléfono</th>
+                    <th class="text-center text-dark">Editar</th>
+                    <th class="text-center text-dark">Despedir</th>
+                </tr>
+            </thead>
+            <tbody id="est-empleados-lista"></tbody>
+        </table>
     </div>
 </div>
 
-<!-- TAB: ARCHIVOS -->
-<div id="tab-archivo" class="est-tab" style="display:none">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-            <div class="kanban-header">Archivo Entregados</div>
-            <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="text-align:center">ID</th>
-                            <th style="text-align:center">Venta</th>
-                            <th style="text-align:center">Fecha</th>
-                            <th style="text-align:center">Material</th>
-                            <th style="text-align:center">Encargado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="est-arch-entregas"></tbody>
-                </table>
-            </div>
-        </div>
-        <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-            <div class="kanban-header">Archivo Compras / Reposiciones</div>
-            <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="text-align:center">ID Compra</th>
-                            <th style="text-align:center">Proveedor</th>
-                            <th style="text-align:center">Fecha</th>
-                            <th style="text-align:center">Material</th>
-                            <th style="text-align:center">Total Compra</th>
-                        </tr>
-                    </thead>
-                    <tbody id="est-arch-compras"></tbody>
-                </table>
-            </div>
-        </div>
+<div id="tab-clientes" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-person-lines-fill me-1 text-primary"></i> Cartera de Clientes</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-clientes">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">ID</th>
+                    <th class="text-center text-dark">Nombre</th>
+                    <th class="text-center text-dark">RUT</th>
+                    <th class="text-center text-dark">Email</th>
+                    <th class="text-center text-dark">Teléfono</th>
+                    <th class="text-center text-dark">Total Compras</th>
+                    <th class="text-center text-dark">Editar</th>
+                    <th class="text-center text-dark">Eliminar</th>
+                </tr>
+            </thead>
+            <tbody id="est-clientes-lista"></tbody>
+        </table>
     </div>
 </div>
 
-<!-- TAB: INVENTARIO EDITABLE -->
-<div id="tab-inventario-est" class="est-tab" style="display:none">
-    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-        <div class="kanban-header">Inventario - Precios y Margen de Ganancia Editable</div>
-        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align:center">SKU</th>
-                        <th style="text-align:center">Material y Características</th>
-                        <th style="text-align:center">Marca</th>
-                        <th style="text-align:center">Stock</th>
-                        <th style="text-align:center">Precio Venta Público</th>
-                        <th style="text-align:center">Margen Ganancia %</th>
-                        <th style="text-align:center">IVA (19%)</th>
-                        <th style="text-align:center">Costo Unit. Proveedor</th>
-                    </tr>
-                </thead>
-                <tbody id="est-inv-precios"></tbody>
-            </table>
-        </div>
+<div id="tab-precios" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-tags me-1 text-primary"></i> Gestión de Márgenes y Precios</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-precios">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">SKU</th>
+                    <th class="text-center text-dark">Material</th>
+                    <th class="text-center text-dark">Marca</th>
+                    <th class="text-center text-dark">Stock</th>
+                    <th class="text-center text-dark">Precio Público</th>
+                    <th class="text-center text-dark">Margen %</th>
+                    <th class="text-center text-dark">IVA (19%)</th>
+                    <th class="text-center text-dark">Costo Est. Proveedor</th>
+                </tr>
+            </thead>
+            <tbody id="est-inv-precios"></tbody>
+        </table>
     </div>
 </div>
 
-<!-- TAB: PROVEEDORES HISTORIAL -->
-<div id="tab-proveedores-est" class="est-tab" style="display:none">
-    <div style="border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-        <div class="kanban-header">Lista de Proveedores e Historial de Compras</div>
-        <div class="scroll-box" style="border:none;border-radius:0;padding:0">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align:center">ID</th>
-                        <th style="text-align:center">Empresa Proveedor</th>
-                        <th style="text-align:center">Marcas Que Trabaja</th>
-                        <th style="text-align:center">Contacto</th>
-                        <th style="text-align:center">Teléfono / Email</th>
-                        <th style="text-align:center">Compras Realizadas</th>
-                        <th style="text-align:center">Total Gastado</th>
-                    </tr>
-                </thead>
-                <tbody id="est-prov-historial"></tbody>
-            </table>
-        </div>
+<div id="tab-proveedores" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-building me-1 text-primary"></i> Compras por Proveedor</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-proveedores">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">ID</th>
+                    <th class="text-center text-dark">Empresa</th>
+                    <th class="text-center text-dark">Marcas</th>
+                    <th class="text-center text-dark">Contacto</th>
+                    <th class="text-center text-dark">Datos Directos</th>
+                    <th class="text-center text-dark">Órdenes</th>
+                    <th class="text-center text-dark">Monto Compras</th>
+                </tr>
+            </thead>
+            <tbody id="est-prov-historial"></tbody>
+        </table>
     </div>
 </div>
 
-<!-- MODAL EMPLEADO -->
-<div id="modal-empleado" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
-    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;width:450px;max-width:95%;max-height:90vh;overflow-y:auto">
-        <div style="font-weight:600;font-size:1em;margin-bottom:12px" id="emp-form-titulo">Contratar Empleado</div>
+<!-- MODAL EMPLEADO (ESTILO VENTAS) -->
+<div id="modal-empleado" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.4);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center">
+    <div class="bento-card bg-white shadow-lg" style="width:420px;max-width:92%">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 id="emp-form-titulo" class="m-0 fw-bold text-dark"><i class="bi bi-person-badge me-1 text-primary"></i> Empleado</h6>
+            <button type="button" class="btn-close" onclick="document.getElementById('modal-empleado').style.display='none'"></button>
+        </div>
         <input type="hidden" id="emp-form-idx">
-        <div style="display:flex;gap:8px">
-            <label style="font-size:0.85em;display:block;margin-bottom:8px;flex:1">Nombre
-                <input type="text" id="emp-form-nombre" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-            </label>
-            <label style="font-size:0.85em;display:block;margin-bottom:8px;flex:1">Apellido
-                <input type="text" id="emp-form-apellido" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-            </label>
+        <div class="row g-2 mb-2">
+            <div class="col-6">
+                <label class="form-label small fw-semibold">Nombre</label>
+                <input type="text" id="emp-form-nombre" class="form-control">
+            </div>
+            <div class="col-6">
+                <label class="form-label small fw-semibold">Apellido</label>
+                <input type="text" id="emp-form-apellido" class="form-control">
+            </div>
         </div>
-        <div style="display:flex;gap:8px">
-            <label style="font-size:0.85em;display:block;margin-bottom:8px;flex:1">RUT
-                <input type="text" id="emp-form-rut" placeholder="18.234.567-8" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-            </label>
-            <label style="font-size:0.85em;display:block;margin-bottom:8px;flex:1">Cumpleaños
-                <input type="date" id="emp-form-cumpleanos" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-            </label>
+        <div class="mb-2">
+            <label class="form-label small fw-semibold">RUT</label>
+            <input type="text" id="emp-form-rut" class="form-control">
         </div>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Rol / Cargo
-            <select id="emp-form-rol" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
+        <div class="mb-2">
+            <label class="form-label small fw-semibold">Rol</label>
+            <select id="emp-form-rol" class="form-select">
                 <option value="Vendedor">Vendedor</option>
                 <option value="Bodeguero">Bodeguero</option>
-                <option value="Admin">Admin</option>
+                <option value="Administrador">Administrador</option>
+                <option value="Gerente">Gerente</option>
             </select>
-        </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Email corporativo
-            <input type="email" id="emp-form-email" placeholder="nombre@construshop.cl" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Contraseña
-            <input type="password" id="emp-form-password" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Teléfono
-            <input type="text" id="emp-form-telefono" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <div style="display:flex;gap:8px;margin-top:12px">
-            <button onclick="estGuardarEmpleado()" style="background:var(--success);flex:1">Guardar</button>
-            <button onclick="estCerrarFormEmpleado()" style="background:#6c757d;flex:1">Cancelar</button>
         </div>
-    </div>
-</div>
-
-<!-- MODAL CLIENTE -->
-<div id="modal-cliente" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
-    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;width:400px;max-width:90%">
-        <div style="font-weight:600;font-size:1em;margin-bottom:12px" id="cli-form-titulo">Registrar Cliente</div>
-        <input type="hidden" id="cli-form-idx">
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Nombre / Razón Social
-            <input type="text" id="cli-form-nombre" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">RUT
-            <input type="text" id="cli-form-rut" placeholder="76.123.456-7" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Email
-            <input type="email" id="cli-form-email" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <label style="font-size:0.85em;display:block;margin-bottom:8px">Teléfono
-            <input type="text" id="cli-form-telefono" style="width:100%;margin-top:2px;padding:6px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-        </label>
-        <div style="display:flex;gap:8px;margin-top:12px">
-            <button onclick="estGuardarCliente()" style="background:var(--success);flex:1">Guardar</button>
-            <button onclick="estCerrarFormCliente()" style="background:#6c757d;flex:1">Cancelar</button>
+        <div class="mb-2">
+            <label class="form-label small fw-semibold">Email</label>
+            <input type="email" id="emp-form-email" class="form-control">
+        </div>
+        <div class="mb-2">
+            <label class="form-label small fw-semibold">Password</label>
+            <input type="password" id="emp-form-password" class="form-control">
+        </div>
+        <div class="row g-2 mb-3">
+            <div class="col-6">
+                <label class="form-label small fw-semibold">Cumpleaños</label>
+                <input type="date" id="emp-form-cumpleanos" class="form-control">
+            </div>
+            <div class="col-6">
+                <label class="form-label small fw-semibold">Teléfono</label>
+                <input type="text" id="emp-form-telefono" class="form-control">
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="estGuardarEmpleado()" class="btn btn-indigo flex-grow-1">Guardar</button>
+            <button onclick="document.getElementById('modal-empleado').style.display='none'" class="btn btn-light border px-3">Cancelar</button>
         </div>
     </div>
 </div>

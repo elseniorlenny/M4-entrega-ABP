@@ -1,550 +1,667 @@
-/* ========================================
-   Full.Stock - Estilos base
-   ======================================== */
+/* ==========================================================================
+   FULL.STOCK - Light Mode System (High Contrast & Refined Kanban Cards)
+   ========================================================================== */
 
-/* Reset */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-/* Variables */
-:root {
-    --bg: #1a1a1a;
-    --bg-card: #2a2a2a;
-    --bg-input: #333;
-    --border: #444;
-    --text: #e0e0e0;
-    --text-muted: #888;
-    --accent: #F4C522;
-    --accent-hover: #d9ad10;
-    --danger: #dc3545;
-    --success: #198754;
-    --warning: #fd7e14;
-    --info: #0dcaf0;
-    --radius: 6px;
+/* ==================== TOKENS MODO CLARO ==================== */
+:root,
+:root[data-theme="light"],
+html,
+html[data-theme="light"] {
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f1f5f9;
+    --bg-input: #ffffff;
+    --border: #e2e8f0;
+    --border-hover: #cbd5e1;
+
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+
+    --accent: #4f46e5;
+    --accent-subtle: #e0e7ff;
+    --accent-text: #3730a3;
+
+    --success: #059669;
+    --success-subtle: #dcfce7;
+    --success-text: #166534;
+
+    --danger: #dc2626;
+    --danger-subtle: #fee2e2;
+    --danger-text: #991b1b;
+
+    --warning: #d97706;
+    --warning-subtle: #fef3c7;
+    --warning-text: #92400e;
+
+    --info: #0891b2;
+    --info-subtle: #cff4fc;
+    --info-text: #155e75;
+
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-hover: 0 6px 16px rgba(15, 23, 42, 0.1);
+
+    /* ==================== SPACING & LAYOUT TOKENS ==================== */
+    --block-gap: 1.5rem;        /* 24px entre bloques principales */
+    --block-gap-sm: 1rem;       /* 16px entre sub-bloques */
+    --header-py: 0.75rem;       /* 12px padding vertical header */
+    --header-border: 1px solid var(--border);
+    --search-max-w: 380px;
+}
+
+/* ==================== RESET & TYPOGRAPHY ==================== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    font-family: 'Plus Jakarta Sans', -apple-system, system-ui, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
     min-height: 100vh;
+    font-size: 0.84rem;
     line-height: 1.5;
+    overflow-x: hidden;
 }
 
-/* ========================================
-   Navbar
-   ======================================== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+}
+
+h1 {
+    font-size: 1.35rem;
+}
+
+h2 {
+    font-size: 1.2rem;
+}
+
+h3 {
+    font-size: 1.1rem;
+}
+
+h4 {
+    font-size: 1.0rem;
+}
+
+h5 {
+    font-size: 0.9rem;
+}
+
+h6 {
+    font-size: 0.82rem;
+}
+
+/* ==================== NAVBAR ==================== */
 header nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 24px;
-    height: 50px;
+    padding: 0.75rem 4rem;
     background: var(--bg-card);
-    border-bottom: 2px solid var(--accent);
+    border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 1000;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+#app-contenido {
+    max-width: 1650px;
+    margin: 0 auto;
+}
+
+@media (max-width: 992px) {
+    header nav {
+        padding: 0.7rem 1.5rem;
+    }
 }
 
 #brand-app {
-    font-size: 1.2em;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: -0.5px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    letter-spacing: -0.02em;
 }
 
-#nav-center, #nav-right {
+#brand-app i {
+    color: var(--accent);
+}
+
+#nav-center {
     display: flex;
-    gap: 4px;
+    gap: 0.35rem;
     align-items: center;
 }
 
-#nav-center a, #nav-right a {
+#nav-center a,
+#nav-right a {
     text-decoration: none;
-    color: var(--text-muted);
-    padding: 6px 14px;
-    border-radius: var(--radius);
-    font-size: 0.9em;
-    font-weight: 500;
-    transition: all 0.15s;
-}
-
-#nav-center a:hover, #nav-right a:hover {
-    color: var(--text);
-    background: var(--bg-input);
-}
-
-#nav-center a.active, #nav-right a.active {
-    color: #000;
-    background: var(--accent);
+    color: var(--text-secondary);
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
     font-weight: 600;
+    transition: all 0.15s ease;
 }
 
-header button {
-    padding: 5px 14px;
-    font-size: 0.85em;
+#nav-center a:hover,
+#nav-right a:hover {
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
 }
 
-/* ========================================
-   Main / Contenido
-   ======================================== */
-main {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 20px 24px;
+#nav-center a.active,
+#nav-right a.active {
+    color: #ffffff;
+    background: var(--accent);
+    font-weight: 700;
 }
 
-/* ========================================
-   Tipografia
-   ======================================== */
-h1 { font-size: 1.8em; margin-bottom: 12px; color: var(--accent); }
-h2 { font-size: 1.4em; margin-bottom: 12px; }
-h3 { font-size: 1.05em; margin: 14px 0 8px; color: var(--text-muted); font-weight: 600; }
-hr { margin: 16px 0; border: none; border-top: 1px solid var(--border); }
-
-/* ========================================
-   Formularios
-   ======================================== */
-label {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 0.85em;
-    color: var(--text-muted);
-    font-weight: 500;
+#nav-center a.nav-disabled,
+#nav-right a.nav-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: not-allowed;
 }
 
-input, select, textarea {
-    padding: 7px 10px;
+/* ==================== SEARCH BAR COMPACTA ==================== */
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    width: 100%;
-    margin-top: 3px;
-    background: var(--bg-input);
-    color: var(--text);
-    font-size: 0.9em;
-    transition: border-color 0.15s;
+    border-radius: var(--radius-sm);
+    padding: 0.08rem 0.35rem;
+    min-height: 28px;
+    max-width: 200px;
+    transition: border-color 0.15s ease;
 }
 
-input:focus, select:focus, textarea:focus {
-    outline: none;
+.search-bar:focus-within {
     border-color: var(--accent);
 }
 
-textarea { resize: vertical; min-height: 40px; }
-
-/* ========================================
-   Botones
-   ======================================== */
-button {
-    padding: 7px 16px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: var(--radius);
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9em;
-    transition: all 0.15s;
+.search-bar i {
+    color: var(--text-muted);
+    font-size: 0.68rem;
 }
 
-button:hover { background: var(--accent-hover); }
-button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
-
-/* ========================================
-   Layout Flex/Grid
-   ======================================== */
-.flex-row {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.flex-col {
-    flex: 1;
-    min-width: 0;
-}
-
-.flex-col[style*="flex:2"] { flex: 2; }
-
-/* ========================================
-   Tablas
-   ======================================== */
-table {
+.search-bar input {
+    border: none !important;
+    background: transparent !important;
+    padding: 0.04rem 0 !important;
+    font-size: 0.68rem !important;
+    font-weight: 500 !important;
+    color: var(--text-primary) !important;
+    box-shadow: none !important;
     width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85em;
+    line-height: 1.2 !important;
 }
 
-th, td {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
-    text-align: center;
+.search-bar input:focus {
+    box-shadow: none !important;
 }
 
-th {
-    background: var(--bg-input);
+.search-bar input::placeholder {
     color: var(--text-muted);
-    font-weight: 600;
-    font-size: 0.85em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: sticky;
-    top: 0;
+    font-weight: 500;
+    font-size: 0.68rem;
 }
 
-tr:hover { background: rgba(244, 197, 34, 0.05); }
+/* ==================== NAVBAR SEARCH (GLOBAL) ==================== */
+.navbar-search-wrapper {
+    position: relative;
+    flex: 0 0 380px;
+    max-width: 420px;
+}
 
-code {
+.navbar-search {
+    position: relative;
+    width: 100%;
+}
+
+.navbar-search .search-bar {
+    max-width: none;
+    width: 100%;
+    min-height: 32px;
+    padding: 0.1rem 0.5rem 0.1rem 2rem;
+    border-radius: var(--radius-sm);
     background: var(--bg-input);
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 0.9em;
-    color: var(--accent);
-}
-
-/* ========================================
-   Scroll Box
-   ======================================== */
-.scroll-box {
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 8px;
-    background: var(--bg-card);
-}
-
-.scroll-box::-webkit-scrollbar { width: 6px; }
-.scroll-box::-webkit-scrollbar-track { background: transparent; }
-.scroll-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-/* ========================================
-   Utilitarios
-   ======================================== */
-.oculto { display: none !important; }
-
-.mb-0 { margin-bottom: 0; }
-.mb-1 { margin-bottom: 4px; }
-.mb-2 { margin-bottom: 8px; }
-.mb-3 { margin-bottom: 12px; }
-.mb-4 { margin-bottom: 16px; }
-.mt-1 { margin-top: 4px; }
-.mt-2 { margin-top: 8px; }
-.mt-3 { margin-top: 12px; }
-
-.text-danger { color: var(--danger); }
-.text-warning { color: var(--warning); }
-.text-success { color: var(--success); }
-.text-info { color: var(--info); }
-.text-muted { color: var(--text-muted); }
-
-/* ========================================
-   Inicio
-   ======================================== */
-.section-inicio {
-    text-align: center;
-    padding: 60px 20px;
-}
-
-.section-inicio h1 {
-    font-size: 2.5em;
-    margin-bottom: 8px;
-}
-
-.section-inicio p {
-    color: var(--text-muted);
-    font-size: 1.1em;
-}
-
-/* ========================================
-   Preview venta
-   ======================================== */
-#venta-preview {
-    background: var(--bg-input);
-    padding: 8px 12px;
-    border-radius: var(--radius);
-    margin: 8px 0;
-    font-size: 0.9em;
     border: 1px solid var(--border);
 }
 
-#venta-resultado-mensaje { margin: 8px 0; }
-
-/* ========================================
-   Opciones forms
-   ======================================== */
-form {
-    max-width: 500px;
-}
-
-form h3 {
-    margin-top: 20px;
-}
-
-/* ========================================
-   Detalle venta (panel derecho)
-   ======================================== */
-#detalle-venta {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-#detalle-venta h3 {
-    margin-top: 0;
-}
-
-#detalle-contenido {
-    flex: 1;
-}
-
-#detalle-acciones {
-    margin-top: 10px;
-}
-
-.detalle-inactivo {
-    background: var(--bg-input);
-    opacity: 0.55;
+.navbar-search .search-bar i {
+    position: absolute;
+    left: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
     pointer-events: none;
-}
-
-.detalle-activo {
-    opacity: 1;
-    pointer-events: auto;
-    transition: all 0.25s;
-}
-
-.detalle-success {
-    background: rgba(25, 135, 84, 0.08);
-    border-color: var(--success);
-}
-
-.detalle-danger {
-    background: rgba(220, 53, 69, 0.08);
-    border-color: var(--danger);
-}
-
-.detalle-info {
-    background: rgba(13, 202, 240, 0.08);
-    border-color: var(--info);
-}
-
-/* ========================================
-   Kanban Board
-   ======================================== */
-.kanban {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    align-items: stretch;
-}
-
-.kanban-5 .kanban-col {
-    flex: 1;
-    min-width: 0;
-}
-
-.kanban-col {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.kanban-header {
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: var(--radius) var(--radius) 0 0;
-    padding: 8px 10px;
-    font-weight: 600;
-    font-size: 0.8em;
+    z-index: 2;
+    font-size: 0.7rem;
     color: var(--text-muted);
+}
+
+.navbar-search .search-bar input {
+    padding-left: 0 !important;
+    width: 100%;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    color: var(--text-primary) !important;
+}
+
+.navbar-search:focus-within .search-bar {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-subtle);
+}
+
+#navbar-search-hint {
+    white-space: nowrap;
+    opacity: 0.7;
+    font-size: 0.65rem;
+}
+
+/* ==================== BENTO UI GRID ==================== */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.1rem;
+    width: 100%;
+}
+
+.bento-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.15rem;
+    box-shadow: var(--shadow-card);
+    transition: all 0.2s ease;
+}
+
+.bento-card:hover {
+    box-shadow: var(--shadow-hover);
+    border-color: var(--border-hover);
+}
+
+.bento-12 {
+    grid-column: span 12;
+}
+
+.bento-8 {
+    grid-column: span 8;
+}
+
+.bento-6 {
+    grid-column: span 6;
+}
+
+.bento-4 {
+    grid-column: span 4;
+}
+
+.bento-3 {
+    grid-column: span 3;
+}
+
+@media (max-width: 992px) {
+
+    .bento-8,
+    .bento-6,
+    .bento-4,
+    .bento-3 {
+        grid-column: span 12;
+    }
+}
+
+/* ==================== SECTION HEADER UNIFICADO ==================== */
+.section-header {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: var(--header-py) 0;
+    border-bottom: var(--header-border);
 }
 
-.kanban-badge {
-    background: var(--border);
-    color: var(--text);
-    padding: 1px 6px;
-    border-radius: 10px;
-    font-size: 0.75em;
+.section-header__title {
+    margin: 0;
     font-weight: 700;
+    color: var(--text-primary);
+    flex-shrink: 0;
 }
 
-.kanban-body {
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 var(--radius) var(--radius);
-    padding: 8px;
-    background: var(--bg);
-    flex: 1;
-    height: 420px;
-    box-sizing: border-box;
+.section-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.section-header__search {
+    max-width: var(--search-max-w);
+}
+
+/* ==================== ESPACIADO CONSISTENTE ==================== */
+.bento-card.bento-12 {
+    margin-bottom: var(--block-gap);
+}
+
+.bento-card.bento-12:last-child {
+    margin-bottom: 0;
+}
+
+/* ==================== ENVÍO TAREAS SCROLL ==================== */
+.bento-scroll-block,
+.scroll-box {
+    max-height: 380px;
     overflow-y: auto;
+    padding-right: 0.2rem;
 }
 
-.kanban-body form {
-    max-width: 100%;
-}
-
-.kanban-drop {
-    flex: 1;
-    height: 420px;
-    box-sizing: border-box;
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 var(--radius) var(--radius);
-    padding: 6px;
-    background: var(--bg);
-    overflow-y: auto;
-    transition: background 0.15s;
-}
-
-.kanban-card {
+/* ==================== STICKY TABS & TABLE HEADERS ==================== */
+.est-tab-headers {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     background: var(--bg-card);
-    border-left: 3px solid var(--border);
-    border-radius: 4px;
-    padding: 8px;
-    margin-bottom: 6px;
-    transition: opacity 0.15s;
-    font-size: 0.85em;
+    border-bottom: 1px solid var(--border);
+}
+
+.bento-scroll-block table thead,
+.scroll-box table thead,
+.est-tab .bento-scroll-block table thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--bg-card);
+}
+
+/* ==================== ENVÍO TAREAS SCROLL ==================== */
+#envio-tareas-drop,
+#envio-bodega-drop {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 0.4rem;
+}
+
+/* ==================== MEJORAS VISUALES EN TARJETAS DE TAREA (KANBAN FORMAT) ==================== */
+.kanban-bento {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.kanban-col-bento {
+    background: #f1f5f9;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 480px;
+}
+
+.kanban-card,
+.task-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 4px solid var(--accent) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 0.85rem !important;
+    margin-bottom: 0.75rem !important;
+    box-shadow: var(--shadow-card) !important;
+    transition: all 0.2s ease !important;
+    color: var(--text-primary) !important;
+}
+
+.kanban-card:hover,
+.task-card:hover {
+    box-shadow: var(--shadow-hover) !important;
+    border-color: #cbd5e1 !important;
+    transform: translateY(-2px);
+}
+
+.kanban-card-title,
+.task-card-title {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+    line-height: 1.35;
 }
 
 .kanban-card-linea {
-    font-size: 0.8em;
-    color: var(--text-muted);
-    margin-top: 3px;
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
 }
 
 .kanban-card-linea strong {
-    color: var(--text);
+    color: var(--text-primary);
 }
 
 .kanban-card-tags {
     display: flex;
-    gap: 4px;
+    gap: 0.3rem;
     flex-wrap: wrap;
-    margin-bottom: 4px;
+    margin-bottom: 0.4rem;
 }
 
-.kanban-card-tipo {
-    display: inline-block;
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 0.7em;
-    font-weight: 600;
-    color: #fff;
-    margin-bottom: 3px;
+.task-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.55rem;
+    border-radius: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
 }
 
-.kanban-card-tipo-entrega { background: #0d6efd; }
-.kanban-card-tipo-interna { background: #6f42c1; }
-.kanban-card-tipo-reposicion { background: var(--warning); }
-
-.kanban-card-estado {
-    display: inline-block;
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 0.7em;
-    font-weight: 600;
-    color: #fff;
-    margin-left: 3px;
+.task-badge-urgente {
+    background: var(--danger-subtle);
+    color: var(--danger-text);
+    border: 1px solid rgba(220, 38, 38, 0.2);
 }
 
-.kanban-card-title {
-    font-weight: 600;
-    font-size: 0.9em;
-    margin-bottom: 3px;
+.task-badge-normal {
+    background: var(--accent-subtle);
+    color: var(--accent-text);
+    border: 1px solid rgba(79, 70, 229, 0.2);
 }
 
-.kanban-card-meta {
-    font-size: 0.8em;
-    color: var(--text-muted);
-    margin-top: 1px;
-}
-
-.kanban-timer {
-    font-size: 0.8em;
-    color: var(--info);
-    margin-top: 4px;
-    font-weight: 600;
-    animation: timerPulse 1s infinite;
-}
-
-@keyframes timerPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+.task-badge-baja {
+    background: var(--success-subtle);
+    color: var(--success-text);
+    border: 1px solid rgba(5, 150, 105, 0.2);
 }
 
 .kanban-card-acciones {
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f1f5f9;
     display: flex;
-    gap: 3px;
-    margin-top: 4px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
 }
 
 .kanban-card-acciones button {
-    font-size: 0.75em;
-    padding: 3px 6px;
+    border-radius: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.3rem 0.6rem;
+    border: none;
+    transition: opacity 0.15s ease;
+}
+
+.kanban-card-acciones button:hover {
+    opacity: 0.9;
 }
 
 .kanban-empty {
     text-align: center;
     color: var(--text-muted);
-    font-size: 0.8em;
-    padding: 16px 0;
-    font-style: italic;
+    font-size: 0.78rem;
+    padding: 2.5rem 0;
+    font-weight: 500;
 }
 
-/* ========================================
-   Estadisticas Tabs
-   ======================================== */
-.tab-btn {
-    background: var(--bg-input);
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 6px 14px;
-    font-size: 0.82em;
-    cursor: pointer;
-    transition: all 0.15s;
+/* ==================== FORM INPUTS & BUTTONS (HIGH CONTRAST) ==================== */
+.form-control,
+.form-select {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 0.45rem 0.7rem !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
 }
 
-.tab-btn:hover {
-    background: var(--border);
-    color: var(--text);
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-subtle) !important;
 }
 
-.tab-btn.active {
-    background: var(--accent);
-    color: #000;
-    font-weight: 600;
-    border-color: var(--accent);
+.form-label {
+    color: var(--text-secondary) !important;
+    font-weight: 600 !important;
+    font-size: 0.78rem !important;
+    margin-bottom: 0.3rem !important;
 }
 
-.metric-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
+button,
+.btn {
+    cursor: pointer !important;
 }
 
-.metric-label {
-    font-size: 0.78em;
-    color: var(--text-muted);
+.btn {
+    font-size: 0.8rem !important;
+    padding: 0.45rem 0.9rem !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 700 !important;
+}
+
+.btn-sm {
+    font-size: 0.74rem !important;
+    padding: 0.32rem 0.65rem !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 600 !important;
+}
+
+.badge {
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    padding: 0.25rem 0.5rem !important;
+    letter-spacing: 0.01em;
+    border-radius: 0.375rem !important;
+}
+
+.btn-indigo {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.btn-emerald {
+    background: var(--success) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.btn-rose {
+    background: var(--danger) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+/* ==================== TABLES (STICKY HEADERS) ==================== */
+.table {
+    font-size: 0.8rem !important;
+    color: var(--text-primary) !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+.table thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.table th {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    font-size: 0.76rem !important;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
+    letter-spacing: 0.03em;
+    padding: 0.7rem 0.75rem !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.metric-value {
-    font-size: 1.3em;
-    font-weight: 700;
-    color: var(--text);
+.table td {
+    padding: 0.65rem 0.75rem !important;
+    border-bottom: 1px solid var(--border) !important;
+    background-color: #ffffff !important;
 }
 
+.oculto {
+    display: none !important;
+}
 
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.timer-pulse {
+    animation: timerPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+    0% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.02); }
+    100% { opacity: 0.7; transform: scale(1); }
+}

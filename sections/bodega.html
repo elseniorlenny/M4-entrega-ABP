@@ -1,81 +1,70 @@
-<!-- BARRA DE HERRAMIENTAS MÓDULO BODEGA -->
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;background:var(--bg-card);padding:12px;border:1px solid var(--border);border-radius:var(--radius)">
-    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:260px">
-        <span style="font-weight:600;font-size:0.9em">🔍 Buscar:</span>
-        <input type="text" id="input-busqueda-bodega" placeholder="Filtrar por SKU, cliente, material, trabajador..." style="flex:1;padding:6px 10px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">
-    </div>
-    <div style="display:flex;gap:8px">
-        <button id="btn-nueva-tarea-bodega" onclick="abrirModalNuevaTarea('entrega')" style="background:var(--primary);color:#000;font-weight:600;padding:6px 12px">+ Nueva Tarea</button>
-        <button id="btn-api-bodega" onclick="sincronizarConAPIExterna()" style="background:#0dcaf0;color:#000;font-weight:600;padding:6px 12px">🌐 Cargar API</button>
-    </div>
-</div>
+<!-- SECCIÓN BODEGA - CON ESTILO Y FORMA DE VENTAS -->
 
-<!-- KANBAN 4 COLUMNAS SUPERIORES -->
-<div class="kanban">
-    <!-- COLUMNA 1: ENTRANTE -->
-    <div class="kanban-col">
-        <div class="kanban-header">
-            <span>📥 Entrante</span>
-            <span class="kanban-badge" id="kanban-ent-count">0</span>
+<!-- KANBAN COLUMNAS LADO A LADO CON ESTILO VENTAS -->
+<div class="kanban-bento mb-3">
+
+    <!-- COLUMNA 1: TAREAS ENTRANTES -->
+    <div class="bento-card p-3 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-inbox me-1 text-primary"></i> Tareas Entrantes</h6>
+            <span class="badge bg-primary text-white px-2 py-1 fw-bold" id="bod-ent-count">0</span>
         </div>
-        <div class="kanban-drop" id="kanban-entrantes"></div>
+        <div class="bento-scroll-block flex-grow-1" id="bod-entrantes" style="max-height: 380px; overflow-y: auto;"></div>
     </div>
 
     <!-- COLUMNA 2: EN PROCESO -->
-    <div class="kanban-col">
-        <div class="kanban-header">
-            <span>⚙️ En Proceso</span>
-            <span class="kanban-badge" id="kanban-proc-count">0</span>
+    <div class="bento-card p-3 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-gear-wide-connected me-1 text-warning"></i> En Proceso</h6>
+            <span class="badge bg-warning text-dark px-2 py-1 fw-bold" id="bod-proc-count">0</span>
         </div>
-        <div class="kanban-drop" id="kanban-proceso"></div>
+        <div class="bento-scroll-block flex-grow-1" id="bod-proceso" style="max-height: 380px; overflow-y: auto;"></div>
     </div>
 
-    <!-- COLUMNA 3: ENTREGADO -->
-    <div class="kanban-col">
-        <div class="kanban-header">
-            <span>✅ Entregado</span>
-            <span class="kanban-badge" id="kanban-term-count">0</span>
+    <!-- COLUMNA 3: ENTREGADOS / ANULADOS -->
+    <div class="bento-card p-3 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-check-circle me-1 text-success"></i> Entregados / Anulados</h6>
+            <span class="badge bg-success text-white px-2 py-1 fw-bold" id="bod-comp-count">0</span>
         </div>
-        <div class="kanban-drop" id="kanban-terminado"></div>
+        <div class="bento-scroll-block flex-grow-1" id="bod-entregados" style="max-height: 380px; overflow-y: auto;"></div>
     </div>
 
     <!-- COLUMNA 4: ENVÍO TAREAS -->
-    <div class="kanban-col">
-        <div class="kanban-header">
-            <span>📤 Envío Tareas</span>
-            <span class="kanban-badge" id="kanban-alert-count">0</span>
+    <div class="bento-card p-3 d-flex flex-column" style="height: 480px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-send me-1 text-success"></i> Envío Tareas</h6>
+            <span class="badge bg-success text-white px-2 py-1 fw-bold" id="envio-bodega-count">0</span>
         </div>
-        <div class="kanban-body" style="display:flex;flex-direction:column;padding:6px;height:420px;box-sizing:border-box">
-            <div class="kanban-drop" id="bodega-envio-drop" style="flex:1;overflow-y:auto;border:none;padding:0">
-                <div class="kanban-empty">Sin alertas de stock pendientes</div>
-            </div>
-            <div style="margin-top:auto;padding-top:6px;border-top:1px solid var(--border)">
-                <button id="btn-enviar-todo-bodega" onclick="appEnviarTodasAlertasBodega()" style="width:100%;font-weight:bold;background:var(--success);padding:8px" disabled>🚀 Enviar Todo</button>
-            </div>
-        </div>
+    <div class="bento-scroll-block flex-grow-1" id="envio-bodega-drop" style="max-height: 380px; overflow-y: auto;">
+        <div class="text-center text-muted py-4 small">Sin tareas pendientes</div>
     </div>
+    </div>
+
 </div>
 
-<!-- COLUMNA ANCHA: INVENTARIO -->
-<div style="margin-top:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);overflow:hidden">
-    <div class="kanban-header" style="justify-content:space-between">
-        <span>📦 Inventario General de Bodega</span>
+<!-- SECCIÓN INVENTARIO BODEGA (TABLA CON ESTILO DE HISTORIAL DE VENTAS) -->
+<div class="bento-card bento-12">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-boxes me-1 text-primary"></i> Stock Físico en Bodega</h6>
     </div>
-    <div class="scroll-box" style="border:none;border-radius:0;padding:0;max-height:350px">
-        <table>
+    <div class="bento-scroll-block" style="max-height: 320px;">
+        <table class="table table-hover align-middle mb-0">
             <thead>
-                <tr>
-                    <th style="text-align:center">SKU</th>
-                    <th style="text-align:center">Material</th>
-                    <th style="text-align:center">Marca</th>
-                    <th style="text-align:center">Color</th>
-                    <th style="text-align:center">Espesor</th>
-                    <th style="text-align:center">Stock</th>
-                    <th style="text-align:center">Estado</th>
-                    <th style="text-align:center">Acción</th>
+                <tr class="table-light">
+                    <th class="text-center text-dark">SKU</th>
+                    <th class="text-center text-dark">Material</th>
+                    <th class="text-center text-dark">Color</th>
+                    <th class="text-center text-dark">Espesor</th>
+                    <th class="text-center text-dark">Dimensiones (Largo x Ancho)</th>
+                    <th class="text-center text-dark">Marca</th>
+                    <th class="text-center text-dark">Categoría</th>
+                    <th class="text-center text-dark">Stock Actual</th>
+                    <th class="text-center text-dark">Estado Stock</th>
+                    <th class="text-center text-dark">Acción Directa</th>
                 </tr>
             </thead>
-            <tbody id="bodega-inv-lista"></tbody>
+            <tbody id="tbody-inventario-bodega"></tbody>
         </table>
     </div>
 </div>
