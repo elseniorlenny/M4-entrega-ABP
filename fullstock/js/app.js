@@ -54,7 +54,11 @@ function renderSeccion(nombre) {
                 makeTableSortable(tbl)
             }
         })
-    }, 60)
+        const searchInput = document.getElementById('navbar-search')
+        if (searchInput && searchInput.value.trim() && window.realizarBusquedaGlobal) {
+            window.realizarBusquedaGlobal(searchInput.value)
+        }
+    }, 100)
 }
 
 window.makeTableSortable = function(tableOrId) {
@@ -167,11 +171,11 @@ async function login() {
             html: `
                 <div class="mb-3 text-start">
                     <label class="form-label text-dark small fw-semibold">Correo Electrónico</label>
-                    <input id="swal-email" class="form-control" placeholder="gerencia@construshop.cl" value="gerencia@construshop.cl">
+                    <input id="swal-email" class="form-control" placeholder="usuario@ejemplo.com" value="">
                 </div>
                 <div class="mb-2 text-start">
                     <label class="form-label text-dark small fw-semibold">Contraseña</label>
-                    <input id="swal-password" type="password" class="form-control" placeholder="••••••••" value="admin123">
+                    <input id="swal-password" type="password" class="form-control" placeholder="••••••••" value="">
                 </div>
             `,
             focusConfirm: false,
@@ -275,7 +279,7 @@ async function logout() {
 
 function actualizarNavbar() {
     const navLinks = document.querySelectorAll('#nav-center a[data-seccion], #nav-right a[data-seccion]')
-    const nombreTienda = (typeof tiendaConfig !== 'undefined' && tiendaConfig.nombre) ? tiendaConfig.nombre : 'Tienda Muebles'
+    const nombreTienda = (typeof tiendaConfig !== 'undefined' && tiendaConfig.nombre) ? tiendaConfig.nombre : 'Sin Empresa Cargada'
     const brandEl = document.getElementById('brand-app')
     if (brandEl) {
         brandEl.innerHTML = `<i class="bi bi-box-seam-fill me-1"></i> Full.Stock <span class="text-muted fw-normal" style="font-size:0.85em;">| ${nombreTienda}</span>`
@@ -631,40 +635,13 @@ function renderEnvioTareasVenta() {
 }
 
 window.verificarAlertasStockAutomaticas = function () {
-    if (!inventario || !Array.isArray(inventario)) return
-    let huboNuevas = false
-
-    inventario.forEach(item => {
-        const esBaja = item.stock <= (typeof STOCK_MINIMO !== 'undefined' ? STOCK_MINIMO : 3) && item.stock > 0
-        const esAgotado = item.stock === 0
-
-        if (esBaja || esAgotado) {
-            const yaEnAlertas = alertasStockPendientes.some(a => a.materialId === item.id || a.sku === item.sku)
-            const yaEnTareas = (typeof tareas !== 'undefined' && Array.isArray(tareas)) ? tareas.some(t => t.tipo === 'reposicion' && (t.materialId === item.id || t.sku === item.sku) && ['pendiente', 'enviada', 'en_proceso', 'comprada', 'eliminada'].includes(t.estado)) : false
-
-            if (!yaEnAlertas && !yaEnTareas) {
-                const cantMin = typeof STOCK_MINIMO !== 'undefined' ? STOCK_MINIMO : 3
-                const cantPedir = Math.max(1, cantMin + 1 - item.stock)
-                const matNombre = `${item.material} ${item.color || ''} ${item.espesor ? item.espesor + 'mm' : ''}`.trim()
-                alertasStockPendientes.push({
-                    id: Date.now() + Math.random(),
-                    materialId: item.id,
-                    sku: item.sku,
-                    materialNombre: matNombre,
-                    cantidad: esAgotado ? Math.max(10, cantPedir) : cantPedir,
-                    prioridad: esAgotado ? 'urgente' : 'media',
-                    origen: esAgotado ? 'stock-agotado' : 'stock-bajo',
-                    notas: esAgotado ? `🔴 Falta de Stock (Stock actual: 0 u.)` : `🟠 Baja de Stock (Stock actual: ${item.stock} u.)`,
-                    enviadoPor: 'Bodega (Alerta Automática)'
-                })
-                huboNuevas = true
-            }
-        }
-    })
-
-    if (huboNuevas && typeof guardarTodo === 'function') {
-        guardarTodo()
-    }
+    // Las tareas de envío en Bodega y Ventas se crean únicamente por acciones del usuario o eventos explícitos:
+    // 1. Ventas: Compra realizada -> Tarea a Bodega en 4ª Columna.
+    // 2. Ventas: Agregar item sin stock -> Tarea a Reposición en 4ª Columna.
+    // 3. Bodega: Click pedir a reposición en tabla inventario -> Tarea a Reposición en 4ª Columna.
+    // 4. Bodega: Error de stock al preparar -> Anulación/Reembolso y tarea a Reposición en 4ª Columna.
+    // 5. Bodega: Terminar preparación con stock crítico o cero -> Tarea a Reposición en 4ª Columna.
+    // En todos los casos el usuario envía manualmente la tarea desde la 4ª Columna.
 }
 
 function renderEnvioTareasBodega() {
@@ -1101,6 +1078,26 @@ function onRenderOpciones() {
             })
             guardarTodo()
             actualizarNavbar()
+        })
+    }
+
+    const btnReset = document.getElementById('btn-reset-datos')
+    if (btnReset) {
+        btnReset.addEventListener('click', async function () {
+            const confirm = await Swal.fire({
+                title: '¿Borrar Datos del Sistema?',
+                text: 'Se eliminarán todos los datos cargados y la aplicación quedará en blanco. Tu sesión continuará abierta.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, borrar datos',
+                cancelButtonText: 'Cancelar'
+            })
+            if (confirm.isConfirmed) {
+                await resetearBaseDatos()
+                if (typeof onRenderOpciones === 'function') onRenderOpciones()
+            }
         })
     }
 
@@ -1596,12 +1593,39 @@ window.pedirRepoDirecto = function (id) {
 function renderInventarioTabla(items) {
     const tbody = document.getElementById('lista-inventario-tabla')
     if (!tbody) return
+
+    // Actualización de KPIs Financieros Top
+    const totalValorizacion = inventario.reduce((sum, item) => sum + ((item.precio || 0) * (item.stock || 0)), 0)
+    const totalCosto = inventario.reduce((sum, item) => {
+        const margen = item.margen || 30
+        const costo = Math.round((item.precio || 0) / ((1 + margen / 100) * 1.19))
+        return sum + (costo * (item.stock || 0))
+    }, 0)
+    const margenPromedio = inventario.length > 0
+        ? Math.round(inventario.reduce((sum, item) => sum + (item.margen || 30), 0) / inventario.length)
+        : 30
+    const gananciaPotencial = Math.max(0, Math.round(totalValorizacion / 1.19) - totalCosto)
+
+    const kpiVal = document.getElementById('inv-kpi-valor-total')
+    const kpiCos = document.getElementById('inv-kpi-costo-total')
+    const kpiMar = document.getElementById('inv-kpi-margen-promedio')
+    const kpiGan = document.getElementById('inv-kpi-ganancia-potencial')
+    const badgeTot = document.getElementById('inv-badge-total')
+
+    if (kpiVal) kpiVal.textContent = formatearCLP(totalValorizacion)
+    if (kpiCos) kpiCos.textContent = formatearCLP(totalCosto)
+    if (kpiMar) kpiMar.textContent = `${margenPromedio}%`
+    if (kpiGan) kpiGan.textContent = formatearCLP(gananciaPotencial)
+    if (badgeTot) badgeTot.textContent = `${items ? items.length : 0} ítems`
+
     if (!items || items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-3 text-secondary">Sin materiales en inventario</td></tr>'
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-secondary">Sin materiales en inventario</td></tr>'
         return
     }
-    const maxItems = items
+
+    const maxItems = [...items]
     maxItems.sort((a, b) => (a.stock || 0) - (b.stock || 0))
+
     tbody.innerHTML = maxItems.map(item => {
         const estadoBadge = item.stock === 0
             ? '<span class="badge px-2 py-1" style="background:#fecaca;color:#991b1b;font-size:0.68rem;font-weight:700;">Agotado</span>'
@@ -1609,25 +1633,107 @@ function renderInventarioTabla(items) {
                 ? '<span class="badge px-2 py-1" style="background:#fef3c7;color:#92400e;font-size:0.68rem;font-weight:700;">Bajo</span>'
                 : '<span class="badge px-2 py-1" style="background:#bbf7d0;color:#166534;font-size:0.68rem;font-weight:700;">Normal</span>'
 
-        const dimStr = (item.largo && item.ancho)
-            ? `${item.largo} x ${item.ancho} mm`
-            : (item.alto && item.largo ? `${item.largo} x ${item.alto} mm` : '2440 x 1520 mm')
+        const margen = item.margen || 30
+        const costoBase = Math.round(item.precio / ((1 + margen / 100) * 1.19))
+        const neto = Math.round(item.precio / 1.19)
+        const gananciaUnidad = neto - costoBase
 
         return `<tr>
             <td class="text-center font-monospace fw-bold text-dark" style="padding:10px 12px;font-size:0.8rem;">${item.sku}</td>
-            <td class="text-center fw-bold text-dark" style="padding:10px 12px;font-size:0.82rem;">${item.material}</td>
-            <td class="text-center text-dark" style="padding:10px 12px;font-size:0.8rem;">${item.color || '-'}</td>
-            <td class="text-center text-dark font-monospace" style="padding:10px 12px;font-size:0.8rem;">${item.espesor ? item.espesor + ' mm' : '-'}</td>
-            <td class="text-center text-secondary font-monospace" style="padding:10px 12px;font-size:0.78rem;">${dimStr}</td>
-            <td class="text-center text-dark" style="padding:10px 12px;font-size:0.8rem;">${item.marca || '-'}</td>
-            <td class="text-center" style="padding:10px 12px;"><span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.68rem;font-weight:700;">${item.categoria || 'Grumal'}</span></td>
+            <td class="text-start fw-bold text-dark" style="padding:10px 12px;font-size:0.82rem;">
+                ${item.material} ${item.color ? '<span class="text-muted small">(' + item.color + ')</span>' : ''}
+            </td>
+            <td class="text-center" style="padding:10px 12px;">
+                <span class="badge px-2 py-1" style="background:#f1f5f9;color:#334155;font-size:0.7rem;font-weight:700;">${item.marca || 'Genérica'}</span>
+            </td>
             <td class="text-center fw-bold text-dark" style="padding:10px 12px;font-size:0.82rem;">${item.stock} u.</td>
             <td class="text-center" style="padding:10px 12px;">${estadoBadge}</td>
-            <td class="text-center fw-bold text-indigo" style="padding:10px 12px;font-size:0.8rem;">${formatearCLP(item.precio)}</td>
+            <td class="text-end text-muted font-monospace" style="padding:10px 12px;font-size:0.8rem;">${formatearCLP(costoBase)}</td>
+            <td class="text-center fw-bold text-warning font-monospace" style="padding:10px 12px;font-size:0.8rem;">${margen}%</td>
+            <td class="text-end fw-bold text-indigo font-monospace" style="padding:10px 12px;font-size:0.82rem;">${formatearCLP(item.precio)}</td>
+            <td class="text-end fw-bold text-success font-monospace" style="padding:10px 12px;font-size:0.8rem;">+${formatearCLP(gananciaUnidad)}</td>
+            <td class="text-center" style="padding:10px 12px;">
+                <button onclick="appInvAbrirEditarPrecio(${item.id})" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size:0.72rem;">
+                    <i class="bi bi-pencil me-1"></i>Ajustar
+                </button>
+            </td>
         </tr>`
     }).join('')
 }
 
+window.appInvAbrirEditarPrecio = function (itemId) {
+    const item = inventario.find(i => i.id === itemId)
+    if (!item) return
+    const elId = document.getElementById('edit-mat-id')
+    if (elId) elId.value = item.id
+    const elNom = document.getElementById('edit-mat-nombre')
+    if (elNom) elNom.textContent = `${item.material} ${item.color ? '(' + item.color + ')' : ''}`
+    const elSku = document.getElementById('edit-mat-sku')
+    if (elSku) elSku.textContent = `SKU: ${item.sku} | Marca: ${item.marca || '-'}`
+    const elMar = document.getElementById('edit-mat-margen')
+    if (elMar) elMar.value = item.margen || 30
+    const elPre = document.getElementById('edit-mat-precio')
+    if (elPre) elPre.value = item.precio || 10000
+
+    appInvReclasificarPrecioDesdeMargen()
+
+    const modalEl = document.getElementById('modal-editar-precio')
+    if (modalEl && typeof bootstrap !== 'undefined') {
+        const modal = new bootstrap.Modal(modalEl)
+        modal.show()
+    }
+}
+
+window.appInvReclasificarPrecioDesdeMargen = function () {
+    const elId = document.getElementById('edit-mat-id')
+    if (!elId) return
+    const itemId = parseInt(elId.value)
+    const item = inventario.find(i => i.id === itemId)
+    if (!item) return
+    const elMar = document.getElementById('edit-mat-margen')
+    const elPre = document.getElementById('edit-mat-precio')
+    const margen = parseFloat(elMar ? elMar.value : 30) || 30
+    const precioActual = parseFloat(elPre ? elPre.value : item.precio) || item.precio
+    const costoBase = Math.round(precioActual / ((1 + margen / 100) * 1.19))
+    const neto = Math.round(precioActual / 1.19)
+    const ganancia = neto - costoBase
+
+    const costoEl = document.getElementById('edit-calc-costo')
+    const gananciaEl = document.getElementById('edit-calc-ganancia')
+    if (costoEl) costoEl.textContent = formatearCLP(costoBase)
+    if (gananciaEl) gananciaEl.textContent = formatearCLP(ganancia)
+}
+
+window.appInvReclasificarMargenDesdePrecio = function () {
+    appInvReclasificarPrecioDesdeMargen()
+}
+
+window.appGuardarAjustePrecio = function () {
+    const elId = document.getElementById('edit-mat-id')
+    if (!elId) return
+    const itemId = parseInt(elId.value)
+    const item = inventario.find(i => i.id === itemId)
+    if (!item) return
+    const elMar = document.getElementById('edit-mat-margen')
+    const elPre = document.getElementById('edit-mat-precio')
+    const nuevoMargen = parseFloat(elMar ? elMar.value : 30) || 30
+    const nuevoPrecio = parseFloat(elPre ? elPre.value : item.precio) || item.precio
+
+    item.margen = nuevoMargen
+    item.precio = nuevoPrecio
+
+    guardarTodo()
+    renderInventarioTabla(inventario)
+
+    const modalEl = document.getElementById('modal-editar-precio')
+    if (modalEl && typeof bootstrap !== 'undefined') {
+        const modal = bootstrap.Modal.getInstance(modalEl)
+        if (modal) modal.hide()
+    }
+    if (typeof mostrarSweetToast === 'function') {
+        mostrarSweetToast(`✔ Margen y Precio actualizados para ${item.sku}`, 'success')
+    }
+}
 
 window.onBuscarInventario = function (query) {
     if (!query || !query.trim()) {
@@ -1755,7 +1861,8 @@ function renderEstadisticasGraficos() {
     }
 }
 
-function onRenderEstadisticas() {
+window.onRenderInventario = function () {
+    renderInventarioTabla(inventario)
     estRenderMetricas()
     estRenderVentas()
     estRenderEntregas()
@@ -1763,10 +1870,34 @@ function onRenderEstadisticas() {
     estRenderReembolsos()
     estRenderEmpleados()
     estRenderClientes()
-    estRenderArchivos()
-    estRenderInventarioPrecios()
-    estRenderProvHistorial()
+    renderProveedoresInventario()
     renderEstadisticasGraficos()
+}
+
+window.onRenderEstadisticas = function () {
+    window.onRenderInventario()
+}
+
+function renderProveedoresInventario() {
+    const cont = document.getElementById('lista-proveedores-inventario')
+    if (!cont) return
+    if (!proveedores || proveedores.length === 0) {
+        cont.innerHTML = '<div class="col-12 text-center py-4 text-secondary">Sin proveedores registrados</div>'
+        return
+    }
+    cont.innerHTML = proveedores.map(p => `
+        <div class="col-md-6 col-lg-4">
+            <div class="border rounded-3 p-3 bg-white shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="m-0 fw-bold text-dark"><i class="bi bi-building me-1 text-primary"></i> ${p.nombre}</h6>
+                    <span class="badge bg-light text-dark border">${p.marcas || 'General'}</span>
+                </div>
+                <div class="small text-secondary mb-1"><strong>Contacto:</strong> ${p.contacto || '-'}</div>
+                <div class="small text-secondary mb-1"><strong>Email:</strong> ${p.email || '-'} | <strong>Tel:</strong> ${p.telefono || '-'}</div>
+                <div class="small text-muted mt-2 border-top pt-2"><em>${p.notas || '-'}</em></div>
+            </div>
+        </div>
+    `).join('')
 }
 
 function estRenderMetricas() {
@@ -1876,8 +2007,18 @@ function estRenderReembolsos() {
 function estRenderEmpleados() {
     const tbody = document.getElementById('est-empleados-lista')
     if (!tbody) return
-    const empleados = (datosJSON && datosJSON.perfiles && datosJSON.perfiles.empleados) || []
-    if (empleados.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:12px;color:var(--text-muted)">Sin empleados registrados</td></tr>'; return }
+    let empleados = (datosJSON && datosJSON.perfiles && datosJSON.perfiles.empleados) || []
+    if (!empleados || empleados.length === 0) {
+        const empStored = localStorage.getItem('fs_empleados')
+        if (empStored) {
+            try {
+                empleados = JSON.parse(empStored)
+                if (!datosJSON.perfiles) datosJSON.perfiles = {}
+                datosJSON.perfiles.empleados = empleados
+            } catch (err) { }
+        }
+    }
+    if (!empleados || empleados.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:12px;color:var(--text-muted)">Sin empleados registrados</td></tr>'; return }
     tbody.innerHTML = empleados.map((e, i) => `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.id}</td>
         <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${e.nombre} ${e.apellido || ''}</td>
@@ -2164,7 +2305,7 @@ window.cerrarModalNuevaTarea = function () {
     if (modal) modal.style.display = 'none'
 }
 
-// NOTIFICACIONES ASINCRÓNICAS - CENTRADAS, PEQUEÑAS, 1.5s
+// NOTIFICACIONES ASINCRÓNICAS - ESQUINA INFERIOR IZQUIERDA, 1.5s
 window.mostrarNotificacionAsync = function (mensaje, tipo = 'success') {
     // Usar BentoToast mixin de swal.js
     if (typeof Swal !== 'undefined' && window.BentoToast) {
@@ -2172,12 +2313,12 @@ window.mostrarNotificacionAsync = function (mensaje, tipo = 'success') {
         return
     }
 
-    // Fallback DOM toast centrado
+    // Fallback DOM toast en la esquina inferior izquierda
     const container = document.getElementById('app-notifications-center')
     if (!container) {
         const c = document.createElement('div')
         c.id = 'app-notifications-center'
-        c.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none;'
+        c.style.cssText = 'position:fixed;bottom:20px;left:20px;z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none;'
         document.body.appendChild(c)
     }
     const realContainer = document.getElementById('app-notifications-center')
@@ -2204,26 +2345,7 @@ window.mostrarNotificacionAsync = function (mensaje, tipo = 'success') {
     }, 1500)
 };
 
-// CONSUMO DE API EXTERNA CON FETCH Y TRY/CATCH
-window.sincronizarConAPIExterna = async function () {
-    try {
-        const tareasNuevas = await gestorTareas.recuperarDeAPI()
-
-        // Notificación asincrónica tras 2 segundos (setTimeout)
-        setTimeout(() => {
-            mostrarNotificacionAsync(`¡Sincronizacion Exitosa! ${tareasNuevas.length} tareas importadas desde API.`, 'success')
-            if (typeof renderSeccion === 'function') {
-                renderSeccion(seccionActual)
-            } else {
-                if (seccionActual === 'bodega') renderBodegaKanban()
-                if (seccionActual === 'reposicion') renderReposicionKanban()
-            }
-        }, 2000)
-    } catch (err) {
-        console.error('Error al sincronizar con API:', err)
-        mostrarNotificacionAsync(`Error al conectar con API externa: ${err.message}`, 'error')
-    }
-}
+// CONSUMO DE API EXTERNA CON FETCH Y TRY/CATCH (Definición principal en window.sincronizarConAPIExterna)
 
 // CONFIGURACIÓN DEL FORMULARIO NUEVA TAREA (SUBMIT, RETARDO SETTIMEOUT 1.5s + NOTIF 2s)
 function configurarFormularioNuevaTarea() {
@@ -2365,8 +2487,33 @@ window.realizarBusquedaGlobal = function (query) {
         case 'estadisticas':
             if (window.onBuscarEstadisticas) window.onBuscarEstadisticas(q)
             break
-        default:
-            break
+    }
+}
+
+window.sincronizarConAPIExterna = async function () {
+    try {
+        if (!gestorTareas || typeof gestorTareas.recuperarDeAPI !== 'function') return
+        const tareasNuevas = await gestorTareas.recuperarDeAPI()
+
+        if (typeof actualizarNavbar === 'function') actualizarNavbar()
+        if (typeof onRenderOpciones === 'function') onRenderOpciones()
+
+        if (typeof renderSeccion === 'function' && seccionActual) {
+            renderSeccion(seccionActual)
+        } else {
+            renderInventarioTabla(inventario)
+            renderBodegaKanban()
+            renderReposicionKanban()
+        }
+
+        if (typeof mostrarSweetToast === 'function') {
+            mostrarSweetToast(`🌐 ¡Carga API Completa! "${tiendaConfig.nombre || 'Empresa'}", inventario y ${tareasNuevas.length} tareas cargadas.`, 'success')
+        }
+    } catch (err) {
+        console.error('Error al sincronizar con API:', err)
+        if (typeof mostrarSweetToast === 'function') {
+            mostrarSweetToast(`Error al conectar con API: ${err.message}`, 'error')
+        }
     }
 }
 
@@ -2390,26 +2537,13 @@ if (document.readyState === 'loading') {
             })
         }
 
-        // Navbar API button handler
-        const btnApiNav = document.getElementById('btn-api-nav')
-        if (btnApiNav) {
-            btnApiNav.addEventListener('click', () => {
-                if (!seccionActual) return
-                switch (seccionActual) {
-                    case 'bodega':
-                        if (window.sincronizarConAPIExterna) window.sincronizarConAPIExterna()
-                        break
-                    case 'reposicion':
-                        if (window.sincronizarConAPIExterna) window.sincronizarConAPIExterna()
-                        break
-                    case 'inventario':
-                        if (window.sincronizarConAPIExterna) window.sincronizarConAPIExterna()
-                        break
-                    default:
-                        break
-                }
-            })
-        }
+        // Opciones API button handler
+        document.addEventListener('click', (e) => {
+            const btnApi = e.target.closest('#btn-cargar-api-opciones') || e.target.closest('#btn-api-nav')
+            if (btnApi) {
+                if (window.sincronizarConAPIExterna) window.sincronizarConAPIExterna()
+            }
+        })
     })
 } else {
     configurarFormularioNuevaTarea()

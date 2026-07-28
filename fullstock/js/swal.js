@@ -2,10 +2,10 @@
    SWAL.JS - SweetAlert2 Light Mode Integration
    ============================================= */
 
-// Custom SweetAlert2 Toast Mixin (Light Mode) - CENTERED, SMALL, FAST
+// Custom SweetAlert2 Toast Mixin (Light Mode) - BOTTOM LEFT, SMALL, FAST
 window.BentoToast = typeof Swal !== 'undefined' ? Swal.mixin({
     toast: true,
-    position: 'center',
+    position: 'bottom-start',
     showConfirmButton: false,
     timer: 1500,
     timerProgressBar: true,

@@ -1,23 +1,268 @@
-<!-- SECCIÓN INVENTARIO - CON ESTILO Y FORMA DE VENTAS -->
+<!-- SECCIÓN MAESTRA UNIFICADA: INVENTARIO, MÉTRICAS Y GESTIÓN -->
 
-<div class="bento-card bento-12">
-    <div class="bento-scroll-block" style="max-height: 380px;">
+<!-- METRICAS SUPERIORES COMPACTAS -->
+<div class="bento-grid mb-3">
+    <!-- VALORIZACIÓN INVENTARIO -->
+    <div class="bento-card bento-3 text-center p-2">
+        <div class="text-secondary small fw-semibold text-uppercase mb-1" style="font-size:0.7rem;">Valor Total Inventario</div>
+        <div id="inv-kpi-valor-total" class="fw-bold text-dark" style="font-size:1.1rem;">$0</div>
+    </div>
+    <!-- COSTO TOTAL ADQUISICIÓN -->
+    <div class="bento-card bento-3 text-center p-2">
+        <div class="text-secondary small fw-semibold text-uppercase mb-1" style="font-size:0.7rem;">Costo Adquisición Total</div>
+        <div id="inv-kpi-costo-total" class="fw-bold text-danger" style="font-size:1.1rem;color:#dc2626 !important;">$0</div>
+    </div>
+    <!-- DINERO EN CAJA -->
+    <div class="bento-card bento-3 text-center p-2">
+        <div class="text-secondary small fw-semibold text-uppercase mb-1" style="font-size:0.7rem;">Caja / Dinero Inicial</div>
+        <div id="est-dinero" class="fw-bold text-warning" style="font-size:1.1rem;">$0</div>
+    </div>
+    <!-- INGRESOS VENTAS -->
+    <div class="bento-card bento-3 text-center p-2">
+        <div class="text-secondary small fw-semibold text-uppercase mb-1" style="font-size:0.7rem;">Ingresos Ventas</div>
+        <div id="est-ingresos" class="fw-bold text-success" style="font-size:1.1rem;color:#059669 !important;">$0</div>
+    </div>
+</div>
+
+<!-- GRÁFICOS Y ANÁLISIS DE MERCADERÍA -->
+<div class="bento-grid mb-3">
+    <div class="bento-card bento-6 p-2">
+        <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+            <h6 class="m-0 fw-bold text-dark small"><i class="bi bi-bar-chart-fill me-1 text-primary"></i> Balance: Ingresos vs Egresos</h6>
+            <span class="badge font-monospace fw-bold" style="background:#e0e7ff; color:#3730a3;">Finanzas</span>
+        </div>
+        <div style="height: 140px; position: relative;">
+            <canvas id="chart-ventas-egresos"></canvas>
+        </div>
+    </div>
+    <div class="bento-card bento-6 p-2">
+        <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+            <h6 class="m-0 fw-bold text-dark small"><i class="bi bi-pie-chart-fill me-1 text-success"></i> Distribución Stock por Categoría</h6>
+            <span class="badge font-monospace fw-bold" style="background:#dcfce7; color:#166534;">Inventario</span>
+        </div>
+        <div style="height: 140px; position: relative;" class="d-flex justify-content-center">
+            <canvas id="chart-stock-categoria"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- NAVEGACIÓN PESTAÑAS SECUNDARIAS -->
+<div class="bento-card bento-12 mb-3 py-2 px-3">
+    <div class="d-flex justify-content-center gap-2 gap-md-3 flex-wrap">
+        <button class="btn btn-outline-primary btn-sm active tab-btn px-3" onclick="showEstTab('stock', event)"><i class="bi bi-box-seam me-1"></i>Stock & Precios</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('ventas', event)"><i class="bi bi-clock-history me-1"></i>Historial Ventas</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('entregas', event)"><i class="bi bi-truck me-1"></i>Entregas</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('anulados', event)"><i class="bi bi-x-circle me-1"></i>Anulaciones & Reembolsos</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('empleados', event)"><i class="bi bi-people me-1"></i>Nómina Empleados</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('clientes', event)"><i class="bi bi-person-lines-fill me-1"></i>Clientes</button>
+        <button class="btn btn-outline-primary btn-sm tab-btn px-3" onclick="showEstTab('proveedores', event)"><i class="bi bi-building me-1"></i>Proveedores</button>
+    </div>
+</div>
+
+<!-- CONTENIDO PESTAÑA 1: CONTROL DE STOCK, COSTOS Y MÁRGENES DE PRECIOS -->
+<div id="tab-stock" class="est-tab bento-card bento-12">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-grid-3x3-gap-fill me-1 text-primary"></i> Control de Stock, Costos y Márgenes de Precios</h6>
+            <span id="inv-badge-total" class="badge bg-indigo text-white px-2 py-1">0 ítems</span>
+        </div>
+        <div class="search-bar" style="max-width:280px;">
+            <i class="bi bi-search"></i>
+            <input type="text" id="inventario-search-input" class="form-control form-control-sm" placeholder="Buscar material, marca, SKU..." oninput="onBuscarInventario(this.value)">
+        </div>
+    </div>
+
+    <div class="bento-scroll-block" style="max-height: 420px;">
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr class="table-light">
                     <th class="text-center text-dark">SKU</th>
-                    <th class="text-center text-dark">Material</th>
-                    <th class="text-center text-dark">Color</th>
-                    <th class="text-center text-dark">Espesor</th>
-                    <th class="text-center text-dark">Dimensiones (Largo x Ancho)</th>
-                    <th class="text-center text-dark">Marca</th>
-                    <th class="text-center text-dark">Categoría</th>
-                    <th class="text-center text-dark">Stock Actual</th>
-                    <th class="text-center text-dark">Estado Stock</th>
-                    <th class="text-center text-dark">Precio Venta</th>
+                    <th class="text-start text-dark">Material</th>
+                    <th class="text-center text-dark">Marca / Cat.</th>
+                    <th class="text-center text-dark">Stock</th>
+                    <th class="text-center text-dark">Estado</th>
+                    <th class="text-end text-dark">Costo Base ($)</th>
+                    <th class="text-center text-dark">Margen (%)</th>
+                    <th class="text-end text-dark">Precio Venta ($)</th>
+                    <th class="text-end text-dark">Ganancia/Ud ($)</th>
+                    <th class="text-center text-dark">Acción</th>
                 </tr>
             </thead>
             <tbody id="lista-inventario-tabla"></tbody>
         </table>
+    </div>
+</div>
+
+<!-- CONTENIDO PESTAÑA 2: HISTORIAL VENTAS -->
+<div id="tab-ventas" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-clock-history me-1 text-primary"></i> Historial de Ventas</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 360px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-ventas">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark"># ID</th>
+                    <th class="text-center text-dark">Fecha</th>
+                    <th class="text-center text-dark">Cliente</th>
+                    <th class="text-center text-dark">Material / SKU</th>
+                    <th class="text-center text-dark">Canal</th>
+                    <th class="text-center text-dark">Entrega</th>
+                    <th class="text-center text-dark">Cant.</th>
+                    <th class="text-center text-dark">Neto</th>
+                    <th class="text-center text-dark">IVA</th>
+                    <th class="text-center text-dark">Total</th>
+                    <th class="text-center text-dark">Estado</th>
+                    <th class="text-center text-dark">Vendedor</th>
+                </tr>
+            </thead>
+            <tbody id="est-ventas-lista"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CONTENIDO PESTAÑA 3: ENTREGAS -->
+<div id="tab-entregas" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-truck me-1 text-primary"></i> Historial de Entregas</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 360px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-entregas">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">ID Tarea</th>
+                    <th class="text-center text-dark">Venta</th>
+                    <th class="text-center text-dark">Cliente</th>
+                    <th class="text-center text-dark">Material</th>
+                    <th class="text-center text-dark">Cant.</th>
+                    <th class="text-center text-dark">Despachador</th>
+                    <th class="text-center text-dark">Inicio</th>
+                    <th class="text-center text-dark">Fin</th>
+                </tr>
+            </thead>
+            <tbody id="est-entregas-lista"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CONTENIDO PESTAÑA 4: ANULACIONES Y REEMBOLSOS -->
+<div id="tab-anulados" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-x-circle me-1 text-danger"></i> Registro de Anulaciones & Reembolsos</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 360px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-anulados">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">ID Anulación</th>
+                    <th class="text-center text-dark">Venta Orig.</th>
+                    <th class="text-center text-dark">Fecha</th>
+                    <th class="text-center text-dark">Cliente</th>
+                    <th class="text-center text-dark">Material</th>
+                    <th class="text-center text-dark">Cant.</th>
+                    <th class="text-center text-dark">Monto Reembolso</th>
+                    <th class="text-center text-dark">Motivo</th>
+                </tr>
+            </thead>
+            <tbody id="est-anulados-lista"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CONTENIDO PESTAÑA 5: EMPLEADOS -->
+<div id="tab-empleados" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-people me-1 text-primary"></i> Nómina de Empleados</h6>
+        <button onclick="estAbrirFormEmpleado()" class="btn btn-indigo btn-sm">+ Contratar Empleado</button>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 360px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-empleados">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">ID</th>
+                    <th class="text-center text-dark">Nombre</th>
+                    <th class="text-center text-dark">RUT</th>
+                    <th class="text-center text-dark">Rol</th>
+                    <th class="text-center text-dark">Email</th>
+                    <th class="text-center text-dark">Cumpleaños</th>
+                    <th class="text-center text-dark">Teléfono</th>
+                    <th class="text-center text-dark">Editar</th>
+                    <th class="text-center text-dark">Despedir</th>
+                </tr>
+            </thead>
+            <tbody id="est-empleados-lista"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CONTENIDO PESTAÑA 6: CLIENTES -->
+<div id="tab-clientes" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-person-lines-fill me-1 text-primary"></i> Cartera de Clientes</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 360px;">
+        <table class="table table-hover align-middle mb-0" id="tabla-est-clientes">
+            <thead>
+                <tr class="table-light">
+                    <th class="text-center text-dark">ID</th>
+                    <th class="text-center text-dark">Nombre</th>
+                    <th class="text-center text-dark">RUT</th>
+                    <th class="text-center text-dark">Email</th>
+                    <th class="text-center text-dark">Teléfono</th>
+                    <th class="text-center text-dark">Total Compras</th>
+                    <th class="text-center text-dark">Editar</th>
+                    <th class="text-center text-dark">Eliminar</th>
+                </tr>
+            </thead>
+            <tbody id="est-clientes-lista"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CONTENIDO PESTAÑA 7: PROVEEDORES -->
+<div id="tab-proveedores" class="est-tab bento-card bento-12" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <h6 class="m-0 fw-bold text-dark"><i class="bi bi-building me-1 text-primary"></i> Directorio de Proveedores Especializados</h6>
+    </div>
+    <div class="bento-scroll-block" style="max-height: 360px;">
+        <div id="lista-proveedores-inventario" class="row g-3"></div>
+    </div>
+</div>
+
+<!-- MODAL EDICIÓN RÁPIDA DE MARGEN Y PRECIO -->
+<div class="modal fade" id="modal-editar-precio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header border-bottom py-2 bg-light">
+                <h6 class="modal-title fw-bold text-dark"><i class="bi bi-pencil-square me-1 text-primary"></i> Ajustar Margen y Precio</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <input type="hidden" id="edit-mat-id">
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold text-muted mb-1">Producto</label>
+                    <div id="edit-mat-nombre" class="fw-bold text-dark"></div>
+                    <div id="edit-mat-sku" class="small text-muted"></div>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold">Margen Ganancia (%)</label>
+                        <input type="number" id="edit-mat-margen" class="form-control form-control-sm" min="1" max="500" value="30" oninput="appInvReclasificarPrecioDesdeMargen()">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold">Precio Venta ($ IVA incl.)</label>
+                        <input type="number" id="edit-mat-precio" class="form-control form-control-sm" min="100" step="50" oninput="appInvReclasificarMargenDesdePrecio()">
+                    </div>
+                </div>
+                <div class="p-2 rounded-2 bg-light border small text-secondary">
+                    <div><strong>Costo Estimado Base:</strong> <span id="edit-calc-costo">$0</span></div>
+                    <div><strong>Ganancia Estimada / Ud:</strong> <span id="edit-calc-ganancia" class="text-success fw-bold">$0</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-top py-2 bg-light">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-indigo btn-sm px-3" onclick="appGuardarAjustePrecio()">Guardar Ajustes</button>
+            </div>
+        </div>
     </div>
 </div>

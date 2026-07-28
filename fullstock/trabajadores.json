@@ -1,103 +1,14 @@
 {
     "trabajadores": [
-        {
-            "id": 1,
-            "nombre": "Gerente",
-            "edad": 45,
-            "genero": "M",
-            "rol": "Gerente General",
-            "email": "gerencia@construshop.cl",
-            "password": "12345",
-            "accesoReal": true,
-            "activo": true
-        },
-        {
-            "id": 2,
-            "nombre": "Carlos Munoz",
-            "edad": 32,
-            "genero": "M",
-            "rol": "Vendedor Presencial",
-            "email": "carlos.ventas@construshop.cl",
-            "password": "carlos2026",
-            "accesoReal": false,
-            "activo": true
-        },
-        {
-            "id": 3,
-            "nombre": "Maria Lopez",
-            "edad": 28,
-            "genero": "F",
-            "rol": "Vendedora Presencial",
-            "email": "maria.ventas@construshop.cl",
-            "password": "maria2026",
-            "accesoReal": false,
-            "activo": true
-        },
-        {
-            "id": 4,
-            "nombre": "Pedro Soto",
-            "edad": 25,
-            "genero": "M",
-            "rol": "Vendedor Online",
-            "email": "pedro.online@construshop.cl",
-            "password": "pedro2026",
-            "accesoReal": false,
-            "activo": true
-        },
-        {
-            "id": 5,
-            "nombre": "Luis Garcia",
-            "edad": 40,
-            "genero": "M",
-            "rol": "Jefe de Bodega",
-            "email": "luis.bodega@construshop.cl",
-            "password": "luis2026",
-            "accesoReal": false,
-            "activo": true
-        },
-        {
-            "id": 6,
-            "nombre": "Ana Ramirez",
-            "edad": 30,
-            "genero": "F",
-            "rol": "Asistente de Bodega",
-            "email": "ana.bodega@construshop.cl",
-            "password": "ana2026",
-            "accesoReal": false,
-            "activo": true
-        },
-        {
-            "id": 7,
-            "nombre": "Jorge Torres",
-            "edad": 27,
-            "genero": "M",
-            "rol": "Asistente de Bodega",
-            "email": "jorge.bodega@construshop.cl",
-            "password": "jorge2026",
-            "accesoReal": false,
-            "activo": true
-        },
-        {
-            "id": 8,
-            "nombre": "Valentina Diaz",
-            "edad": 23,
-            "genero": "F",
-            "rol": "Asistente de Bodega",
-            "email": "valentina.bodega@construshop.cl",
-            "password": "valentina2026",
-            "accesoReal": false,
-            "activo": true
-        },
-        {
-            "id": 9,
-            "nombre": "Rodrigo Vargas",
-            "edad": 35,
-            "genero": "M",
-            "rol": "Reposicion / Compras",
-            "email": "rodrigo.compras@construshop.cl",
-            "password": "rodrigo2026",
-            "accesoReal": false,
-            "activo": true
-        }
+        { "id": 1, "nombre": "Carlos Gutierrez", "edad": 35, "genero": "M", "rol": "Vendedor", "email": "carlos@ferreteria.cl", "password": "123", "rut": "18.234.567-8", "cumpleanos": "1990-03-15", "telefono": "+56912345678", "activo": true },
+        { "id": 2, "nombre": "Maria Lopez", "edad": 33, "genero": "F", "rol": "Vendedor", "email": "maria@ferreteria.cl", "password": "123", "rut": "19.876.543-2", "cumpleanos": "1992-07-22", "telefono": "+56923456789", "activo": true },
+        { "id": 3, "nombre": "Camila Fernandez", "edad": 30, "genero": "F", "rol": "Vendedor", "email": "camila@ferreteria.cl", "password": "123", "rut": "20.123.456-1", "cumpleanos": "1995-11-05", "telefono": "+56934567891", "activo": true },
+        { "id": 4, "nombre": "Luis Morales", "edad": 37, "genero": "M", "rol": "Encargado de Bodega", "email": "luis@ferreteria.cl", "password": "123", "rut": "17.654.321-0", "cumpleanos": "1988-11-08", "telefono": "+56934567890", "activo": true },
+        { "id": 5, "nombre": "Ana Ramirez", "edad": 32, "genero": "F", "rol": "Bodeguero", "email": "ana@ferreteria.cl", "password": "123", "rut": "18.987.654-3", "cumpleanos": "1993-05-14", "telefono": "+56945678901", "activo": true },
+        { "id": 6, "nombre": "Felipe Soto", "edad": 31, "genero": "M", "rol": "Bodeguero", "email": "felipe@ferreteria.cl", "password": "123", "rut": "19.456.789-4", "cumpleanos": "1994-09-18", "telefono": "+56956789012", "activo": true },
+        { "id": 7, "nombre": "Jorge Torres", "edad": 36, "genero": "M", "rol": "Bodeguero", "email": "jorge@ferreteria.cl", "password": "123", "rut": "17.321.654-5", "cumpleanos": "1989-12-03", "telefono": "+56967890123", "activo": true },
+        { "id": 8, "nombre": "Valentina Diaz", "edad": 28, "genero": "F", "rol": "Bodeguero", "email": "valentina@ferreteria.cl", "password": "123", "rut": "21.654.987-6", "cumpleanos": "1997-04-25", "telefono": "+56978901234", "activo": true },
+        { "id": 9, "nombre": "Rodrigo Vargas", "edad": 39, "genero": "M", "rol": "Reposición", "email": "rodrigo@ferreteria.cl", "password": "123", "rut": "16.876.543-7", "cumpleanos": "1986-08-30", "telefono": "+56989012345", "activo": true },
+        { "id": 10, "nombre": "Roberto Henriquez", "edad": 44, "genero": "M", "rol": "Gerente", "email": "gerencia@construshop.cl", "password": "12345", "rut": "15.432.109-8", "cumpleanos": "1982-01-20", "telefono": "+56990123456", "accesoReal": true, "activo": true }
     ]
 }
