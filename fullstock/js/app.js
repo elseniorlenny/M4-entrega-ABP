@@ -370,8 +370,6 @@ function onFormVentaSubmit(e) {
 
     const matNombre = `${item.material} ${item.color} ${item.espesor}mm`
     const enCarrito = carritoVenta.filter(c => c.materialId === item.id).reduce((s, c) => s + c.cantidad, 0)
-    const sinStockSuficiente = (cantidad + enCarrito) > item.stock
-
     if (item.stock === 0 || cantidad > (item.stock - enCarrito)) {
         const vendedor = usuarioActual ? usuarioActual.nombre : 'Gerente';
         alertasEnvioVenta.push({
@@ -420,30 +418,6 @@ function onFormVentaSubmit(e) {
     guardarTodo()
     renderCarritoVenta()
     renderEnvioTareasVenta()
-}
-
-function enviarRepoDesdeAlerta() {
-    const pendiente = window._repoPendiente
-    if (!pendiente) return
-
-    const nota = document.getElementById('detalle-nota') ? document.getElementById('detalle-nota').value.trim() : ''
-    const { item, cantidad, cliente } = pendiente
-
-    const tarea = new Tarea(siguienteId(tareas), 'reposicion', item.id, item.sku, `${item.material} ${item.color} ${item.espesor}mm`, cantidad, 'stock-agotado', `Cliente: ${cliente}. Necesita: ${cantidad} und.` + (nota ? ` | Nota: ${nota}` : ''))
-    tarea.prioridad = 'urgente'
-    tarea.estado = 'enviada'
-    tarea.asignadoA = 'proveedores'
-    tarea.fuente = 'ventas'
-    tarea.enviadoPor = document.getElementById('venta-vendedor-label')?.textContent || 'Ventas'
-    tareas.push(tarea)
-    guardarTodo()
-
-    setTareaAcumulada()
-    document.getElementById('mensaje-enviado').textContent = `Reposicion enviada - ${item.material} ${item.color}`
-
-    window._repoPendiente = null
-
-    setTimeout(() => setTareaInactivo(), 2000)
 }
 
 function renderCarritoVenta() {
@@ -688,44 +662,6 @@ function renderEnvioTareasBodega() {
             </div>
         </div>
         `
-    }).join('')
-}
-
-function estRenderEmpleados() {
-    const tbody = document.getElementById('est-empleados-lista')
-    if (!tbody) return
-    const datosE = (datosJSON && datosJSON.perfiles && datosJSON.perfiles.empleados) || []
-    const empleados = datosE
-    if (empleados.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:12px;color:var(--text-muted)">Sin empleados registrados</td></tr>'; return }
-    tbody.innerHTML = empleados.map((e, i) => `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.id}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${e.nombre} ${e.apellido || ''}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.rut || '-'}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center"><span style="background:var(--info);color:#000;padding:1px 5px;border-radius:3px;font-size:0.75em">${e.rol}</span></td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.email}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.cumpleanos || '-'}</td>
-        <td style="padding:6px 8px;font-size:0.85em;text-align:center">${e.telefono || '-'}</td>
-        <td style="padding:6px 8px;text-align:center"><button onclick="estEditarEmpleado(${i})" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size:0.72rem;" title="Editar"><i class="bi bi-pencil-square me-1"></i>Editar</button></td>
-        <td style="padding:6px 8px;text-align:center"><button onclick="estDespedirEmpleado(${i})" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size:0.72rem;" title="Eliminar"><i class="bi bi-trash3-fill me-1"></i>Despedir</button></td>
-    </tr>`).join('')
-}
-
-function estRenderClientes() {
-    const tbody = document.getElementById('est-clientes-lista')
-    if (!tbody) return
-    if (clientes.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:12px;color:var(--text-muted)">Sin clientes registrados</td></tr>'; return }
-    tbody.innerHTML = clientes.map((c, i) => {
-        const totalComprasCliente = ventas.filter(v => v.cliente === c.nombre && v.estado === 'completada').reduce((s, v) => s + v.total, 0)
-        return `<tr style="border-bottom:1px solid var(--border)">
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.id || (i + 1)}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${c.nombre}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.rut || '-'}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.email || '-'}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${c.telefono || '-'}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold;color:var(--success)">${formatearCLP(totalComprasCliente)}</td>
-            <td style="padding:6px 8px;text-align:center"><button onclick="estEditarCliente(${i})" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size:0.72rem;" title="Editar"><i class="bi bi-pencil-square me-1"></i>Editar</button></td>
-            <td style="padding:6px 8px;text-align:center"><button onclick="estEliminarCliente(${i})" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size:0.72rem;" title="Eliminar"><i class="bi bi-trash3-fill"></i></button></td>
-        </tr>`
     }).join('')
 }
 
@@ -2140,24 +2076,6 @@ window.estDespedirEmpleado = function (idx) {
     })
 }
 
-function estRenderArchivos() {
-    const tbody = document.getElementById('est-archivos-lista')
-    if (!tbody) return
-    const archivadas = tareas.filter(t => t.estado === 'archivada' || t.estado === 'completada')
-    if (archivadas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:12px;color:var(--text-muted)">Sin registros archivados</td></tr>'
-        return
-    }
-    tbody.innerHTML = archivadas.map(t => `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:6px;text-align:center">${t.id}</td>
-        <td style="padding:6px;text-align:center">${t.tipo}</td>
-        <td style="padding:6px;text-align:center">${t.materialNombre || t.descripcion}</td>
-        <td style="padding:6px;text-align:center">${t.cantidad}</td>
-        <td style="padding:6px;text-align:center">${t.estado}</td>
-        <td style="padding:6px;text-align:center">${new Date(t.fechaCreacion).toLocaleDateString('es-CL')}</td>
-    </tr>`).join('')
-}
-
 function estRenderClientes() {
     const tbody = document.getElementById('est-clientes-lista')
     if (!tbody) return
@@ -2269,25 +2187,6 @@ window.estUpdateMargen = function (itemId, value) {
     estRenderInventarioPrecios()
 }
 
-function estRenderProvHistorial() {
-    const tbody = document.getElementById('est-prov-historial')
-    if (!tbody) return
-    const compras = tareas.filter(t => t.tipo === 'reposicion' && ['comprada', 'completada'].includes(t.estado))
-    if (proveedores.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:12px;color:var(--text-muted)">Sin proveedores registrados</td></tr>'; return }
-    tbody.innerHTML = proveedores.map(p => {
-        const comps = compras.filter(t => t.proveedorId === p.id)
-        const totalGastado = comps.reduce((s, t) => s + (t.totalCompra || 0), 0)
-        return `<tr style="border-bottom:1px solid var(--border)">
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${p.id}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold">${p.nombre}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center;max-width:200px;word-break:break-word;">${p.marcas || '-'}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${p.contacto || '-'}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${p.telefono || ''} | ${p.email || ''}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center">${comps.length}</td>
-            <td style="padding:6px 8px;font-size:0.85em;text-align:center;font-weight:bold;color:var(--danger)">${formatearCLP(totalGastado)}</td>
-        </tr>`
-    }).join('')
-}
 
 /* ==================== MÓDULO 4: EVENTOS DOM, ASINCRONÍA Y CONSUMO API ==================== */
 

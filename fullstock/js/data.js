@@ -11,7 +11,6 @@ let datosJSON = null
 let datosJSON_backup = null
 let inventario = []
 let ventas = []
-let bodega = []
 let tareas = []
 let proveedores = []
 let tiendaConfig = {}
@@ -68,9 +67,6 @@ function cargarEstadoInicial() {
     const venLocal = localStorage.getItem('fs_ventas') || sessionStorage.getItem('fs_ventas')
     ventas = venLocal ? JSON.parse(venLocal) : JSON.parse(JSON.stringify(datosJSON.ventas))
 
-    const bodLocal = localStorage.getItem('fs_bodega') || sessionStorage.getItem('fs_bodega')
-    bodega = bodLocal ? JSON.parse(bodLocal) : JSON.parse(JSON.stringify(datosJSON.bodega))
-
     if (!gestorTareas.cargarDeStorage()) {
         const tareasRaw = JSON.parse(JSON.stringify(datosJSON.tareas || []))
         gestorTareas.tareas = tareasRaw
@@ -109,7 +105,7 @@ function cargarEstadoInicial() {
 
 async function resetearBaseDatos() {
     const keys = [
-        'fs_inventario', 'fs_ventas', 'fs_bodega', 'fs_tareas',
+        'fs_inventario', 'fs_ventas', 'fs_tareas',
         'fs_proveedores', 'fs_ventasAnuladas', 'fs_alertasStock',
         'fs_alertasEnvioVenta', 'fs_clientes', 'fs_empleados', 'fs_tienda',
         'fs_app_cargada'
@@ -123,7 +119,6 @@ async function resetearBaseDatos() {
     tiendaConfig = { nombre: '', rut: '', direccion: '', email: '', telefono: '', giro: '', contacto: '', dineroInicial: 0 }
     inventario = []
     ventas = []
-    bodega = []
     if (typeof gestorTareas !== 'undefined' && gestorTareas) {
         gestorTareas.tareas = []
     }
@@ -189,7 +184,6 @@ function reconstruirTarea(t) {
 function guardarTodo() {
     const invStr = JSON.stringify(inventario)
     const venStr = JSON.stringify(ventas)
-    const bodStr = JSON.stringify(bodega)
     const provStr = JSON.stringify(proveedores)
     const vaStr = JSON.stringify(ventasAnuladas)
     const alertStr = JSON.stringify(alertasStockPendientes)
@@ -201,9 +195,6 @@ function guardarTodo() {
 
     localStorage.setItem('fs_ventas', venStr)
     sessionStorage.setItem('fs_ventas', venStr)
-
-    localStorage.setItem('fs_bodega', bodStr)
-    sessionStorage.setItem('fs_bodega', bodStr)
 
     gestorTareas.guardarEnStorage()
 
@@ -522,14 +513,6 @@ function siguienteId(arr) {
     return arr.length > 0 ? Math.max(...arr.map(x => x.id)) + 1 : 1
 }
 
-function obtenerStockBajo() {
-    return inventario.filter(i => i.stock <= STOCK_MINIMO && i.stock > 0)
-}
-
-function obtenerStockAgotado() {
-    return inventario.filter(i => i.stock === 0)
-}
-
 /* ==================== AUTENTICACION ==================== */
 function validarCredenciales(email, password) {
     const em = (email || '').trim().toLowerCase()
@@ -566,53 +549,6 @@ function cerrarSesion() {
     sesionActiva = false
     localStorage.removeItem('fs_sesion')
     sessionStorage.removeItem('fs_sesion')
-}
-
-/* ==================== LOGICA DE VENTA (CARRITO) ==================== */
-let ventaPendiente = null
-
-function crearTareaEntrega(nota) {
-    if (!ventaPendiente || ventaPendiente.tipo !== 'entrega') return null
-
-    const tarea = new Tarea(
-        siguienteId(tareas),
-        'entrega',
-        ventaPendiente.materialId,
-        ventaPendiente.sku,
-        ventaPendiente.materialNombre,
-        ventaPendiente.cantidad,
-        'venta',
-        `Entregar a: ${ventaPendiente.cliente}` + (nota ? ` | Nota: ${nota}` : '')
-    )
-    tarea.asignadoA = 'bodega'
-    tarea.ventaId = ventaPendiente.ventaId
-    tareas.push(tarea)
-    ventaPendiente = null
-    guardarTodo()
-    return tarea
-}
-
-function crearTareaReposicion(cantidadPedir, proveedor, nota, fechaLimite, prioridad) {
-    if (!ventaPendiente || ventaPendiente.tipo !== 'reposicion') return null
-
-    const tarea = new Tarea(
-        siguienteId(tareas),
-        'reposicion',
-        ventaPendiente.materialId,
-        ventaPendiente.sku,
-        ventaPendiente.materialNombre,
-        parseInt(cantidadPedir) || ventaPendiente.cantidadNecesaria,
-        'venta-fallida',
-        `Venta fallida. Se necesitaban ${ventaPendiente.cantidadNecesaria}, stock: ${ventaPendiente.stockActual}. Cliente: ${ventaPendiente.cliente}` + (nota ? ` | Nota: ${nota}` : '')
-    )
-    tarea.asignadoA = 'proveedores'
-    if (proveedor) tarea.proveedorSugerido = proveedor
-    if (fechaLimite) tarea.fechaLimite = fechaLimite
-    if (prioridad) tarea.prioridad = prioridad
-    tareas.push(tarea)
-    ventaPendiente = null
-    guardarTodo()
-    return tarea
 }
 
 /* ==================== RENDER: VENTAS ==================== */
@@ -2564,87 +2500,4 @@ function renderTablaInventario() {
         tbody.appendChild(tr)
     })
 }
-
-/* ==================== FUNCIONES DE RENDER: REPORTES ==================== */
-function renderStatsReportes() {
-    const totalVentas = ventas.reduce((sum, v) => sum + v.total, 0)
-    const totalReembolsos = ventasAnuladas.reduce((sum, va) => sum + va.montoReembolso, 0)
-    const totalCompras = tareas
-        .filter(t => t.tipo === 'reposicion' && t.estado === 'completada')
-        .reduce((sum, t) => {
-            const item = inventario.find(i => i.id === t.materialId)
-            return sum + (item ? item.precio * t.cantidad : 0)
-        }, 0)
-    const ganancia = totalVentas - totalCompras - totalReembolsos
-    const margen = totalVentas > 0 ? Math.round((ganancia / totalVentas) * 100) : 0
-
-    const elIngresos = document.getElementById('rep-ingresos')
-    const elEgresos = document.getElementById('rep-egresos')
-    const elGanancia = document.getElementById('rep-ganancia')
-    const elMargen = document.getElementById('rep-margen')
-    if (elIngresos) elIngresos.textContent = formatearCLP(totalVentas)
-    if (elEgresos) elEgresos.textContent = formatearCLP(totalCompras + totalReembolsos)
-    if (elGanancia) elGanancia.textContent = formatearCLP(ganancia)
-    if (elMargen) elMargen.textContent = margen + '%'
-}
-
-function renderDetalleReportes() {
-    const divVentas = document.getElementById('rep-detalle-ventas')
-    const divCompras = document.getElementById('rep-detalle-compras')
-    const divReembolsos = document.getElementById('rep-detalle-reembolsos')
-
-    if (divVentas) {
-        if (ventas.length === 0) {
-            divVentas.innerHTML = '<p>Sin datos</p>'
-        } else {
-            const porCliente = {}
-            ventas.forEach(v => {
-                if (!porCliente[v.cliente]) porCliente[v.cliente] = { cantidad: 0, total: 0 }
-                porCliente[v.cliente].cantidad += v.cantidad
-                porCliente[v.cliente].total += v.total
-            })
-            divVentas.innerHTML = Object.entries(porCliente).map(([cliente, datos]) =>
-                `<p><strong>${cliente}</strong>: ${datos.cantidad} und - ${formatearCLP(datos.total)}</p>`
-            ).join('')
-        }
-    }
-
-    if (divReembolsos) {
-        if (ventasAnuladas.length === 0) {
-            divReembolsos.innerHTML = '<p>Sin reembolsos</p>'
-        } else {
-            const totalReembolsos = ventasAnuladas.reduce((sum, va) => sum + va.montoReembolso, 0)
-            const unidades = ventasAnuladas.reduce((sum, va) => sum + va.cantidad, 0)
-            divReembolsos.innerHTML = `
-                <p><strong>Ventas anuladas:</strong> ${ventasAnuladas.length}</p>
-                <p><strong>Unidades devueltas:</strong> ${unidades}</p>
-                <p><strong>Total reembolsado:</strong> <span style="color:var(--danger)">${formatearCLP(totalReembolsos)}</span></p>
-            `
-        }
-    }
-
-    if (divCompras) {
-        const reposPend = tareas.filter(t => t.tipo === 'reposicion' && ['pendiente', 'enviada'].includes(t.estado))
-        const reposComp = tareas.filter(t => t.tipo === 'reposicion' && t.estado === 'completada')
-        if (reposPend.length === 0 && reposComp.length === 0) {
-            divCompras.innerHTML = '<p>Sin datos</p>'
-        } else {
-            let html = ''
-            if (reposComp.length > 0) {
-                html += '<p><strong>Completadas:</strong></p>'
-                reposComp.forEach(t => {
-                    html += `<p>#${t.id} - ${t.materialNombre} x${t.cantidad}</p>`
-                })
-            }
-            if (reposPend.length > 0) {
-                html += '<p><strong>Pendientes:</strong></p>'
-                reposPend.forEach(t => {
-                    html += `<p>#${t.id} - ${t.materialNombre} x${t.cantidad}</p>`
-                })
-            }
-            divCompras.innerHTML = html
-        }
-    }
-}
-
 
