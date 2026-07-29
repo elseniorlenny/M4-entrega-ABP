@@ -4,7 +4,7 @@
 > **Desarrollado por: Fabian Ortiz Pena**  
 > **Empresa simulada: ConstruShop Ferretería SpA**  
 > **Fecha: Julio 2026**
-> **https://elseniorlenny.github.io/M4-entrega-ABP/**
+
 
 ---
 
@@ -206,3 +206,5 @@ Contraseña:        12345
 Desarrollo Full Stack JavaScript Trainee  
 **Autor**: Fabian Ortiz Pena  
 **Año**: 2026
+
+> **https://elseniorlenny.github.io/M4-entrega-ABP/**
