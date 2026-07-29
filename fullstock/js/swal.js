@@ -1,13 +1,13 @@
-/* =============================================
-   SWAL.JS - SweetAlert2 Light Mode Integration
-   ============================================= */
+/* ==================================================
+   SWAL.JS - Integración de SweetAlert2
+   ================================================== */
 
-// Custom SweetAlert2 Toast Mixin (Light Mode) - BOTTOM LEFT, SMALL, FAST
+// Toast personalizado de SweetAlert2 - Abajo a la izquierda, compacto y rápido
 window.BentoToast = typeof Swal !== 'undefined' ? Swal.mixin({
     toast: true,
     position: 'bottom-start',
     showConfirmButton: false,
-    timer: 1500,
+    timer: 2500,
     timerProgressBar: true,
     width: '320px',
     padding: '0.5rem 1rem',
@@ -22,7 +22,7 @@ window.BentoToast = typeof Swal !== 'undefined' ? Swal.mixin({
     }
 }) : null;
 
-// Custom SweetAlert2 Modal Mixin (Light Mode)
+// Modal personalizado de SweetAlert2
 const BentoAlert = typeof Swal !== 'undefined' ? Swal.mixin({
     background: '#ffffff',
     color: '#0f172a',
@@ -36,13 +36,13 @@ const BentoAlert = typeof Swal !== 'undefined' ? Swal.mixin({
     }
 }) : null;
 
-window.mostrarSweetToast = function(title, icon = 'success') {
+window.mostrarSweetToast = function (title, icon = 'success') {
     if (typeof Swal !== 'undefined' && BentoToast) {
         BentoToast.fire({ icon, title });
     }
 };
 
-window.confirmarAccionBento = async function(titulo, texto, confirmText = 'Sí, continuar', icon = 'question') {
+window.confirmarAccionBento = async function (titulo, texto, confirmText = 'Sí, continuar', icon = 'question') {
     if (typeof Swal !== 'undefined') {
         const res = await BentoAlert.fire({
             title: titulo,

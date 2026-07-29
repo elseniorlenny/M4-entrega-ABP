@@ -1,14 +1,11 @@
 /* ==========================================================================
-   FULL.STOCK - Light Mode System (High Contrast & Refined Kanban Cards)
+   FULL.STOCK - Estilos (Alto Contraste y Tarjetas Kanban)
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-/* ==================== TOKENS MODO CLARO ==================== */
-:root,
-:root[data-theme="light"],
-html,
-html[data-theme="light"] {
+/* ==================== TOKENS DE ESTILO ==================== */
+:root {
     --bg-main: #f8fafc;
     --bg-card: #ffffff;
     --bg-card-hover: #f1f5f9;
@@ -45,15 +42,15 @@ html[data-theme="light"] {
     --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
     --shadow-hover: 0 6px 16px rgba(15, 23, 42, 0.1);
 
-    /* ==================== SPACING & LAYOUT TOKENS ==================== */
+    /* ==================== TOKENS DE ESPACIADO Y LAYOUT ==================== */
     --block-gap: 1.5rem;        /* 24px entre bloques principales */
     --block-gap-sm: 1rem;       /* 16px entre sub-bloques */
-    --header-py: 0.75rem;       /* 12px padding vertical header */
+    --header-py: 0.75rem;       /* 12px padding vertical en header */
     --header-border: 1px solid var(--border);
     --search-max-w: 380px;
 }
 
-/* ==================== RESET & TYPOGRAPHY ==================== */
+/* ==================== RESET Y TIPOGRAFÍA ==================== */
 *,
 *::before,
 *::after {
@@ -183,7 +180,7 @@ header nav {
     cursor: not-allowed;
 }
 
-/* ==================== SEARCH BAR COMPACTA ==================== */
+/* ==================== BARRA DE BÚSQUEDA COMPACTA ==================== */
 .search-bar {
     display: flex;
     align-items: center;
@@ -228,7 +225,7 @@ header nav {
     font-size: 0.68rem;
 }
 
-/* ==================== NAVBAR SEARCH (GLOBAL) ==================== */
+/* ==================== BÚSQUEDA EN NAVBAR (GLOBAL) ==================== */
 .navbar-search-wrapper {
     position: relative;
     flex: 0 0 380px;
@@ -280,7 +277,7 @@ header nav {
     font-size: 0.65rem;
 }
 
-/* ==================== BENTO UI GRID ==================== */
+/* ==================== GRILLA BENTO UI ==================== */
 .bento-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
@@ -332,7 +329,7 @@ header nav {
     }
 }
 
-/* ==================== SECTION HEADER UNIFICADO ==================== */
+/* ==================== HEADER DE SECCIÓN UNIFICADO ==================== */
 .section-header {
     display: flex;
     align-items: center;
@@ -378,7 +375,7 @@ header nav {
     padding-right: 0.2rem;
 }
 
-/* ==================== STICKY TABS & TABLE HEADERS ==================== */
+/* ==================== PESTAÑAS STICKY Y HEADERS DE TABLA ==================== */
 .est-tab-headers {
     position: sticky;
     top: 0;
@@ -405,7 +402,7 @@ header nav {
     padding-right: 0.4rem;
 }
 
-/* ==================== MEJORAS VISUALES EN TARJETAS DE TAREA (KANBAN FORMAT) ==================== */
+/* ==================== MEJORAS VISUALES EN TARJETAS DE TAREA (FORMATO KANBAN) ==================== */
 .kanban-bento {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -528,7 +525,7 @@ header nav {
     font-weight: 500;
 }
 
-/* ==================== FORM INPUTS & BUTTONS (HIGH CONTRAST) ==================== */
+/* ==================== INPUTS Y BOTONES DE FORMULARIO (ALTO CONTRASTE) ==================== */
 .form-control,
 .form-select {
     background-color: #ffffff !important;
@@ -598,7 +595,7 @@ button,
     border: none !important;
 }
 
-/* ==================== TABLES (STICKY HEADERS) ==================== */
+/* ==================== TABLAS (HEADERS STICKY) ==================== */
 .table {
     font-size: 0.8rem !important;
     color: var(--text-primary) !important;
@@ -637,7 +634,7 @@ button,
     display: none !important;
 }
 
-/* Scrollbar */
+/* Barra de desplazamiento */
 ::-webkit-scrollbar {
     width: 5px;
     height: 5px;
